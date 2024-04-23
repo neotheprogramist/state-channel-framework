@@ -1,0 +1,17 @@
+[package]
+name = "prover"
+version.workspace = true
+edition.workspace = true
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+axum.workspace = true
+podman.workspace = true
+thiserror.workspace = true
+utils.workspace = true
+tokio.workspace = true
+tower-http.workspace = true
+tracing-subscriber.workspace = true
+serde.workspace = true
+serde_json.workspace = true
