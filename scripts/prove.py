@@ -8,10 +8,8 @@ import sys
 async def send_async_request(url, data):
     async with aiohttp.ClientSession() as session:
         async with session.post(url, data=json.dumps(data, indent=2)) as response:
-            print("Status:", response.status)
-            print("Content-type:", response.headers['content-type'])
             response_data = await response.text()
-            print("Response:", response_data)
+            print(response_data)
 
 async def main():
     # Read JSON data from stdin
