@@ -37,13 +37,9 @@ pub async fn start(args: &Args) -> Result<(), ServerError> {
         .with(tracing_subscriber::fmt::layer())
         .init();
 
-    let app_state = AppState {
-        prover_image_name: args.prover_image_name.to_owned(),
-    };
-
     // Create a regular axum app.
     let app = Router::new()
-        .nest("/prove", prove::router(&app_state))
+        .nest("/prove", prove::router())
         .route("/slow", get(|| sleep(Duration::from_secs(5))))
         .route("/forever", get(std::future::pending::<()>))
         .layer((

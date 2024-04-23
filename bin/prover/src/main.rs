@@ -15,10 +15,6 @@ struct Args {
     /// Port to listen on
     #[clap(long, default_value = "3618")]
     port: u16,
-
-    /// Prover image name
-    #[clap(long, default_value = "localhost/state-diff-commitment:latest")]
-    prover_image_name: String,
 }
 
 #[tokio::main]

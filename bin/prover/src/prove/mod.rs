@@ -2,8 +2,6 @@ use axum::{http::StatusCode, response::IntoResponse, routing::post, Router};
 use podman::process::ProcessError;
 use thiserror::Error;
 
-use crate::server::AppState;
-
 mod state_diff_commitment;
 
 #[derive(Error, Debug)]
@@ -25,8 +23,6 @@ impl IntoResponse for ProveError {
     }
 }
 
-pub fn router(app_state: &AppState) -> Router {
-    Router::new()
-        .route("/state-diff-commitment", post(state_diff_commitment::root))
-        .with_state(app_state.clone())
+pub fn router() -> Router {
+    Router::new().route("/state-diff-commitment", post(state_diff_commitment::root))
 }
