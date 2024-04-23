@@ -1,20 +1,8 @@
-use std::net::AddrParseError;
-
 use clap::Parser;
-use server::start;
-use thiserror::Error;
+use server::{start, ServerError};
 
 mod prove;
 mod server;
-
-#[derive(Debug, Error)]
-enum ProverError {
-    #[error("server error")]
-    Server(#[from] std::io::Error),
-
-    #[error("failed to parse address")]
-    AddressParse(#[from] AddrParseError),
-}
 
 /// Command line arguments for the server
 #[derive(Parser, Debug)]
@@ -27,17 +15,18 @@ struct Args {
     /// Port to listen on
     #[clap(long, default_value = "3618")]
     port: u16,
+
+    /// Prover image name
+    #[clap(long, default_value = "localhost/state-diff-commitment:latest")]
+    prover_image_name: String,
 }
 
 #[tokio::main]
-async fn main() -> Result<(), ProverError> {
+async fn main() -> Result<(), ServerError> {
     let args = Args::parse();
 
-    // Construct the full address string
-    let address = format!("{}:{}", args.host, args.port);
-
     // Start the server with the specified address
-    start(address.parse()?).await?;
+    start(&args).await?;
 
     Ok(())
 }

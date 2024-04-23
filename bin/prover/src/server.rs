@@ -1,5 +1,9 @@
 use axum::{routing::get, Router};
-use std::{net::SocketAddr, time::Duration};
+use std::{
+    net::{AddrParseError, SocketAddr},
+    time::Duration,
+};
+use thiserror::Error;
 use tokio::net::TcpListener;
 use tokio::time::sleep;
 use tower_http::timeout::TimeoutLayer;
@@ -7,9 +11,23 @@ use tower_http::trace::TraceLayer;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 use utils::shutdown::shutdown_signal;
 
-use crate::prove;
+use crate::{prove, Args};
 
-pub async fn start(address: SocketAddr) -> Result<(), std::io::Error> {
+#[derive(Debug, Error)]
+pub enum ServerError {
+    #[error("server error")]
+    Server(#[from] std::io::Error),
+
+    #[error("failed to parse address")]
+    AddressParse(#[from] AddrParseError),
+}
+
+#[derive(Debug, Clone)]
+pub struct AppState {
+    pub prover_image_name: String,
+}
+
+pub async fn start(args: &Args) -> Result<(), ServerError> {
     // Enable tracing.
     tracing_subscriber::registry()
         .with(
@@ -19,9 +37,13 @@ pub async fn start(address: SocketAddr) -> Result<(), std::io::Error> {
         .with(tracing_subscriber::fmt::layer())
         .init();
 
+    let app_state = AppState {
+        prover_image_name: args.prover_image_name.to_owned(),
+    };
+
     // Create a regular axum app.
     let app = Router::new()
-        .nest("/prove", prove::router())
+        .nest("/prove", prove::router(&app_state))
         .route("/slow", get(|| sleep(Duration::from_secs(5))))
         .route("/forever", get(std::future::pending::<()>))
         .layer((
@@ -31,6 +53,7 @@ pub async fn start(address: SocketAddr) -> Result<(), std::io::Error> {
             TimeoutLayer::new(Duration::from_secs(60)),
         ));
 
+    let address: SocketAddr = format!("{}:{}", args.host, args.port).parse()?;
     tracing::trace!("start listening on {}", address);
 
     // Create a `TcpListener` using tokio.
