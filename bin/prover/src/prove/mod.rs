@@ -1,4 +1,4 @@
-use axum::{http::StatusCode, response::IntoResponse, routing::get, Router};
+use axum::{http::StatusCode, response::IntoResponse, routing::post, Router};
 use podman::process::ProcessError;
 use thiserror::Error;
 
@@ -21,5 +21,5 @@ impl IntoResponse for ProveError {
 }
 
 pub fn router() -> Router {
-    Router::new().route("/state-diff-commitment", get(state_diff_commitment::root))
+    Router::new().route("/state-diff-commitment", post(state_diff_commitment::root))
 }

@@ -7,11 +7,13 @@ edition.workspace = true
 
 [dependencies]
 axum.workspace = true
+cairo-proof-parser.workspace = true
 podman.workspace = true
 thiserror.workspace = true
 utils.workspace = true
 tokio.workspace = true
 tower-http.workspace = true
+tracing.workspace = true
 tracing-subscriber.workspace = true
 serde.workspace = true
 serde_json.workspace = true

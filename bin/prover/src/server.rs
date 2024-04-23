@@ -14,7 +14,7 @@ pub async fn start() -> Result<(), std::io::Error> {
     tracing_subscriber::registry()
         .with(
             tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| {
-                "example_graceful_shutdown=debug,tower_http=debug,axum=trace".into()
+                "example_graceful_shutdown=debug,tower_http=debug,axum=debug".into()
             }),
         )
         .with(tracing_subscriber::fmt::layer().without_time())

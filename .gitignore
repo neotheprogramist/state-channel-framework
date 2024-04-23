@@ -1,5 +1,9 @@
+/.venv
+
 /target
 /.snfoundry_cache
 
 Cargo.lock
 Scarb.lock
+
+/resources
