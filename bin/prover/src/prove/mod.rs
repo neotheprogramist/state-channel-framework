@@ -8,6 +8,9 @@ mod state_diff_commitment;
 pub enum ProveError {
     #[error("failed to prove state-diff-commitment")]
     StateDiffCommitment(#[from] ProcessError),
+
+    #[error("failed to parse result")]
+    Parse(#[from] serde_json::Error),
 }
 
 impl IntoResponse for ProveError {
