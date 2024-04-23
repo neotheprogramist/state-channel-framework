@@ -17,7 +17,7 @@ async def main():
     data = json.loads(input_json)
 
     # URL of the local endpoint
-    url = "http://localhost:3000/prove/state-diff-commitment"
+    url = "http://localhost:3618/prove/state-diff-commitment"
 
     # Send the async request
     await send_async_request(url, data)
