@@ -1,0 +1,11 @@
+/.venv
+/.git
+/README.md
+
+/target
+/.snfoundry_cache
+
+Cargo.lock
+Scarb.lock
+
+/resources

@@ -8,6 +8,7 @@ edition.workspace = true
 [dependencies]
 axum.workspace = true
 cairo-proof-parser.workspace = true
+clap.workspace = true
 podman.workspace = true
 thiserror.workspace = true
 utils.workspace = true

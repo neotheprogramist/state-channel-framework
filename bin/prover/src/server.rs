@@ -1,5 +1,5 @@
 use axum::{routing::get, Router};
-use std::time::Duration;
+use std::{net::SocketAddr, time::Duration};
 use tokio::net::TcpListener;
 use tokio::time::sleep;
 use tower_http::timeout::TimeoutLayer;
@@ -9,15 +9,14 @@ use utils::shutdown::shutdown_signal;
 
 use crate::prove;
 
-pub async fn start() -> Result<(), std::io::Error> {
+pub async fn start(address: SocketAddr) -> Result<(), std::io::Error> {
     // Enable tracing.
     tracing_subscriber::registry()
         .with(
-            tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| {
-                "example_graceful_shutdown=debug,tower_http=debug,axum=debug".into()
-            }),
+            tracing_subscriber::EnvFilter::try_from_default_env()
+                .unwrap_or_else(|_| "trace".into()),
         )
-        .with(tracing_subscriber::fmt::layer().without_time())
+        .with(tracing_subscriber::fmt::layer())
         .init();
 
     // Create a regular axum app.
@@ -32,8 +31,10 @@ pub async fn start() -> Result<(), std::io::Error> {
             TimeoutLayer::new(Duration::from_secs(60)),
         ));
 
+    tracing::trace!("start listening on {}", address);
+
     // Create a `TcpListener` using tokio.
-    let listener = TcpListener::bind("0.0.0.0:3000").await?;
+    let listener = TcpListener::bind(address).await?;
 
     // Run the server with graceful shutdown
     axum::serve(listener, app)

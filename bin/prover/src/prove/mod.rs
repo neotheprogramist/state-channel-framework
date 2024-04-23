@@ -17,7 +17,7 @@ impl IntoResponse for ProveError {
     fn into_response(self) -> axum::response::Response {
         (
             StatusCode::INTERNAL_SERVER_ERROR,
-            format!("Something went wrong: {}", self.to_string()),
+            format!("Something went wrong: {self}"),
         )
             .into_response()
     }

@@ -11,6 +11,7 @@ edition = "2021"
 [workspace.dependencies]
 axum = { version = "0.7.5", features = ["http2", "macros", "multipart", "ws"] }
 cairo-proof-parser ={ git = "https://github.com/cartridge-gg/cairo-proof-parser.git" }
+clap = { version = "4.5.4", features = ["derive"] }
 podman ={ path = "crates/podman" }
 thiserror = "1.0.59"
 utils = { path = "crates/utils" }
