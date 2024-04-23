@@ -20,8 +20,6 @@ RUN cargo build --release --package prover
 
 # Create the runtime stage without the full Rust environment
 FROM alpine AS runtime
-# Install runtime dependencies if there are any, often libraries like ca-certificates, openssl, etc.
-RUN apk add --no-cache libgcc
 # Copy the built binary from the builder stage
 COPY --from=builder /app/target/release/prover /usr/local/bin/prover
 ENTRYPOINT ["/usr/local/bin/prover"]
