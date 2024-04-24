@@ -1,8 +1,17 @@
-use axum::{http::StatusCode, response::IntoResponse, routing::post, Router};
+use axum::{http::StatusCode, response::IntoResponse, routing::post,routing::get, Router};
 use podman::process::ProcessError;
 use thiserror::Error;
 
 mod state_diff_commitment;
+mod models;
+
+
+use std::collections::HashMap;
+use std::sync::{Arc, Mutex};
+use lazy_static::lazy_static;
+lazy_static! {
+    static ref NONCES: Arc<Mutex<HashMap<String, String>>> = Arc::new(Mutex::new(HashMap::new()));
+}
 
 #[derive(Error, Debug)]
 pub enum ProveError {
@@ -24,5 +33,7 @@ impl IntoResponse for ProveError {
 }
 
 pub fn router() -> Router {
-    Router::new().route("/state-diff-commitment", post(state_diff_commitment::root))
-}
+    Router::new()
+        .route("/state-diff-commitment", post(state_diff_commitment::root))
+        .route("/state-diff-commitment", get(state_diff_commitment::generate_nonce))
+    }

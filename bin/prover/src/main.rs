@@ -19,7 +19,7 @@ struct Args {
 
 #[tokio::main]
 async fn main() -> Result<(), ServerError> {
-    let args = Args::parse();
+    let args: Args = Args::parse();
 
     // Start the server with the specified address
     start(&args).await?;
