@@ -31,6 +31,7 @@ pub enum ProveError {
     Validation(String),
     #[error("Missing or invalid public key")]
     MissingPublicKey,
+
 }
 
 

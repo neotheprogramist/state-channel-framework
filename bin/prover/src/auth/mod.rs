@@ -2,35 +2,27 @@ use crate::prove::ProveError;
 use crate::server::AppState;
 use ed25519_dalek::{Signature, PublicKey}; // Ensure these are properly imported
 use std::env;
-use jsonwebtoken::{encode,EncodingKey,Header};
 use crate::prove::models::{Nonce,GenerateNonceResponse,ValidateSignatureRequest,JWTResponse,GenerateNonceRequest};
 use axum::{
   http::{self, HeaderValue,HeaderMap},
   extract::{State,Json,Query},
   response::IntoResponse
 };
-use serde::Serialize;
+use jwt::{decode_jwt,encode_jwt,Claims};
+pub mod jwt;
 
-#[derive(Serialize)]
-struct Claims {
-    sub: String,
-    exp: usize,
-}
-
-pub const COOKIE_NAME: &str = "session_id";
+pub const COOKIE_NAME: &str = "jwt_token";
 
 pub async fn generate_nonce(
     State(state): State<AppState>,
     Query(params): Query<GenerateNonceRequest>,
 
 ) -> Result<Json<GenerateNonceResponse>, ProveError>{
-  let env_var_name = "MESSAGE_EXPIRATION_TIME"; // Environment variable name
-  let message_expiration_str = env::var(env_var_name)
+  let message_expiration_str = env::var("MESSAGE_EXPIRATION_TIME")
   .expect("MESSAGE_EXPIRATION_TIME environment variable not found!");
 
   let message_expiration_time: usize = message_expiration_str
     .parse::<usize>().unwrap();
-
 
   if params.public_key.trim().is_empty() {
     return Err(ProveError::MissingPublicKey);
@@ -39,12 +31,11 @@ pub async fn generate_nonce(
   let mut nonces: std::sync::MutexGuard<'_, std::collections::HashMap<String, String>> = state.nonces.lock().unwrap();
   let formatted_key = params.public_key.trim().to_lowercase();
   nonces.insert(formatted_key.clone(), nonce.clone().to_string());
-  // Printing whether the nonce was found or not, along with the public key
+
   match nonces.get(&params.public_key) {
     Some(nonce) => println!("Nonce for public key {}: {}", &params.public_key, nonce),
     None => println!("No nonce found for public key: {}", &params.public_key),
   }    
-
   
   Ok(Json(GenerateNonceResponse {
       message:nonce.to_string(),
@@ -56,14 +47,13 @@ pub async fn generate_nonce(
 pub async fn validate_signature(
   State(state): State<AppState>,
   Json(payload): Json<ValidateSignatureRequest>
-)-> Result<impl IntoResponse, ProveError>{ 
-  let env_var_name = "SESSION_EXPIRATION_TIME"; // Environment variable name
-  let message_expiration_str = env::var(env_var_name)
+)-> Result<impl IntoResponse, ProveError>{
+  
+  let message_expiration_str = env::var("SESSION_EXPIRATION_TIME")
   .expect("SESSION_EXPIRATION_TIME environment variable not found!");
 
   let session_expiration_time: usize = message_expiration_str
     .parse::<usize>().unwrap();
-
 
   let nonces = state.nonces.lock().map_err(|_| ProveError::InternalServerError("Failed to lock state".to_string()))?;
 
@@ -77,10 +67,8 @@ pub async fn validate_signature(
   }
 
   let expiration = chrono::Utc::now() + chrono::Duration::seconds(session_expiration_time as i64);
-  let token = generate_jwt(&payload.public_key, expiration.timestamp() as usize)
+  let token = encode_jwt(&payload.public_key, expiration.timestamp() as usize)
       .map_err(|_| ProveError::InternalServerError("JWT generation failed".to_string()))?;
-
-
   let cookie_value = format!("{}={}; HttpOnly; Secure; Path=/; Max-Age={}", COOKIE_NAME, token, session_expiration_time);
   let mut headers = HeaderMap::new();
   headers.insert(http::header::SET_COOKIE, HeaderValue::from_str(&cookie_value)
@@ -89,22 +77,14 @@ pub async fn validate_signature(
   Ok((
       headers,
       Json(JWTResponse {
-          session_id: token,  // Use the JWT as the session identifier
+          session_id: token, 
           expiration: session_expiration_time,
       })
   ))
 
 }
 
-fn generate_jwt(sub: &str, exp: usize) -> Result<String, jsonwebtoken::errors::Error> {
-  let secret = env::var("ENV_VAR_JWT_SECRET_KEY").expect("JWT_SECRET_KEY must be set");
-  println!("{} {} {}",secret,sub,exp);
-  let claims = Claims {
-      sub: sub.to_owned(),
-      exp,
-  };
-  encode(&Header::default(), &claims, &EncodingKey::from_secret(secret.as_bytes()))
-}
+
 /// Verify signature using ed25519_dalek
 /// Verifies a signature given a nonce and a public key.
 ///

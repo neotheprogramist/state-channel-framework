@@ -67,8 +67,7 @@ async def test_validate_signature():
             print("Making a request to:", url)
             print("Data sent:", json.dumps(data, indent=2))
             print(response_data)
-
-
+  
 async def test_validate_signature_with_invalid_signature():
     signing_key = SigningKey.generate()
     public_key = signing_key.verify_key.encode(encoder=HexEncoder)
@@ -114,13 +113,53 @@ async def get_nonce(public_key):
             print("Making a request to:", response.url) 
             print(response_data)
             return response_data
-    
+        
+async def validate_signature(url):
+    signing_key = SigningKey.generate()
+    public_key = signing_key.verify_key.encode(encoder=HexEncoder)
+    response_json = await get_nonce(public_key.decode()) 
+
+    nonce = response_json.get('message', '')
+    signed_nonce = signing_key.sign(nonce.encode())
+
+    async with aiohttp.ClientSession() as session:
+        data = {
+            "public_key": public_key.decode(),
+            "nonce": nonce,
+            "signature": signed_nonce.signature.hex()
+        }
+        async with session.post(url, json=data) as response:
+            response_data = await response.json()
+            print("Status Code:", response.status)
+            print("Making a request to:", response.url) 
+      
+            return response_data
+        
+
+async def test_prover_with_JWT(url,data):
+    response_json=await validate_signature(url)
+    token = response_json.get("session_id")
+    headers = {
+        'Authorization': f'Bearer {token}',
+        'Content-Type': 'application/json'  # Ensure content type is set for JSON data
+    }
+    url = "http://localhost:7003/prove/state-diff-commitment"
+
+    async with aiohttp.ClientSession() as session:
+        async with session.post(url, data=json.dumps(data), headers=headers) as response:
+            response_data = await response.text()
+            print("Status Code:", response.status)
+            print("Making a request to:", url) 
+            print(response_data)
+
+
+
 async def main():
     # Read JSON data from stdin
     input_json = sys.stdin.read()
     data = json.loads(input_json)
-    
-    await test_validate_signature()
+    url = "http://localhost:7003/auth"
+    await test_prover_with_JWT(url,data)
 
 if __name__ == "__main__":
     asyncio.run(main())
