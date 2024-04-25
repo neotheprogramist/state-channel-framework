@@ -3,8 +3,10 @@ use bytes::{Bytes, BytesMut};
 use rand::RngCore;
 use serde_with::{serde_as, DisplayFromStr};
 use std::{io, ops::Deref, str::FromStr};
-
+use ethers_core::types::Signature;
 use serde::{Deserialize, Serialize};
+use evm::address::Address;
+
 #[derive(Debug, Clone)]
 pub struct Nonce(Bytes);
 
@@ -74,6 +76,10 @@ impl std::fmt::Display for Message {
         write!(f, "{}", self.0)
     }
 }
+#[derive(Debug, Serialize, Deserialize)]
+pub struct GenerateNonceRequest {
+    public_key: String,
+}
 
 #[serde_as]
 #[derive(Debug, Serialize, Deserialize)]
@@ -94,4 +100,54 @@ pub struct ProgramInput {
     // Add fields here that match the JSON structure being sent from Python
     // Example:
     value: i32,
+}
+
+
+#[serde_as]
+#[derive(Debug, Serialize, Deserialize)]
+pub struct ValidateSignatureRequest {
+    #[serde_as(as = "DisplayFromStr")]
+    pub address: Address,
+    #[serde_as(as = "DisplayFromStr")]
+    pub signature: Signature,
+    pub public_key: String,
+
+}
+
+#[serde_as]
+#[derive(Debug, Serialize, Deserialize)]
+pub struct SessionResponse {
+    #[serde_as(as = "DisplayFromStr")]
+    pub address: String,
+    #[serde_as(as = "DisplayFromStr")]
+    pub session_id: SessionId,
+    pub expiration: usize,
+}
+
+#[derive(Debug, Clone)]
+pub struct SessionId(Bytes);
+impl SessionId {
+    pub fn new(size: usize) -> Self {
+        let mut bytes = BytesMut::zeroed(size);
+        rand::thread_rng().fill_bytes(bytes.as_mut());
+        Self(bytes.into())
+    }
+}
+
+impl FromStr for SessionId {
+    type Err = io::Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(Self(
+            prefix_hex::decode::<Vec<u8>>(s)
+                .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e.to_string()))?
+                .into(),
+        ))
+    }
+}
+
+impl std::fmt::Display for SessionId {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", prefix_hex::encode(self.0.to_vec()))
+    }
 }

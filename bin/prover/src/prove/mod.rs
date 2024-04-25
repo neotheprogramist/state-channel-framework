@@ -1,17 +1,11 @@
 use axum::{http::StatusCode, response::IntoResponse, routing::post,routing::get, Router};
 use podman::process::ProcessError;
 use thiserror::Error;
-
+use crate::server::AppState;
 mod state_diff_commitment;
 mod models;
 
 
-use std::collections::HashMap;
-use std::sync::{Arc, Mutex};
-use lazy_static::lazy_static;
-lazy_static! {
-    static ref NONCES: Arc<Mutex<HashMap<String, String>>> = Arc::new(Mutex::new(HashMap::new()));
-}
 
 #[derive(Error, Debug)]
 pub enum ProveError {
@@ -20,7 +14,23 @@ pub enum ProveError {
 
     #[error("failed to parse result")]
     Parse(#[from] serde_json::Error),
+
+    #[error("failed to acquire lock")]
+    LockError(String),
+
+    #[error("unauthorized access")]
+    Unauthorized(String),
+
+    #[error("resource not found")]
+    NotFound(String),
+
+    #[error("internal server error")]
+    InternalServerError(String),
+
+    #[error("validation error: {0}")]
+    Validation(String),
 }
+
 
 impl IntoResponse for ProveError {
     fn into_response(self) -> axum::response::Response {
@@ -32,8 +42,9 @@ impl IntoResponse for ProveError {
     }
 }
 
-pub fn router() -> Router {
+pub fn router(app_state: &AppState) -> Router{
     Router::new()
         .route("/state-diff-commitment", post(state_diff_commitment::root))
         .route("/state-diff-commitment", get(state_diff_commitment::generate_nonce))
+        .with_state(app_state.clone())
     }
