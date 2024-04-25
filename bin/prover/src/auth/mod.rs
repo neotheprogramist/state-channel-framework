@@ -3,15 +3,21 @@ pub const SESSION_EXPIRATION_TIME: usize = 3600; // in seconds
 use crate::prove::ProveError;
 use crate::server::AppState;
 use ed25519_dalek::{Signature, PublicKey, Verifier}; // Ensure these are properly imported
-
-use crate::prove::models::{Nonce,GenerateNonceResponse,Message,ValidateSignatureRequest,SessionResponse,GenerateNonceRequest,SessionId};
+use std::env;
+use jsonwebtoken::{encode,EncodingKey,Header};
+use crate::prove::models::{Nonce,GenerateNonceResponse,Message,ValidateSignatureRequest,JWTResponse,GenerateNonceRequest};
 use axum::{
   http::{self, HeaderValue,HeaderMap},
   extract::{State,Json,Query},
   response::IntoResponse
 };
+use serde::Serialize;
 
-
+#[derive(Serialize)]
+struct Claims {
+    sub: String,
+    exp: usize,
+}
 
 pub const COOKIE_NAME: &str = "session_id";
 
@@ -44,7 +50,6 @@ pub async fn validate_signature(
   Json(payload): Json<ValidateSignatureRequest>
 )-> Result<impl IntoResponse, ProveError>{ 
   let nonces = state.nonces.lock().map_err(|_| ProveError::InternalServerError("Failed to lock state".to_string()))?;
-  // Printing whether the nonce was found or not, along with the public key
 
   let user_nonce = nonces.get(&payload.public_key)
     .ok_or_else(|| ProveError::NotFound(format!("Nonce not found for the provided public key: {}", &payload.public_key)))?;
@@ -54,25 +59,36 @@ pub async fn validate_signature(
   if !signature_valid {
     return Err(ProveError::Unauthorized("Invalid signature".to_string()));
   }
-  let session_id=SessionId::new(32);
+
+  let expiration = chrono::Utc::now() + chrono::Duration::seconds(SESSION_EXPIRATION_TIME as i64);
+  let token = generate_jwt(&payload.public_key, expiration.timestamp() as usize)
+      .map_err(|_| ProveError::InternalServerError("JWT generation failed".to_string()))?;
+
+
+  let cookie_value = format!("{}={}; HttpOnly; Secure; Path=/; Max-Age={}", COOKIE_NAME, token, SESSION_EXPIRATION_TIME);
   let mut headers = HeaderMap::new();
-  headers.insert(
-    http::header::SET_COOKIE,
-    HeaderValue::from_str(&format!("{}={}", COOKIE_NAME, session_id))
-        .map_err(|e| ProveError::InternalServerError(e.to_string()))?
-  );
+  headers.insert(http::header::SET_COOKIE, HeaderValue::from_str(&cookie_value)
+      .map_err(|_| ProveError::InternalServerError("Failed to set cookie header".to_string()))?);
 
   Ok((
-    headers,
-    Json(SessionResponse {
-        session_id,
-        expiration: SESSION_EXPIRATION_TIME,
-    }),
+      headers,
+      Json(JWTResponse {
+          session_id: token,  // Use the JWT as the session identifier
+          expiration: SESSION_EXPIRATION_TIME,
+      })
   ))
+
 }
 
-
-
+fn generate_jwt(sub: &str, exp: usize) -> Result<String, jsonwebtoken::errors::Error> {
+  let secret = env::var("ENV_VAR_JWT_SECRET_KEY").expect("JWT_SECRET_KEY must be set");
+  println!("{} {} {}",secret,sub,exp);
+  let claims = Claims {
+      sub: sub.to_owned(),
+      exp,
+  };
+  encode(&Header::default(), &claims, &EncodingKey::from_secret(secret.as_bytes()))
+}
 /// Verify signature using ed25519_dalek
 /// Verifies a signature given a nonce and a public key.
 ///

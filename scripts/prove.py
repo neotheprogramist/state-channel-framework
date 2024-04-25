@@ -139,7 +139,7 @@ async def main():
     input_json = sys.stdin.read()
     data = json.loads(input_json)
     
-    await test_validate_signature_with_invalid_signature()
+    await test_validate_signature()
 
 if __name__ == "__main__":
     asyncio.run(main())

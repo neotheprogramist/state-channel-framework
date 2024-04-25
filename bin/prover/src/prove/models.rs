@@ -112,36 +112,9 @@ pub struct ValidateSignatureRequest {
 
 #[serde_as]
 #[derive(Debug, Serialize, Deserialize)]
-pub struct SessionResponse {
+pub struct JWTResponse {
     #[serde_as(as = "DisplayFromStr")]
-    pub session_id: SessionId,
+    pub session_id: String,
     pub expiration: usize,
 }
 
-#[derive(Debug, Clone)]
-pub struct SessionId(Bytes);
-impl SessionId {
-    pub fn new(size: usize) -> Self {
-        let mut bytes = BytesMut::zeroed(size);
-        rand::thread_rng().fill_bytes(bytes.as_mut());
-        Self(bytes.into())
-    }
-}
-
-impl FromStr for SessionId {
-    type Err = io::Error;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        Ok(Self(
-            prefix_hex::decode::<Vec<u8>>(s)
-                .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e.to_string()))?
-                .into(),
-        ))
-    }
-}
-
-impl std::fmt::Display for SessionId {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", prefix_hex::encode(self.0.to_vec()))
-    }
-}
