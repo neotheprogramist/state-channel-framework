@@ -3,6 +3,7 @@ use server::{start, ServerError};
 
 mod prove;
 mod server;
+mod auth;
 
 /// Command line arguments for the server
 #[derive(Parser, Debug)]
@@ -13,7 +14,7 @@ struct Args {
     host: String,
 
     /// Port to listen on
-    #[clap(long, default_value = "3618")]
+    #[clap(long, default_value = "7003")]
     port: u16,
 }
 

@@ -3,7 +3,7 @@ use podman::process::ProcessError;
 use thiserror::Error;
 use crate::server::AppState;
 mod state_diff_commitment;
-mod models;
+pub mod models;
 
 
 
@@ -29,6 +29,8 @@ pub enum ProveError {
 
     #[error("validation error: {0}")]
     Validation(String),
+    #[error("Missing or invalid public key")]
+    MissingPublicKey,
 }
 
 
@@ -45,6 +47,7 @@ impl IntoResponse for ProveError {
 pub fn router(app_state: &AppState) -> Router{
     Router::new()
         .route("/state-diff-commitment", post(state_diff_commitment::root))
-        .route("/state-diff-commitment", get(state_diff_commitment::generate_nonce))
+        .route("/state-diff-commitment/auth", get(crate::auth::generate_nonce))
+        .route("/state-diff-commitment/auth", post(crate::auth::validate_signature))
         .with_state(app_state.clone())
     }

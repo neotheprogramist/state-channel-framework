@@ -24,4 +24,6 @@ serde_with = "3.2.0"
 prefix-hex = "0.7.1"
 lazy_static = "1.4.0"
 curve25519-dalek = "4"
-ether
+ethers-core = "2.0.14"
+ed25519-dalek = "1"
+hex = "0.4"

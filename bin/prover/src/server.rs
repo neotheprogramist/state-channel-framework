@@ -1,4 +1,4 @@
-use axum::{routing::get, Router,extract::State};
+use axum::{routing::get, Router};
 
 use std::{
     net::{AddrParseError, SocketAddr},
@@ -50,7 +50,6 @@ pub async fn start(args: &Args) -> Result<(), ServerError> {
     let app = Router::new()
         .nest("/prove", prove::router(&state))
         .route("/slow", get(|| sleep(Duration::from_secs(5))))
-        .route("/slowed", get(|| sleep(Duration::from_secs(5))))
         .route("/forever", get(std::future::pending::<()>))
         .layer((
                 TraceLayer::new_for_http(),

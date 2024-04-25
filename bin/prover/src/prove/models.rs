@@ -3,9 +3,8 @@ use bytes::{Bytes, BytesMut};
 use rand::RngCore;
 use serde_with::{serde_as, DisplayFromStr};
 use std::{io, ops::Deref, str::FromStr};
-use ethers_core::types::Signature;
 use serde::{Deserialize, Serialize};
-use evm::address::Address;
+use ed25519_dalek::Signature; // Ensure these are properly imported
 
 #[derive(Debug, Clone)]
 pub struct Nonce(Bytes);
@@ -78,7 +77,7 @@ impl std::fmt::Display for Message {
 }
 #[derive(Debug, Serialize, Deserialize)]
 pub struct GenerateNonceRequest {
-    public_key: String,
+    pub public_key: String,
 }
 
 #[serde_as]
@@ -107,18 +106,13 @@ pub struct ProgramInput {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ValidateSignatureRequest {
     #[serde_as(as = "DisplayFromStr")]
-    pub address: Address,
-    #[serde_as(as = "DisplayFromStr")]
     pub signature: Signature,
     pub public_key: String,
-
 }
 
 #[serde_as]
 #[derive(Debug, Serialize, Deserialize)]
 pub struct SessionResponse {
-    #[serde_as(as = "DisplayFromStr")]
-    pub address: String,
     #[serde_as(as = "DisplayFromStr")]
     pub session_id: SessionId,
     pub expiration: usize,
