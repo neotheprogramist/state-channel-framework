@@ -1,11 +1,9 @@
-pub const MESSAGE_EXPIRATION_TIME: usize = 60; // in seconds
-pub const SESSION_EXPIRATION_TIME: usize = 3600; // in seconds
 use crate::prove::ProveError;
 use crate::server::AppState;
-use ed25519_dalek::{Signature, PublicKey, Verifier}; // Ensure these are properly imported
+use ed25519_dalek::{Signature, PublicKey}; // Ensure these are properly imported
 use std::env;
 use jsonwebtoken::{encode,EncodingKey,Header};
-use crate::prove::models::{Nonce,GenerateNonceResponse,Message,ValidateSignatureRequest,JWTResponse,GenerateNonceRequest};
+use crate::prove::models::{Nonce,GenerateNonceResponse,ValidateSignatureRequest,JWTResponse,GenerateNonceRequest};
 use axum::{
   http::{self, HeaderValue,HeaderMap},
   extract::{State,Json,Query},
@@ -26,6 +24,14 @@ pub async fn generate_nonce(
     Query(params): Query<GenerateNonceRequest>,
 
 ) -> Result<Json<GenerateNonceResponse>, ProveError>{
+  let env_var_name = "MESSAGE_EXPIRATION_TIME"; // Environment variable name
+  let message_expiration_str = env::var(env_var_name)
+  .expect("MESSAGE_EXPIRATION_TIME environment variable not found!");
+
+  let message_expiration_time: usize = message_expiration_str
+    .parse::<usize>().unwrap();
+
+
   if params.public_key.trim().is_empty() {
     return Err(ProveError::MissingPublicKey);
   }
@@ -37,10 +43,12 @@ pub async fn generate_nonce(
   match nonces.get(&params.public_key) {
     Some(nonce) => println!("Nonce for public key {}: {}", &params.public_key, nonce),
     None => println!("No nonce found for public key: {}", &params.public_key),
-  } 
+  }    
+
+  
   Ok(Json(GenerateNonceResponse {
-      message: Message::from(nonce),
-      expiration: MESSAGE_EXPIRATION_TIME,
+      message:nonce.to_string(),
+      expiration: message_expiration_time,
   }))
 }
 
@@ -49,6 +57,14 @@ pub async fn validate_signature(
   State(state): State<AppState>,
   Json(payload): Json<ValidateSignatureRequest>
 )-> Result<impl IntoResponse, ProveError>{ 
+  let env_var_name = "SESSION_EXPIRATION_TIME"; // Environment variable name
+  let message_expiration_str = env::var(env_var_name)
+  .expect("SESSION_EXPIRATION_TIME environment variable not found!");
+
+  let session_expiration_time: usize = message_expiration_str
+    .parse::<usize>().unwrap();
+
+
   let nonces = state.nonces.lock().map_err(|_| ProveError::InternalServerError("Failed to lock state".to_string()))?;
 
   let user_nonce = nonces.get(&payload.public_key)
@@ -60,12 +76,12 @@ pub async fn validate_signature(
     return Err(ProveError::Unauthorized("Invalid signature".to_string()));
   }
 
-  let expiration = chrono::Utc::now() + chrono::Duration::seconds(SESSION_EXPIRATION_TIME as i64);
+  let expiration = chrono::Utc::now() + chrono::Duration::seconds(session_expiration_time as i64);
   let token = generate_jwt(&payload.public_key, expiration.timestamp() as usize)
       .map_err(|_| ProveError::InternalServerError("JWT generation failed".to_string()))?;
 
 
-  let cookie_value = format!("{}={}; HttpOnly; Secure; Path=/; Max-Age={}", COOKIE_NAME, token, SESSION_EXPIRATION_TIME);
+  let cookie_value = format!("{}={}; HttpOnly; Secure; Path=/; Max-Age={}", COOKIE_NAME, token, session_expiration_time);
   let mut headers = HeaderMap::new();
   headers.insert(http::header::SET_COOKIE, HeaderValue::from_str(&cookie_value)
       .map_err(|_| ProveError::InternalServerError("Failed to set cookie header".to_string()))?);
@@ -74,7 +90,7 @@ pub async fn validate_signature(
       headers,
       Json(JWTResponse {
           session_id: token,  // Use the JWT as the session identifier
-          expiration: SESSION_EXPIRATION_TIME,
+          expiration: session_expiration_time,
       })
   ))
 

@@ -43,38 +43,7 @@ impl Deref for Nonce {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
-pub struct Message(String);
-impl From<Nonce> for Message {
-    fn from(value: Nonce) -> Self {
-        Self(format!(
-            "Confirm identity by signing random data:\n{}",
-            value,
-        ))
-    }
-}
 
-impl Deref for Message {
-    type Target = String;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
-
-impl FromStr for Message {
-    type Err = io::Error;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        Ok(Self(s.to_owned()))
-    }
-}
-
-impl std::fmt::Display for Message {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.0)
-    }
-}
 #[derive(Debug, Serialize, Deserialize)]
 pub struct GenerateNonceRequest {
     pub public_key: String,
@@ -84,7 +53,7 @@ pub struct GenerateNonceRequest {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct GenerateNonceResponse {
     #[serde_as(as = "DisplayFromStr")]
-    pub message: Message,
+    pub message: String,
     pub expiration: usize,
 }
 

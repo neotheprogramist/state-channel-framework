@@ -25,7 +25,7 @@ async def test_get_slow():
 
             print(response_data)
 async def test_generate_nonce():
-    url = "http://localhost:7003/prove/state-diff-commitment/auth"
+    url = "http://localhost:7003/auth"
     public_key = "0x123123123123"  # Replace this with the actual public key you want to use
 
     async with aiohttp.ClientSession() as session:
@@ -41,34 +41,21 @@ async def test_validate_signature():
 
     signing_key = SigningKey.generate()
     public_key = signing_key.verify_key.encode(encoder=HexEncoder)
-    
-
-    response_json = await get_nonce(public_key.decode())  # Get JSON response from the server
+    response_json = await get_nonce(public_key.decode()) 
 
     if not response_json:
         print("No JSON response received to sign.")
         return
 
-    # Extract the message and then the nonce
-    full_message = response_json.get('message', '')
-    if not full_message:
+    nonce = response_json.get('message', '')
+    if not nonce:
         print("No message found in JSON response.")
         return
 
-    try:
-        # Assuming the format "Confirm identity by signing random data:\n<nonce>"
-        nonce = full_message.split('\n')[1]
-    except IndexError:
-        print("Failed to extract nonce from the message.")
-        return
-    
-
-    # Sign the nonce received from the server
     signed_nonce = signing_key.sign(nonce.encode())
 
-    url = "http://localhost:7003/prove/state-diff-commitment/auth"
+    url = "http://localhost:7003/auth"
     async with aiohttp.ClientSession() as session:
-        # Prepare data to send (nonce and signature)
         data = {
             "public_key": public_key.decode(),
             "nonce": nonce,
@@ -92,15 +79,9 @@ async def test_validate_signature_with_invalid_signature():
         print("No JSON response received to sign.")
         return
 
-    full_message = response_json.get('message', '')
-    if not full_message:
+    nonce = response_json.get('message', '')
+    if not nonce:
         print("No message found in JSON response.")
-        return
-
-    try:
-        nonce = full_message.split('\n')[1]
-    except IndexError:
-        print("Failed to extract nonce from the message.")
         return
     
     signed_nonce = signing_key.sign(nonce.encode())
@@ -108,7 +89,7 @@ async def test_validate_signature_with_invalid_signature():
     invalid_signature = bytearray(signed_nonce.signature)
     invalid_signature[0] ^= 0xff  
 
-    url = "http://localhost:7003/prove/state-diff-commitment/auth"
+    url = "http://localhost:7003/auth"
     async with aiohttp.ClientSession() as session:
         data = {
             "public_key": public_key.decode(),
@@ -123,7 +104,7 @@ async def test_validate_signature_with_invalid_signature():
             print(response_data)
 
 async def get_nonce(public_key):
-    url = "http://localhost:7003/prove/state-diff-commitment/auth"
+    url = "http://localhost:7003/auth"
 
     async with aiohttp.ClientSession() as session:
         params = {'public_key': public_key}

@@ -47,7 +47,13 @@ impl IntoResponse for ProveError {
 pub fn router(app_state: &AppState) -> Router{
     Router::new()
         .route("/state-diff-commitment", post(state_diff_commitment::root))
-        .route("/state-diff-commitment/auth", get(crate::auth::generate_nonce))
-        .route("/state-diff-commitment/auth", post(crate::auth::validate_signature))
+        .with_state(app_state.clone())
+    }
+
+    
+pub fn auth(app_state: &AppState) -> Router{
+    Router::new()
+        .route("/auth", get(crate::auth::generate_nonce))
+        .route("/auth", post(crate::auth::validate_signature))
         .with_state(app_state.clone())
     }
