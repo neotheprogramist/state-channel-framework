@@ -41,7 +41,7 @@ pub async fn validate_signature(
   // payload
   // .signature
   // .verify(Message::from(user_nonce).as_str(), payload.address.clone())?;
-
+  //verify signature using curve25519_dalek
   let signature_valid = verify_signature(&payload.signature, &user_nonce, &payload.address);
 
   if !signature_valid {
@@ -55,6 +55,7 @@ pub async fn validate_signature(
     HeaderValue::from_str(&format!("{}={}", COOKIE_NAME, session_id))
         .map_err(|e| ProveError::InternalServerError(e.to_string()))?
   );
+
   Ok((
     headers,
     Json(SessionResponse {
