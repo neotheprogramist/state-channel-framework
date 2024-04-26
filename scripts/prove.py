@@ -162,6 +162,23 @@ async def test_prover_with_JWT(url,data):
             print("Making a request to:", url) 
             print(response_data)
 
+async def test_prover_with_invalid_JWT(url,data):
+    response_json=await validate_signature(url)
+    token = response_json.get("jwt_token")
+    headers = {
+        'Authorization': f'Bearer {"BLABLABLA"}',
+        'Content-Type': 'application/json'  # Ensure content type is set for JSON data
+    }
+    url = "http://localhost:7003/prove/state-diff-commitment"
+
+    async with aiohttp.ClientSession() as session:
+        async with session.post(url, data=json.dumps(data, indent=2), headers=headers) as response:
+            response_data = await response.text()
+            print("Status Code:", response.status)
+            print("Making a request to:", url) 
+            print(response_data)
+
+
 # Set env variable expiration time to 1s
 async def test_expiration_time(url,data):
     response_json=await validate_signature(url)
@@ -185,6 +202,6 @@ async def main():
     data = json.loads(input_json)
     url = "http://localhost:7003/auth"
     # await test_prover_with_JWT(url,data)
-    await test_expiration_time(url,data)
+    await test_prover_with_invalid_JWT(url,data)
 if __name__ == "__main__":
     asyncio.run(main())

@@ -9,14 +9,13 @@ use axum::{
     response::IntoResponse,
 };
 use jwt::encode_jwt;
-use validation::verify_signature;
 use std::env;
+use validation::verify_signature;
 
 pub mod jwt;
 pub mod validation;
 
 pub const COOKIE_NAME: &str = "jwt_token";
-
 
 /// Generates a nonce for a given public key and stores it in the application state.
 ///

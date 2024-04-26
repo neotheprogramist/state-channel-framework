@@ -3,7 +3,7 @@ use ed25519_dalek::Signature;
 use rand::RngCore;
 use serde::{Deserialize, Serialize};
 use serde_with::{serde_as, DisplayFromStr};
-use std::{io, ops::Deref, str::FromStr}; 
+use std::{io, ops::Deref, str::FromStr};
 
 #[serde_as]
 #[derive(Debug, Serialize, Deserialize)]

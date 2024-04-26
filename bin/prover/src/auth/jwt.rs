@@ -1,55 +1,75 @@
 use crate::prove::ProveError;
-use jsonwebtoken::{decode, encode, DecodingKey, EncodingKey, Header, TokenData, Validation};
+use axum::{
+    async_trait, extract::FromRequestParts, http::header::AUTHORIZATION, http::request::Parts,
+};
+use jsonwebtoken::{decode, encode, DecodingKey, EncodingKey, Header, Validation};
+use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
-use std::env;
+use std::fmt::Display;
 
-#[derive(Serialize, Deserialize)]
-pub struct Claims {
-    pub sub: String,
-    pub exp: usize,
-}
+static KEYS: Lazy<Keys> = Lazy::new(|| {
+    let secret = std::env::var("ENV_VAR_JWT_SECRET_KEY").expect("JWT_SECRET must be set");
+    Keys::new(secret.as_bytes())
+});
 
-/// Encodes a JWT token with the provided subject and expiration time.
-///
-/// # Parameters
-///
-/// - `sub`: The subject (usually a user identifier) to be included in the JWT claims.
-/// - `exp`: The expiration time (in seconds since the UNIX epoch) for the JWT token.
-///
-/// # Returns
-///
-/// Returns a JWT token as a string if successful, or a `ProveError::InternalServerError` if encoding fails.
 pub fn encode_jwt(sub: &str, exp: usize) -> Result<String, ProveError> {
-    let secret = env::var("ENV_VAR_JWT_SECRET_KEY").expect("JWT_SECRET_KEY must be set");
-
     let claims = Claims {
         sub: sub.to_owned(),
         exp,
     };
-    encode(
-        &Header::default(),
-        &claims,
-        &EncodingKey::from_secret(secret.as_bytes()),
-    )
-    .map_err(|e| ProveError::InternalServerError(format!("JWT generation failed: {}", e)))
+    encode(&Header::default(), &claims, &KEYS.encoding)
+        .map_err(|e| ProveError::InternalServerError(format!("JWT generation failed: {}", e)))
 }
 
-/// Decodes a JWT token and verifies its signature.
-///
-/// # Parameters
-///
-/// - `jwt`: The JWT token to be decoded and verified.
-///
-/// # Returns
-///
-/// Returns the decoded JWT token data if verification is successful, or a `ProveError::InternalServerError` if decoding fails.
-pub fn decode_jwt(jwt: String) -> Result<TokenData<Claims>, ProveError> {
-    let secret = env::var("ENV_VAR_JWT_SECRET_KEY").expect("JWT_SECRET_KEY must be set");
+#[async_trait]
+impl<S> FromRequestParts<S> for Claims
+where
+    S: Send + Sync,
+{
+    type Rejection = ProveError;
 
-    decode(
-        &jwt,
-        &DecodingKey::from_secret(secret.as_ref()),
-        &Validation::default(),
-    )
-    .map_err(|e| ProveError::InternalServerError(format!("JWT generation failed: {}", e)))
+    async fn from_request_parts(parts: &mut Parts, _state: &S) -> Result<Self, Self::Rejection> {
+        // Extract the 'Authorization' header
+        let header_value = parts.headers.get(AUTHORIZATION).ok_or(ProveError::Auth(
+            crate::prove::AuthError::MissingAuthorizationHeader,
+        ))?;
+
+        // Convert the header value to a string and validate it starts with "Bearer "
+        let token_str = header_value
+            .to_str()
+            .map_err(|_| ProveError::Auth(crate::prove::AuthError::InvalidToken))?;
+        if !token_str.starts_with("Bearer ") {
+            return Err(ProveError::Auth(crate::prove::AuthError::Unauthorized));
+        }
+
+        let token = &token_str["Bearer ".len()..];
+
+        let token_data = decode::<Claims>(token, &KEYS.decoding, &Validation::default())
+            .map_err(|_| ProveError::Auth(crate::prove::AuthError::InvalidToken))?;
+
+        Ok(token_data.claims)
+    }
+}
+#[derive(Debug, Serialize, Deserialize)]
+pub struct Claims {
+    sub: String,
+    exp: usize,
+}
+impl Display for Claims {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "sub: {}", self.sub)
+    }
+}
+struct Keys {
+    encoding: EncodingKey,
+    decoding: DecodingKey,
+}
+
+impl Keys {
+    fn new(secret: &[u8]) -> Self {
+        Self {
+            encoding: EncodingKey::from_secret(secret),
+            decoding: DecodingKey::from_secret(secret),
+        }
+    }
 }
