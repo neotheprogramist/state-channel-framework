@@ -21,7 +21,14 @@ pub async fn root(headers: HeaderMap, program_input: String) -> Result<String, P
         let header_str = header_value.to_str().unwrap_or("");
         if header_str.starts_with("Bearer ") {
             let token = header_str[7..].to_string();
-            decode_jwt(token)?;
+            let token_data = decode_jwt(token)?;
+            let expiration  = token_data.claims.exp;
+            let now = chrono::Utc::now().timestamp();
+            if expiration < now.try_into().unwrap() {
+                println!("JWT token has expired");
+                return Err(ProveError::Unauthorized("JWT token has expired".to_string()));
+            } 
+
         } else {
             return Err(ProveError::Unauthorized("Invalid or missing Bearer token".to_string()));
         }

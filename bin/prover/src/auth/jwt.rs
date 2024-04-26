@@ -5,8 +5,8 @@ use std::env;
 
 #[derive(Serialize, Deserialize)]
 pub struct Claims {
-    sub: String,
-    exp: usize,
+    pub sub: String,
+    pub exp: usize,
 }
 
 /// Encodes a JWT token with the provided subject and expiration time.
