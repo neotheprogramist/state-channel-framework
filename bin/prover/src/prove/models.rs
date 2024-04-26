@@ -1,10 +1,17 @@
-
 use bytes::{Bytes, BytesMut};
+use ed25519_dalek::Signature;
 use rand::RngCore;
-use serde_with::{serde_as, DisplayFromStr};
-use std::{io, ops::Deref, str::FromStr};
 use serde::{Deserialize, Serialize};
-use ed25519_dalek::Signature; // Ensure these are properly imported
+use serde_with::{serde_as, DisplayFromStr};
+use std::{io, ops::Deref, str::FromStr}; 
+
+#[serde_as]
+#[derive(Debug, Serialize, Deserialize)]
+pub struct GenerateNonceResponse {
+    #[serde_as(as = "DisplayFromStr")]
+    pub nonce: Nonce,
+    pub expiration: usize,
+}
 
 #[derive(Debug, Clone)]
 pub struct Nonce(Bytes);
@@ -43,33 +50,15 @@ impl Deref for Nonce {
     }
 }
 
-
 #[derive(Debug, Serialize, Deserialize)]
 pub struct GenerateNonceRequest {
     pub public_key: String,
 }
 
-#[serde_as]
-#[derive(Debug, Serialize, Deserialize)]
-pub struct GenerateNonceResponse {
-    #[serde_as(as = "DisplayFromStr")]
-    pub message: String,
-    pub expiration: usize,
-}
-
-// Define a struct for the query parameters
 #[derive(Debug, Serialize, Deserialize)]
 pub struct PublicKeyQuery {
     pub public_key: String,
 }
-// Define a struct for the JSON body
-#[derive(Debug,Serialize, Deserialize)]
-pub struct ProgramInput {
-    // Add fields here that match the JSON structure being sent from Python
-    // Example:
-    value: i32,
-}
-
 
 #[serde_as]
 #[derive(Debug, Serialize, Deserialize)]
@@ -83,7 +72,6 @@ pub struct ValidateSignatureRequest {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct JWTResponse {
     #[serde_as(as = "DisplayFromStr")]
-    pub session_id: String,
+    pub jwt_token: String,
     pub expiration: usize,
 }
-

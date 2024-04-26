@@ -1,9 +1,9 @@
 use clap::Parser;
 use server::{start, ServerError};
 
+mod auth;
 mod prove;
 mod server;
-mod auth;
 
 /// Command line arguments for the server
 #[derive(Parser, Debug)]

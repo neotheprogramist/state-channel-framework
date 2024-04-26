@@ -8,6 +8,12 @@ from nacl.signing import SigningKey
 from nacl.encoding import HexEncoder
 
 async def send_async_request(url,  data):
+    headers = {
+        'Authorization': f'Bearer {"token"}',
+        'Content-Type': 'application/json'  # Ensure content type is set for JSON data
+    }
+    url = "http://localhost:7003/prove/state-diff-commitment"
+
     async with aiohttp.ClientSession() as session:
         async with session.post(url, data=json.dumps(data, indent=2)) as response:
             response_data = await response.text()
@@ -16,7 +22,7 @@ async def send_async_request(url,  data):
             print(response_data)
 
 async def test_get_slow():
-    url = "http://localhost:7003/slow"
+    url = "http://localhost:3618/slow"
     async with aiohttp.ClientSession() as session:
         async with session.get(url) as response:
             response_data = await response.text()
@@ -24,6 +30,8 @@ async def test_get_slow():
             print("Making a request to:", url)
 
             print(response_data)
+
+            
 async def test_generate_nonce():
     url = "http://localhost:7003/auth"
     public_key = "0x123123123123"  # Replace this with the actual public key you want to use
@@ -47,7 +55,7 @@ async def test_validate_signature():
         print("No JSON response received to sign.")
         return
 
-    nonce = response_json.get('message', '')
+    nonce = response_json.get('nonce', '')
     if not nonce:
         print("No message found in JSON response.")
         return
@@ -68,7 +76,7 @@ async def test_validate_signature():
             print("Data sent:", json.dumps(data, indent=2))
             print(response_data)
   
-async def test_validate_signature_with_invalid_signature():
+async def test_validate_signature_unauthorized():
     signing_key = SigningKey.generate()
     public_key = signing_key.verify_key.encode(encoder=HexEncoder)
 
@@ -78,7 +86,7 @@ async def test_validate_signature_with_invalid_signature():
         print("No JSON response received to sign.")
         return
 
-    nonce = response_json.get('message', '')
+    nonce = response_json.get('nonce', '')
     if not nonce:
         print("No message found in JSON response.")
         return
@@ -102,6 +110,8 @@ async def test_validate_signature_with_invalid_signature():
             print("Data sent:", json.dumps(data, indent=2))
             print(response_data)
 
+
+# Get the nonce by passing public_key in auth url params
 async def get_nonce(public_key):
     url = "http://localhost:7003/auth"
 
@@ -119,7 +129,7 @@ async def validate_signature(url):
     public_key = signing_key.verify_key.encode(encoder=HexEncoder)
     response_json = await get_nonce(public_key.decode()) 
 
-    nonce = response_json.get('message', '')
+    nonce = response_json.get('nonce', '')
     signed_nonce = signing_key.sign(nonce.encode())
 
     async with aiohttp.ClientSession() as session:
@@ -138,7 +148,7 @@ async def validate_signature(url):
 
 async def test_prover_with_JWT(url,data):
     response_json=await validate_signature(url)
-    token = response_json.get("session_id")
+    token = response_json.get("jwt_token")
     headers = {
         'Authorization': f'Bearer {token}',
         'Content-Type': 'application/json'  # Ensure content type is set for JSON data
@@ -146,7 +156,7 @@ async def test_prover_with_JWT(url,data):
     url = "http://localhost:7003/prove/state-diff-commitment"
 
     async with aiohttp.ClientSession() as session:
-        async with session.post(url, data=json.dumps(data), headers=headers) as response:
+        async with session.post(url, data=json.dumps(data, indent=2), headers=headers) as response:
             response_data = await response.text()
             print("Status Code:", response.status)
             print("Making a request to:", url) 
@@ -159,7 +169,7 @@ async def main():
     input_json = sys.stdin.read()
     data = json.loads(input_json)
     url = "http://localhost:7003/auth"
+    # await test_prover_with_JWT(url,data)
     await test_prover_with_JWT(url,data)
-
 if __name__ == "__main__":
     asyncio.run(main())

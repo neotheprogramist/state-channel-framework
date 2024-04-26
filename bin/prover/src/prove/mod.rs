@@ -1,11 +1,9 @@
-use axum::{http::StatusCode, response::IntoResponse, routing::post,routing::get, Router};
+use crate::server::AppState;
+use axum::{http::StatusCode, response::IntoResponse, routing::get, routing::post, Router};
 use podman::process::ProcessError;
 use thiserror::Error;
-use crate::server::AppState;
-mod state_diff_commitment;
 pub mod models;
-
-
+mod state_diff_commitment;
 
 #[derive(Error, Debug)]
 pub enum ProveError {
@@ -14,9 +12,6 @@ pub enum ProveError {
 
     #[error("failed to parse result")]
     Parse(#[from] serde_json::Error),
-
-    #[error("failed to acquire lock")]
-    LockError(String),
 
     #[error("unauthorized access")]
     Unauthorized(String),
@@ -27,13 +22,9 @@ pub enum ProveError {
     #[error("internal server error")]
     InternalServerError(String),
 
-    #[error("validation error: {0}")]
-    Validation(String),
     #[error("Missing or invalid public key")]
     MissingPublicKey,
-
 }
-
 
 impl IntoResponse for ProveError {
     fn into_response(self) -> axum::response::Response {
@@ -45,16 +36,13 @@ impl IntoResponse for ProveError {
     }
 }
 
-pub fn router(app_state: &AppState) -> Router{
-    Router::new()
-        .route("/state-diff-commitment", post(state_diff_commitment::root))
-        .with_state(app_state.clone())
-    }
+pub fn router() -> Router {
+    Router::new().route("/state-diff-commitment", post(state_diff_commitment::root))
+}
 
-    
-pub fn auth(app_state: &AppState) -> Router{
+pub fn auth(app_state: &AppState) -> Router {
     Router::new()
         .route("/auth", get(crate::auth::generate_nonce))
         .route("/auth", post(crate::auth::validate_signature))
         .with_state(app_state.clone())
-    }
+}

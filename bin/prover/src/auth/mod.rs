@@ -1,110 +1,116 @@
+use crate::prove::models::{
+    GenerateNonceRequest, GenerateNonceResponse, JWTResponse, Nonce, ValidateSignatureRequest,
+};
 use crate::prove::ProveError;
 use crate::server::AppState;
-use ed25519_dalek::{Signature, PublicKey}; // Ensure these are properly imported
-use std::env;
-use crate::prove::models::{Nonce,GenerateNonceResponse,ValidateSignatureRequest,JWTResponse,GenerateNonceRequest};
 use axum::{
-  http::{self, HeaderValue,HeaderMap},
-  extract::{State,Json,Query},
-  response::IntoResponse
+    extract::{Json, Query, State},
+    http::{self, HeaderMap, HeaderValue},
+    response::IntoResponse,
 };
-use jwt::{decode_jwt,encode_jwt,Claims};
+use jwt::encode_jwt;
+use validation::verify_signature;
+use std::env;
+
 pub mod jwt;
+pub mod validation;
 
 pub const COOKIE_NAME: &str = "jwt_token";
 
+
+/// Generates a nonce for a given public key and stores it in the application state.
+///
+/// # Parameters
+///
+/// - `state`: The application state containing a mutex-guarded HashMap to store nonces.
+/// - `params`: The query parameters containing the public key for which nonce is generated.
+///
+/// # Returns
+///
+/// Returns a JSON response containing the generated nonce and its expiration time, or
+/// an error if the public key is missing.
 pub async fn generate_nonce(
     State(state): State<AppState>,
     Query(params): Query<GenerateNonceRequest>,
+) -> Result<Json<GenerateNonceResponse>, ProveError> {
+    if params.public_key.trim().is_empty() {
+        return Err(ProveError::MissingPublicKey);
+    }
 
-) -> Result<Json<GenerateNonceResponse>, ProveError>{
-  let message_expiration_str = env::var("MESSAGE_EXPIRATION_TIME")
-  .expect("MESSAGE_EXPIRATION_TIME environment variable not found!");
+    let message_expiration_str = env::var("MESSAGE_EXPIRATION_TIME")
+        .expect("MESSAGE_EXPIRATION_TIME environment variable not found!");
+    let message_expiration_time: usize = message_expiration_str.parse::<usize>().unwrap();
 
-  let message_expiration_time: usize = message_expiration_str
-    .parse::<usize>().unwrap();
+    let nonce: Nonce = Nonce::new(32);
+    let nonce_string = nonce.to_string();
+    let mut nonces: std::sync::MutexGuard<'_, std::collections::HashMap<String, String>> =
+        state.nonces.lock().unwrap();
+    let formatted_key = params.public_key.trim().to_lowercase();
+    nonces.insert(formatted_key.clone(), nonce_string);
 
-  if params.public_key.trim().is_empty() {
-    return Err(ProveError::MissingPublicKey);
-  }
-  let nonce: Nonce = Nonce::new(32);
-  let mut nonces: std::sync::MutexGuard<'_, std::collections::HashMap<String, String>> = state.nonces.lock().unwrap();
-  let formatted_key = params.public_key.trim().to_lowercase();
-  nonces.insert(formatted_key.clone(), nonce.clone().to_string());
-
-  match nonces.get(&params.public_key) {
-    Some(nonce) => println!("Nonce for public key {}: {}", &params.public_key, nonce),
-    None => println!("No nonce found for public key: {}", &params.public_key),
-  }    
-  
-  Ok(Json(GenerateNonceResponse {
-      message:nonce.to_string(),
-      expiration: message_expiration_time,
-  }))
+    Ok(Json(GenerateNonceResponse {
+        nonce,
+        expiration: message_expiration_time,
+    }))
 }
 
-
+/// Validates the signature provided in the request payload and generates a JWT token if the signature is valid.
+///
+/// # Parameters
+///
+/// - `state`: The application state containing nonce information stored in a mutex-guarded HashMap.
+/// - `payload`: JSON payload containing the public key and signature to be validated.
+///
+/// # Returns
+///
+/// Returns a tuple containing HTTP headers and a JSON response with a JWT token and its expiration time if the signature is valid.
 pub async fn validate_signature(
-  State(state): State<AppState>,
-  Json(payload): Json<ValidateSignatureRequest>
-)-> Result<impl IntoResponse, ProveError>{
-  
-  let message_expiration_str = env::var("SESSION_EXPIRATION_TIME")
-  .expect("SESSION_EXPIRATION_TIME environment variable not found!");
+    State(state): State<AppState>,
+    Json(payload): Json<ValidateSignatureRequest>,
+) -> Result<impl IntoResponse, ProveError> {
+    let message_expiration_str = env::var("SESSION_EXPIRATION_TIME")
+        .expect("SESSION_EXPIRATION_TIME environment variable not found!");
 
-  let session_expiration_time: usize = message_expiration_str
-    .parse::<usize>().unwrap();
+    let session_expiration_time: usize = message_expiration_str.parse::<usize>().unwrap();
 
-  let nonces = state.nonces.lock().map_err(|_| ProveError::InternalServerError("Failed to lock state".to_string()))?;
+    let nonces = state
+        .nonces
+        .lock()
+        .map_err(|_| ProveError::InternalServerError("Failed to lock state".to_string()))?;
 
-  let user_nonce = nonces.get(&payload.public_key)
-    .ok_or_else(|| ProveError::NotFound(format!("Nonce not found for the provided public key: {}", &payload.public_key)))?;
+    let user_nonce = nonces.get(&payload.public_key).ok_or_else(|| {
+        ProveError::NotFound(format!(
+            "Nonce not found for the provided public key: {}",
+            &payload.public_key
+        ))
+    })?;
 
-  let signature_valid = verify_signature(&payload.signature, &user_nonce, &payload.public_key);
+    let signature_valid = verify_signature(&payload.signature, &user_nonce, &payload.public_key);
 
-  if !signature_valid {
-    return Err(ProveError::Unauthorized("Invalid signature".to_string()));
-  }
+    if !signature_valid {
+        return Err(ProveError::Unauthorized("Invalid signature".to_string()));
+    }
 
-  let expiration = chrono::Utc::now() + chrono::Duration::seconds(session_expiration_time as i64);
-  let token = encode_jwt(&payload.public_key, expiration.timestamp() as usize)
-      .map_err(|_| ProveError::InternalServerError("JWT generation failed".to_string()))?;
-  let cookie_value = format!("{}={}; HttpOnly; Secure; Path=/; Max-Age={}", COOKIE_NAME, token, session_expiration_time);
-  let mut headers = HeaderMap::new();
-  headers.insert(http::header::SET_COOKIE, HeaderValue::from_str(&cookie_value)
-      .map_err(|_| ProveError::InternalServerError("Failed to set cookie header".to_string()))?);
+    let expiration = chrono::Utc::now() + chrono::Duration::seconds(session_expiration_time as i64);
+    let token = encode_jwt(&payload.public_key, expiration.timestamp() as usize)
+        .map_err(|_| ProveError::InternalServerError("JWT generation failed".to_string()))?;
+    let cookie_value = format!(
+        "{}={}; HttpOnly; Secure; Path=/; Max-Age={}",
+        COOKIE_NAME, token, session_expiration_time
+    );
+    let mut headers = HeaderMap::new();
+    headers.insert(
+        http::header::SET_COOKIE,
+        HeaderValue::from_str(&cookie_value).map_err(|_| {
+            ProveError::InternalServerError("Failed to set cookie header".to_string())
+        })?,
+    );
 
-  Ok((
-      headers,
-      Json(JWTResponse {
-          session_id: token, 
-          expiration: session_expiration_time,
-      })
-  ))
-
-}
-
-
-/// Verify signature using ed25519_dalek
-/// Verifies a signature given a nonce and a public key.
-///
-/// - `signature`: The signature object.
-/// - `nonce`: The message that was signed, as a string.
-/// - `public_key_hex`: The hexadecimal string of the public key.
-///
-/// Returns `true` if the signature is valid; `false` otherwise.
-fn verify_signature(signature: &Signature, nonce: &str, public_key_hex: &str) -> bool {
-  // Decode the hex public key
-  let public_key_bytes = match hex::decode(public_key_hex) {
-      Ok(bytes) => bytes,
-      Err(_) => return false, // return false if the public key hex is invalid
-  };
-
-  let public_key = match PublicKey::from_bytes(&public_key_bytes) {
-      Ok(pk) => pk,
-      Err(_) => return false, // return false if bytes are not a valid public key
-  };
-
-  // Verify the signature
-  public_key.verify_strict(nonce.as_bytes(), &signature).is_ok()
+    Ok((
+        headers,
+        Json(JWTResponse {
+            jwt_token: token,
+            expiration: session_expiration_time,
+        }),
+    ))
 }
