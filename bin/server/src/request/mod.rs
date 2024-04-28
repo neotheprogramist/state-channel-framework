@@ -1,20 +1,10 @@
-use crate::server::AppState;
-use axum::{routing::post,routing::get, Router};
-use thiserror::Error;
+use axum::{ routing::post, Router};
 
 mod accept_contract;
 mod models;
 mod request_quote;
+mod price;
 
-#[derive(Error, Debug)]
-pub enum ServerError {
-
-    #[error("unauthorized access")]
-    Unauthorized(String),
-
-    #[error("resource not found")]
-    NotFound(String),
-}
 
 pub fn router() -> Router {
     Router::new()

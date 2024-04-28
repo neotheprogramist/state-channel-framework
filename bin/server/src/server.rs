@@ -11,10 +11,10 @@ use tower_http::timeout::TimeoutLayer;
 use tower_http::trace::TraceLayer;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 use utils::shutdown::shutdown_signal;
+use serde_json::json;
+use axum::{http::StatusCode, response::IntoResponse, Json};
 
 use crate::{request, Args};
-use std::collections::HashMap;
-use std::sync::{Arc, Mutex};
 
 #[derive(Debug, Error)]
 pub enum ServerError {
@@ -23,18 +23,26 @@ pub enum ServerError {
 
     #[error("failed to parse address")]
     AddressParse(#[from] AddrParseError),
+
+    #[error("Request to Binance API failed")]
+    BTCRequestFailure, // Implement From trait for reqwest::Error
+    #[error("Failed to parse JSON response")]
+    JsonParsingFailed(#[from] serde_json::Error),
 }
 
-#[derive(Debug, Clone)]
-pub struct AppState {
-    pub nonces: Arc<Mutex<HashMap<String, String>>>,
+impl IntoResponse for ServerError {
+    fn into_response(self) -> axum::response::Response {
+        let (status, error_message) = match &self {
+            ServerError::Server(_) => (StatusCode::UNAUTHORIZED, self.to_string()),
+            ServerError::AddressParse(_) => (StatusCode::NOT_FOUND, self.to_string()),
+        };
+        let body = Json(json!({ "error": error_message }));
+        (status, body).into_response()
+    }
 }
 
 pub async fn start(args: &Args) -> Result<(), ServerError> {
-    // TODO: Appstate not needed here
-    let state: AppState = AppState {
-        nonces: Arc::new(Mutex::new(HashMap::new())),
-    };
+
     // Enable tracing.
     tracing_subscriber::registry()
         .with(

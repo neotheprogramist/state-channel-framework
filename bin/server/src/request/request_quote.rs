@@ -1,20 +1,29 @@
-use super::ServerError;
+use crate::server::ServerError;
 use crate::request::models::Nonce;
 use axum::Json;
-
+use axum::response::IntoResponse;
 use super::models::{Quote, RequestQuotation, RequestQuotationResponse};
 use keccak_hash::keccak;
 use std::env;
+use super::price::get_btc_usdt_price;
 
 pub async fn request_quote(
     Json(payload): Json<RequestQuotation>,
-) -> Result<Json<RequestQuotationResponse>, ServerError> {
+) -> Result<impl IntoResponse, ServerError> {
     let nonce = Nonce::new(32);
+    let btc_price = match get_btc_usdt_price().await {
+        Ok(price) => price,
+        Err(err) => {
+            eprintln!("Error getting BTC price: {:?}", err);
+            return Err(ServerError::BTCRequestFailure);
+
+        }
+    };
     let quote = Quote {
         address: payload.address,
         quantity: payload.quantity,
-        nonce,
-        price: get_btc_usdt_price(),
+        nonce:nonce.clone(),
+        price:btc_price,
     };
 
     println!("{}", quote);
@@ -25,18 +34,12 @@ pub async fn request_quote(
 
     //TODO: SIGN WITH ACCOUNT
     //  let signature = account.signMessage( message: hash );
-    let signature = "";
+    let signature = "Signature";
 
-    //TODO : use of moved value: `nonce` (cant us Copy)???
     Ok(Json(RequestQuotationResponse {
-        nonce: nonce.clone(),
+        nonce: nonce,
         server_signature: signature.to_string(),
     }))
-}
-
-pub fn get_btc_usdt_price() -> u64 {
-    let price: u64 = 0;
-    return price;
 }
 
 fn hash_quote(quote: &Quote) -> String {

@@ -23,11 +23,16 @@ impl std::fmt::Display for Quote {
 }
 
 //TODO: is signature string ?
+
+#[serde_as]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct RequestAcceptContract {
     pub quote: Quote,
     pub server_signature: String,
     pub client_signature: String,
 }
+#[serde_as]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct RequestQuotation {
     pub address: String,
     pub quantity: u64,
