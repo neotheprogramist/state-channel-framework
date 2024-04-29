@@ -1,13 +1,15 @@
-use crate::server::ServerError;
+use crate::server::{ServerError,AppState};
 use crate::request::models::Nonce;
 use axum::Json;
+use axum::extract::State;
 use axum::response::IntoResponse;
 use super::models::{Quote, RequestQuotation, RequestQuotationResponse};
-use keccak_hash::keccak;
-use std::env;
 use super::price::get_btc_usdt_price;
+use ed25519_dalek::Signature;
+use super::account::MockAccount;
 
 pub async fn request_quote(
+    State(_state): State<AppState>,
     Json(payload): Json<RequestQuotation>,
 ) -> Result<impl IntoResponse, ServerError> {
     let nonce = Nonce::new(32);
@@ -28,29 +30,16 @@ pub async fn request_quote(
 
     println!("{}", quote);
 
-    let hash = hash_quote(&quote);
+    let quote_json = serde_json::to_string(&quote).unwrap();
+    let quote_bytes = quote_json.as_bytes();
 
-    let private_key = env::var("PRIVATE_KEY").expect("PRIVATE_KEY environment variable not found!");
+    // Use MockAccount for signing the quote
+    let mut mock_account = MockAccount::new();
+    let server_signature: Signature = mock_account.sign_message(&quote_bytes);
 
-    //TODO: SIGN WITH ACCOUNT
-    //  let signature = account.signMessage( message: hash );
-    let signature = "Signature";
-
+    // Convert signature to a string for serialization
     Ok(Json(RequestQuotationResponse {
-        nonce: nonce,
-        server_signature: signature.to_string(),
+        quote,
+        server_signature: server_signature.to_string(),
     }))
-}
-
-fn hash_quote(quote: &Quote) -> String {
-    // Serialize the quote to JSON
-    let serialized_quote = serde_json::to_string(quote).unwrap();
-
-    // Compute the Keccak-256 hash of the UTF-8 encoded JSON string
-    let hash = keccak(serialized_quote.as_bytes());
-
-    // Convert the hash bytes to a hexadecimal string
-    let hash_hex = hex::encode(hash);
-
-    hash_hex
 }

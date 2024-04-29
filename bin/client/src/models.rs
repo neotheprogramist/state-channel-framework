@@ -5,29 +5,26 @@ use serde_with::{serde_as, DisplayFromStr};
 use std::ops::Deref;
 use std::{io, str::FromStr};
 
-impl std::fmt::Display for Quote {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(
-            f,
-            "Address: {}, Quantity: {}, Nonce: {:?}, Price: {}",
-            self.address, self.quantity, self.nonce, self.price
-        )
-    }
-}
 
-//TODO: is signature string ?
 #[serde_as]
-#[derive(Debug, Serialize, Deserialize)]
-pub struct RequestAcceptContract {
+#[derive(Debug,Serialize,Deserialize)]
+pub struct AgreeToQuotation {
     pub quote: Quote,
     pub server_signature: String,
-    pub client_signature: String,
+    pub client_signature: String
 }
+
 #[serde_as]
 #[derive(Debug, Serialize, Deserialize)]
 pub struct RequestQuotation {
     pub address: String,
     pub quantity: u64,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct RequestQuotationResponse {
+    pub quote: Quote,
+    pub server_signature: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -37,13 +34,6 @@ pub struct Quote {
     pub nonce: Nonce,
     pub price: f64,
 }
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct RequestQuotationResponse {
-    pub quote: Quote,
-    pub server_signature: String,
-}
-
 #[derive(Debug, Clone)]
 pub struct Nonce(Bytes);
 
@@ -95,5 +85,16 @@ impl<'de> Deserialize<'de> for Nonce {
     {
         let bytes = Vec::<u8>::deserialize(deserializer)?;
         Ok(Self(Bytes::from(bytes)))
+    }
+}
+
+
+impl std::fmt::Display for Quote {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "Address: {}, Quantity: {}, Nonce: {:?}, Price: {}",
+            self.address, self.quantity, self.nonce, self.price
+        )
     }
 }
