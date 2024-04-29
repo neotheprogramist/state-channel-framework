@@ -1,6 +1,7 @@
 use clap::Parser;
 use server::{start, ServerError};
 
+mod auth;
 mod prove;
 mod server;
 
@@ -13,13 +14,13 @@ struct Args {
     host: String,
 
     /// Port to listen on
-    #[clap(long, default_value = "3618")]
+    #[clap(long, default_value = "7003")]
     port: u16,
 }
 
 #[tokio::main]
 async fn main() -> Result<(), ServerError> {
-    let args = Args::parse();
+    let args: Args = Args::parse();
 
     // Start the server with the specified address
     start(&args).await?;
