@@ -16,4 +16,6 @@ pub async fn accept_contract(
     Ok(Json("OK"))
 }
 
+
+
 pub async fn create_contract() {}

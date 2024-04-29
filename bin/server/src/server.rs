@@ -25,7 +25,7 @@ pub enum ServerError {
     AddressParse(#[from] AddrParseError),
 
     #[error("Request to Binance API failed")]
-    BTCRequestFailure, // Implement From trait for reqwest::Error
+    BTCRequestFailure(String), // Implement From trait for reqwest::Error
     #[error("Failed to parse JSON response")]
     JsonParsingFailed(#[from] serde_json::Error),
 }
@@ -33,8 +33,11 @@ pub enum ServerError {
 impl IntoResponse for ServerError {
     fn into_response(self) -> axum::response::Response {
         let (status, error_message) = match &self {
-            ServerError::Server(_) => (StatusCode::UNAUTHORIZED, self.to_string()),
-            ServerError::AddressParse(_) => (StatusCode::NOT_FOUND, self.to_string()),
+            ServerError::Server(_) => (StatusCode::INTERNAL_SERVER_ERROR, self.to_string()),
+            ServerError::AddressParse(_) => (StatusCode::BAD_REQUEST, self.to_string()),
+            ServerError::BTCRequestFailure(_) => (StatusCode::SERVICE_UNAVAILABLE, self.to_string()),
+            ServerError::JsonParsingFailed(_) => (StatusCode::UNPROCESSABLE_ENTITY, self.to_string()),
+
         };
         let body = Json(json!({ "error": error_message }));
         (status, body).into_response()

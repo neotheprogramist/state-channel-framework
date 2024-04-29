@@ -15,7 +15,7 @@ pub async fn request_quote(
         Ok(price) => price,
         Err(err) => {
             eprintln!("Error getting BTC price: {:?}", err);
-            return Err(ServerError::BTCRequestFailure);
+            return Err(ServerError::BTCRequestFailure("Failed to get BTC price.".to_string()));
 
         }
     };

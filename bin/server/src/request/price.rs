@@ -1,29 +1,22 @@
 use serde::Deserialize;
 use crate::server::ServerError;
+
 #[derive(Debug, Deserialize)]
 struct BtcUsdtPriceResponse {
     price: String,
 }
-
-pub async fn get_btc_usdt_price() -> Result<u64, ServerError> {
-    // Send GET request to Binance API
-    let response = match reqwest::get("https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT").await {
-        Ok(response) => {
-            // Deserialize JSON response
-            let json_response: BtcUsdtPriceResponse = response.json().await?;
-            // Parse price string to float
-            let price: f64 = json_response.price.parse().unwrap_or(0.0);
-
-            // Convert price to u64
-            let price_u64 = price as u64;
-
-            // Return price as Result<u64, Error>
-            
-            return Ok(price_u64)
+pub async fn get_btc_usdt_price() -> Result<f64, ServerError> {
+    let response = reqwest::get("https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT").await;
+    match response {
+        Ok(res) => {
+            if res.status().is_success() {
+                let json_response: BtcUsdtPriceResponse = res.json().await.unwrap_or_else(|_| BtcUsdtPriceResponse { price: "0".to_string() });
+                let price_f64: f64 = json_response.price.parse().unwrap_or(0.0);
+                Ok(price_f64)
+            } else {
+                Err(ServerError::BTCRequestFailure("Failed to fetch or parse price.".to_string()))
+            }
         },
-        Err(err) => {
-            return Err(ServerError::BTCRequestFailure); // Convert reqwest::Error to string
-        }
-    };
-
+        Err(err) => Err(ServerError::BTCRequestFailure(err.to_string())),
+    }
 }

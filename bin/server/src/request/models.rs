@@ -10,7 +10,7 @@ pub struct Quote {
     pub address: String,
     pub quantity: u64,
     pub nonce: Nonce,
-    pub price: u64,
+    pub price: f64,
 }
 impl std::fmt::Display for Quote {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
