@@ -1,10 +1,9 @@
 use bytes::{Bytes, BytesMut};
 use rand::RngCore;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
-use serde_with::{serde_as, DisplayFromStr};
+use serde_with::serde_as;
 use std::ops::Deref;
 use std::{io, str::FromStr};
-
 impl std::fmt::Display for Quote {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(

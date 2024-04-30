@@ -1,17 +1,15 @@
 use clap::Parser;
+use models::{AgreeToQuotation, RequestQuotation, RequestQuotationResponse};
 use reqwest::Client;
-use serde::{Deserialize,Serialize};
-use serde_with::{serde_as, DisplayFromStr};
-use models::{Nonce,Quote,RequestQuotation,RequestQuotationResponse,AgreeToQuotation};
-use account::MockAccount;
-use ed25519_dalek::Signature;
-mod models;
 mod account;
+mod models;
+use crate::account::scalar_to_hex;
+use rand::rngs::OsRng;
+use account::MockAccount;
 
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
 struct Args {
-
     #[arg(short, long, default_value_t = ("http://localhost:7003/server/requestQuote".to_string()))]
     url_request_quote: String,
 
@@ -21,7 +19,7 @@ struct Args {
     #[arg(short, long)]
     address: String,
 
-    #[arg(short, long,default_value_t=1)]
+    #[arg(short, long, default_value_t = 1)]
     quantity: u64,
 }
 #[tokio::main]
@@ -36,7 +34,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         quantity: args.quantity,
     };
 
-    let response = client.post(&args.url_request_quote)
+    let response = client
+        .post(&args.url_request_quote)
         .header(reqwest::header::CONTENT_TYPE, "application/json")
         .json(&request_quotation)
         .send()
@@ -45,20 +44,45 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     if response.status().is_success() {
         println!("Request successful!");
         let response_data: RequestQuotationResponse = response.json().await?;
-        println!("Response \n  quote:{} \n sever_signature:{}", response_data.quote,response_data.server_signature);
+        println!(
+            "Response \n  quote:{} \n sever_signature:{}",
+            response_data.quote, response_data.server_signature
+        );
         // Serialize the response data for signing
         let data_to_sign = serde_json::to_string(&response_data)?;
 
-        let mut mock_account = MockAccount::new();
-        let client_signature: Signature = mock_account.sign_message(data_to_sign.as_bytes());
+        let quote_json = serde_json::to_string(&data_to_sign).unwrap();
+        let quote_bytes = quote_json.as_bytes();
+    
+        // Use MockAccount for signing the quote
+        let mut rng = OsRng; // Create an instance of a cryptographically secure RNG
+        let mut mock_account = MockAccount::new(&mut rng); // Initialize MockAccount with RNG
+        
+        let client_signature = mock_account.sign_message(&quote_bytes, &mut rng);
 
-        println!("Client signature: {}", client_signature);
+        let client_signature = match client_signature {
+            Ok(signature) => {
+                println!("Signature R part: {:?}", scalar_to_hex(&signature.r));
+                println!("Signature S part: {:?}", scalar_to_hex(&signature.s));
+                // Create a JSON-serializable format or a simple string representation of the signature
+                let signature_json = format!("{{\"r\": \"{}\", \"s\": \"{}\"}}",
+                                             scalar_to_hex(&signature.r),
+                                             scalar_to_hex(&signature.s));
+                println!("Serialized Signature: {}", signature_json);
+                signature_json
+            },
+            Err(e) => {
+                //todo: fix the error
+                println!("Failed to sign message: {}", e);
+                return Err(e.into())
+            }
+        };
         let request_quotation = AgreeToQuotation {
             quote: response_data.quote,
             server_signature:response_data.server_signature,
             client_signature: client_signature.to_string()
         };
-
+        println!("Server signature: {}", request_quotation.server_signature);
         let agree_to_quotatinon_response = client.post(&args.url_accept_contract)
         .header(reqwest::header::CONTENT_TYPE, "application/json")
         .json(&request_quotation)

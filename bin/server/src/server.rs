@@ -1,10 +1,16 @@
 use axum::{routing::get, Router};
 
+use crate::{request, Args};
+use axum::{http::StatusCode, response::IntoResponse, Json};
+use serde_json::json;
 use std::{
     net::{AddrParseError, SocketAddr},
     time::Duration,
 };
+use surrealdb::engine::remote::ws::Client;
+use surrealdb::engine::remote::ws::Ws;
 use surrealdb::opt::auth::Root;
+use surrealdb::Surreal;
 use thiserror::Error;
 use tokio::net::TcpListener;
 use tokio::time::sleep;
@@ -12,12 +18,6 @@ use tower_http::timeout::TimeoutLayer;
 use tower_http::trace::TraceLayer;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 use utils::shutdown::shutdown_signal;
-use serde_json::json;
-use axum::{http::StatusCode, response::IntoResponse, Json};
-use surrealdb::Surreal;
-use surrealdb::engine::remote::ws::Ws;
-use surrealdb::engine::remote::ws::Client;
-use crate::{request, Args};
 
 #[derive(Debug, Error)]
 pub enum ServerError {
@@ -28,14 +28,13 @@ pub enum ServerError {
     AddressParse(#[from] AddrParseError),
 
     #[error("Request to Binance API failed")]
-    BTCRequestFailure(String), 
+    BTCRequestFailure(String),
 
     #[error("Failed to parse JSON response")]
     JsonParsingFailed(#[from] serde_json::Error),
 
     #[error("Database error: {0}")]
     DatabaseError(String),
-
 }
 
 impl IntoResponse for ServerError {
@@ -43,8 +42,12 @@ impl IntoResponse for ServerError {
         let (status, error_message) = match &self {
             ServerError::Server(_) => (StatusCode::INTERNAL_SERVER_ERROR, self.to_string()),
             ServerError::AddressParse(_) => (StatusCode::BAD_REQUEST, self.to_string()),
-            ServerError::BTCRequestFailure(_) => (StatusCode::SERVICE_UNAVAILABLE, self.to_string()),
-            ServerError::JsonParsingFailed(_) => (StatusCode::UNPROCESSABLE_ENTITY, self.to_string()),
+            ServerError::BTCRequestFailure(_) => {
+                (StatusCode::SERVICE_UNAVAILABLE, self.to_string())
+            }
+            ServerError::JsonParsingFailed(_) => {
+                (StatusCode::UNPROCESSABLE_ENTITY, self.to_string())
+            }
             ServerError::DatabaseError(_) => (StatusCode::INTERNAL_SERVER_ERROR, self.to_string()),
         };
         let body = Json(json!({ "error": error_message }));
@@ -64,8 +67,6 @@ pub struct AppState {
 }
 
 pub async fn start(args: &Args) -> Result<(), ServerError> {
-    
-    let db_address:String  = format!("{}:{}",args.host,args.port);
     let db = Surreal::new::<Ws>("0.0.0.0:8000").await?;
     db.signin(Root {
         username: "root",
@@ -73,7 +74,7 @@ pub async fn start(args: &Args) -> Result<(), ServerError> {
     })
     .await?;
     db.use_ns("test").use_db("test").await?;
-    let state: AppState = AppState{db};
+    let state: AppState = AppState { db };
 
     tracing_subscriber::registry()
         .with(
@@ -82,7 +83,6 @@ pub async fn start(args: &Args) -> Result<(), ServerError> {
         )
         .with(tracing_subscriber::fmt::layer())
         .init();
-
 
     // Create a regular axum app.
     let app = Router::new()

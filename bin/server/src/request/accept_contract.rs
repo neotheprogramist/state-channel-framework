@@ -1,14 +1,14 @@
+use super::models::Quote;
 use super::models::RequestAcceptContract;
-use crate::server::{ServerError,AppState};
-use axum::Json;
-use axum::response::IntoResponse;
+use crate::server::{AppState, ServerError};
 use axum::extract::State;
 use axum::http::StatusCode;
-use surrealdb::Surreal;
-use surrealdb::engine::remote::ws::Client;
-use super::models::Quote;
+use axum::response::IntoResponse;
+use axum::Json;
+use serde::{self, Deserialize, Deserializer, Serialize};
 use serde_json::json;
-use serde::{self, Deserialize, Deserializer,Serialize};
+use surrealdb::engine::remote::ws::Client;
+use surrealdb::Surreal;
 
 pub async fn accept_contract(
     State(state): State<AppState>,
@@ -19,10 +19,13 @@ pub async fn accept_contract(
     let quote: super::models::Quote = payload.quote;
     let server_signature = payload.server_signature;
     let client_signature = payload.client_signature;
-    println!(" quote:{} \n server_signature:{} \n quclient_signatureote:{} \n",quote,server_signature,client_signature);
+    println!(
+        " quote:{} \n server_signature:{} \n quclient_signatureote:{} \n",
+        quote, server_signature, client_signature
+    );
     //TODO: create contract
-    let result = create_contract(state.db,&quote,&server_signature,&client_signature).await?;
-    println!("{}",result.to_string());
+    let result = create_contract(state.db, &quote, &server_signature, &client_signature).await?;
+    println!("{}", result.to_string());
     Ok(StatusCode::NO_CONTENT)
 }
 #[derive(Debug, Serialize, Deserialize)]
@@ -51,7 +54,6 @@ struct Contract {
     price: f64,
     server_signature: String,
     client_signature: String,
-
 }
 impl std::fmt::Display for Contract {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -73,7 +75,7 @@ async fn create_contract(
         price = type::number($price),
         server_signature = type::string($server_signature),
         client_signature = type::string($client_signature)"#;
-    
+
     let params = json!({
         "address": quote.address.to_string(),
         "quantity": quote.quantity,
@@ -89,18 +91,20 @@ async fn create_contract(
         .bind(params)
         .await
         .map_err(|e| ServerError::DatabaseError(e.to_string()))?;
-    
+
     println!("After creating contract");
     // Check the result of taking the contract data
     match result.take(0) {
         Ok(Some(contract)) => {
             println!("Contract created successfully.");
             Ok(contract)
-        },
+        }
         Ok(None) => {
             println!("No contract was created.");
-            Err(ServerError::DatabaseError("No contract was created.".to_string()))
-        },
+            Err(ServerError::DatabaseError(
+                "No contract was created.".to_string(),
+            ))
+        }
         Err(e) => {
             println!("Error retrieving contract: {:?}", e);
             Err(ServerError::DatabaseError(e.to_string()))

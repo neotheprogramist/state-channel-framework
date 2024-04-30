@@ -1,17 +1,16 @@
 use bytes::{Bytes, BytesMut};
 use rand::RngCore;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
-use serde_with::{serde_as, DisplayFromStr};
+use serde_with::serde_as;
 use std::ops::Deref;
 use std::{io, str::FromStr};
 
-
 #[serde_as]
-#[derive(Debug,Serialize,Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct AgreeToQuotation {
     pub quote: Quote,
     pub server_signature: String,
-    pub client_signature: String
+    pub client_signature: String,
 }
 
 #[serde_as]
@@ -87,7 +86,6 @@ impl<'de> Deserialize<'de> for Nonce {
         Ok(Self(Bytes::from(bytes)))
     }
 }
-
 
 impl std::fmt::Display for Quote {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
