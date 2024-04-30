@@ -1,14 +1,12 @@
-use axum::{routing::get, Router};
-
 use crate::{request, Args};
 use axum::{http::StatusCode, response::IntoResponse, Json};
+use axum::{routing::get, Router};
 use serde_json::json;
 use std::{
     net::{AddrParseError, SocketAddr},
     time::Duration,
 };
-use surrealdb::engine::remote::ws::Client;
-use surrealdb::engine::remote::ws::Ws;
+use surrealdb::engine::remote::ws::{Client, Ws};
 use surrealdb::opt::auth::Root;
 use surrealdb::Surreal;
 use thiserror::Error;

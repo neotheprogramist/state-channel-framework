@@ -4,8 +4,8 @@ use reqwest::Client;
 mod account;
 mod models;
 use crate::account::scalar_to_hex;
-use rand::rngs::OsRng;
 use account::MockAccount;
+use rand::rngs::OsRng;
 
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
@@ -22,6 +22,7 @@ struct Args {
     #[arg(short, long, default_value_t = 1)]
     quantity: u64,
 }
+
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Parse command-line arguments
@@ -53,46 +54,48 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
         let quote_json = serde_json::to_string(&data_to_sign).unwrap();
         let quote_bytes = quote_json.as_bytes();
-    
+
         // Use MockAccount for signing the quote
         let mut rng = OsRng; // Create an instance of a cryptographically secure RNG
-        let mut mock_account = MockAccount::new(&mut rng); // Initialize MockAccount with RNG
-        
+        let mut mock_account = MockAccount::new(&mut rng);
+
         let client_signature = mock_account.sign_message(&quote_bytes, &mut rng);
 
         let client_signature = match client_signature {
             Ok(signature) => {
-                println!("Signature R part: {:?}", scalar_to_hex(&signature.r));
-                println!("Signature S part: {:?}", scalar_to_hex(&signature.s));
-                // Create a JSON-serializable format or a simple string representation of the signature
-                let signature_json = format!("{{\"r\": \"{}\", \"s\": \"{}\"}}",
-                                             scalar_to_hex(&signature.r),
-                                             scalar_to_hex(&signature.s));
+                let signature_json = format!(
+                    "{{\"r\": \"{}\", \"s\": \"{}\"}}",
+                    scalar_to_hex(&signature.r),
+                    scalar_to_hex(&signature.s)
+                );
                 println!("Serialized Signature: {}", signature_json);
                 signature_json
-            },
+            }
             Err(e) => {
                 //todo: fix the error
                 println!("Failed to sign message: {}", e);
-                return Err(e.into())
+                return Err(e.into());
             }
         };
         let request_quotation = AgreeToQuotation {
             quote: response_data.quote,
-            server_signature:response_data.server_signature,
-            client_signature: client_signature.to_string()
+            server_signature: response_data.server_signature,
+            client_signature: client_signature.to_string(),
         };
         println!("Server signature: {}", request_quotation.server_signature);
-        let agree_to_quotatinon_response = client.post(&args.url_accept_contract)
-        .header(reqwest::header::CONTENT_TYPE, "application/json")
-        .json(&request_quotation)
-        .send()
-        .await?;
+        let agree_to_quotatinon_response = client
+            .post(&args.url_accept_contract)
+            .header(reqwest::header::CONTENT_TYPE, "application/json")
+            .json(&request_quotation)
+            .send()
+            .await?;
         if agree_to_quotatinon_response.status().is_success() {
             println!("Agreee to quotation successful!");
         } else {
-            println!("Agreee to quotation  failed with status: {}", agree_to_quotatinon_response.status());
-
+            println!(
+                "Agreee to quotation  failed with status: {}",
+                agree_to_quotatinon_response.status()
+            );
         }
     } else {
         println!("Request failed with status: {}", response.status());
@@ -100,4 +103,3 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     Ok(())
 }
-

@@ -1,11 +1,10 @@
-use super::models::Quote;
-use super::models::RequestAcceptContract;
+use super::models::{Contract, Id, Quote, RequestAcceptContract};
 use crate::server::{AppState, ServerError};
 use axum::extract::State;
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use axum::Json;
-use serde::{self, Deserialize, Deserializer, Serialize};
+use serde::{self, Deserialize, Serialize};
 use serde_json::json;
 use surrealdb::engine::remote::ws::Client;
 use surrealdb::Surreal;
@@ -27,39 +26,6 @@ pub async fn accept_contract(
     let result = create_contract(state.db, &quote, &server_signature, &client_signature).await?;
     println!("{}", result.to_string());
     Ok(StatusCode::NO_CONTENT)
-}
-#[derive(Debug, Serialize, Deserialize)]
-struct Id {
-    tb: String,
-    id: String,
-}
-fn deserialize_id<'de, D>(deserializer: D) -> Result<String, D::Error>
-where
-    D: Deserializer<'de>,
-{
-    #[derive(Deserialize)]
-    struct Wrapper {
-        id: String,
-    }
-
-    let helper = Wrapper::deserialize(deserializer)?;
-    Ok(helper.id)
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-struct Contract {
-    address: String,
-    quantity: u64,
-    nonce: String,
-    price: f64,
-    server_signature: String,
-    client_signature: String,
-}
-impl std::fmt::Display for Contract {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, " \n address :{} \n quantity :{} \n nonce :{} \n price :{} \n server_signature :{} \n client_signature :{} \n",
-    self.address,self.quantity,self.nonce,self.price,self.server_signature,self.client_signature)
-    }
 }
 
 async fn create_contract(

@@ -5,6 +5,7 @@ use serde::Deserialize;
 struct BtcUsdtPriceResponse {
     price: String,
 }
+
 pub async fn get_btc_usdt_price() -> Result<f64, ServerError> {
     let response = reqwest::get("https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT").await;
     match response {

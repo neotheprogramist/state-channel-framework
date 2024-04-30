@@ -96,3 +96,25 @@ impl<'de> Deserialize<'de> for Nonce {
         Ok(Self(Bytes::from(bytes)))
     }
 }
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct Id {
+    tb: String,
+    id: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct Contract {
+    address: String,
+    quantity: u64,
+    nonce: String,
+    price: f64,
+    server_signature: String,
+    client_signature: String,
+}
+impl std::fmt::Display for Contract {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, " \n address :{} \n quantity :{} \n nonce :{} \n price :{} \n server_signature :{} \n client_signature :{} \n",
+    self.address,self.quantity,self.nonce,self.price,self.server_signature,self.client_signature)
+    }
+}
