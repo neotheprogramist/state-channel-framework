@@ -77,10 +77,8 @@ impl SigningKey {
             return Err("Failed to compute k^-1, possibly division by zero");
         }
         let k_inv = k_inv.unwrap();
-        let s_not_mod = k_inv * z_plus_rd;
+        let s = k_inv * z_plus_rd;
 
-        //TODO: DONT KNOW IF THIS IS CORRECT
-        let s = stark_curve::Scalar::new(*s_not_mod);
         if s.is_zero().into() {
             return Err("s is zero");
         }
