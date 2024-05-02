@@ -1,4 +1,4 @@
-use axum::{routing::post, Router};
+use axum::{routing::get, routing::post, Router};
 
 use crate::server::AppState;
 
@@ -7,11 +7,16 @@ mod account;
 mod models;
 mod price;
 mod request_quote;
+mod request_settlement_proof;
 mod tests;
 
 pub fn router(app_state: &AppState) -> Router {
     Router::new()
         .route("/requestQuote", post(request_quote::request_quote))
         .route("/acceptContract", post(accept_contract::accept_contract))
+        .route(
+            "/requestSettlementProof",
+            get(request_settlement_proof::request_settlement_proof),
+        )
         .with_state(app_state.clone())
 }

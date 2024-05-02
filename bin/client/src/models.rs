@@ -1,5 +1,4 @@
-use bytes::{Bytes, BytesMut};
-use rand::RngCore;
+use bytes::Bytes;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use serde_with::serde_as;
 use std::ops::Deref;
@@ -11,6 +10,13 @@ pub struct AgreeToQuotation {
     pub quote: Quote,
     pub server_signature: String,
     pub client_signature: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct SettlementProofResponse {
+    pub address: String,
+    pub balance: f64,
+    pub diff: f64,
 }
 
 #[serde_as]
@@ -35,14 +41,6 @@ pub struct Quote {
 }
 #[derive(Debug, Clone)]
 pub struct Nonce(Bytes);
-
-impl Nonce {
-    pub fn new(size: usize) -> Self {
-        let mut bytes = BytesMut::zeroed(size);
-        rand::thread_rng().fill_bytes(bytes.as_mut());
-        Self(bytes.into())
-    }
-}
 
 impl Deref for Nonce {
     type Target = Bytes;

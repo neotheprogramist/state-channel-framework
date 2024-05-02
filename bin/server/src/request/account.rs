@@ -80,7 +80,6 @@ impl SigningKey {
         let k_inv = k_inv.unwrap();
         let s = k_inv * z_plus_rd;
 
-
         if s.is_zero().into() {
             return Err("s is zero");
         }

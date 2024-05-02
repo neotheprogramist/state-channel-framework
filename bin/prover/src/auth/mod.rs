@@ -32,6 +32,8 @@ pub async fn generate_nonce(
     State(state): State<AppState>,
     Query(params): Query<GenerateNonceRequest>,
 ) -> Result<Json<GenerateNonceResponse>, ProveError> {
+    println!(" Generate key");
+
     if params.public_key.trim().is_empty() {
         println!("Missing public key");
         return Err(ProveError::MissingPublicKey);

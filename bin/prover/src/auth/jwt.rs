@@ -1,10 +1,12 @@
 use crate::prove::ProveError;
 use axum::{
-    async_trait, extract::FromRequestParts, http::header::AUTHORIZATION, http::request::Parts,
+    async_trait, extract::FromRequestParts, http::header::AUTHORIZATION, http::header::COOKIE,
+    http::request::Parts,
 };
 use jsonwebtoken::{decode, encode, DecodingKey, EncodingKey, Header, Validation};
 use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 use std::fmt::Display;
 
 static KEYS: Lazy<Keys> = Lazy::new(|| {
@@ -29,20 +31,32 @@ where
     type Rejection = ProveError;
 
     async fn from_request_parts(parts: &mut Parts, _state: &S) -> Result<Self, Self::Rejection> {
-        // Extract the 'Authorization' header
-        let header_value = parts.headers.get(AUTHORIZATION).ok_or(ProveError::Auth(
+        // Extract the 'Cookie' header
+        let header_value = parts.headers.get(COOKIE).ok_or(ProveError::Auth(
             crate::prove::AuthError::MissingAuthorizationHeader,
         ))?;
 
-        // Convert the header value to a string and validate it starts with "Bearer "
-        let token_str = header_value
+        // Convert the header value to a string
+        let cookie_str = header_value
             .to_str()
             .map_err(|_| ProveError::Auth(crate::prove::AuthError::InvalidToken))?;
-        if !token_str.starts_with("Bearer ") {
-            return Err(ProveError::Auth(crate::prove::AuthError::Unauthorized));
-        }
 
-        let token = &token_str["Bearer ".len()..];
+        // Parse the cookie string into a HashMap
+        let cookies: HashMap<_, _> = cookie_str
+            .split(';')
+            .filter_map(|s| {
+                let mut parts = s.split('=');
+                match (parts.next(), parts.next()) {
+                    (Some(key), Some(value)) => Some((key.trim(), value.trim())),
+                    _ => None,
+                }
+            })
+            .collect();
+
+        // Extract the JWT token from the cookies
+        let token = cookies.get("jwt_token").ok_or(ProveError::Auth(
+            crate::prove::AuthError::MissingAuthorizationHeader,
+        ))?;
 
         let token_data = decode::<Claims>(token, &KEYS.decoding, &Validation::default())
             .map_err(|_| ProveError::Auth(crate::prove::AuthError::InvalidToken))?;

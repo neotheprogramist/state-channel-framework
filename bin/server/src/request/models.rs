@@ -4,6 +4,7 @@ use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use serde_with::serde_as;
 use std::ops::Deref;
 use std::{io, str::FromStr};
+use surrealdb::sql::Id;
 impl std::fmt::Display for Quote {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
@@ -14,6 +15,17 @@ impl std::fmt::Display for Quote {
     }
 }
 
+#[derive(Debug, Serialize, Deserialize)]
+pub struct SettlementProofResponse {
+    pub address: String,
+    pub balance: f64,
+    pub diff: f64,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct GenerateSettlementProofRequest {
+    pub address: String,
+}
 //TODO: is signature string ?
 #[serde_as]
 #[derive(Debug, Serialize, Deserialize)]
@@ -98,17 +110,17 @@ impl<'de> Deserialize<'de> for Nonce {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct Id {
-    tb: String,
-    id: String,
+pub struct Thing {
+    pub id: Id,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Contract {
-    address: String,
-    quantity: u64,
+    pub id: Thing,
+    pub address: String,
+    pub quantity: f64,
     nonce: String,
-    price: f64,
+    pub price: f64,
     server_signature: String,
     client_signature: String,
 }

@@ -12,7 +12,7 @@ struct Args {
     host: String,
 
     /// Port to listen on
-    #[clap(long, default_value = "7003")]
+    #[clap(long, default_value = "7005")]
     port: u16,
 }
 

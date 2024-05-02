@@ -1,10 +1,9 @@
-use super::models::{Contract, Id, Quote, RequestAcceptContract};
+use super::models::{Contract, Quote, RequestAcceptContract};
 use crate::server::{AppState, ServerError};
 use axum::extract::State;
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use axum::Json;
-use serde::{self, Deserialize, Serialize};
 use serde_json::json;
 use surrealdb::engine::remote::ws::Client;
 use surrealdb::Surreal;
@@ -35,14 +34,17 @@ async fn create_contract(
     client_signature: &str,
 ) -> Result<Contract, ServerError> {
     let query = r#"CREATE ONLY contract SET
+        id = type::string($id),
         address = type::string($address),
         quantity = type::number($quantity),
         nonce = type::string($nonce),
         price = type::number($price),
         server_signature = type::string($server_signature),
         client_signature = type::string($client_signature)"#;
+    let id = uuid::Uuid::new_v4();
 
     let params = json!({
+        "id": id.to_string(),
         "address": quote.address.to_string(),
         "quantity": quote.quantity,
         "nonce": quote.nonce.to_string(),

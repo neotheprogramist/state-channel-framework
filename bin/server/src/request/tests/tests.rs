@@ -38,11 +38,11 @@ mod test_module {
 
         match response {
             Ok(result) => {
-              println!("Success:")
-            },
+                println!("Success:")
+            }
             Err(e) => {
                 println!("Error during request: {:?}", e);
-            },
+            }
         }
     }
 }
