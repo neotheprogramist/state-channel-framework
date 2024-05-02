@@ -33,6 +33,7 @@ pub async fn generate_nonce(
     Query(params): Query<GenerateNonceRequest>,
 ) -> Result<Json<GenerateNonceResponse>, ProveError> {
     if params.public_key.trim().is_empty() {
+        println!("Missing public key");
         return Err(ProveError::MissingPublicKey);
     }
 

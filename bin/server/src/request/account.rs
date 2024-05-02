@@ -28,6 +28,7 @@ pub struct Signature {
     pub r: stark_curve::Scalar,
     pub s: stark_curve::Scalar,
 }
+
 /// Helper function to convert a `stark_curve::Scalar` to a hexadecimal string.
 pub fn scalar_to_hex(scalar: &stark_curve::Scalar) -> String {
     let bytes = scalar.to_repr();
