@@ -2,43 +2,39 @@ use clap::Parser;
 use ed25519_dalek::SigningKey;
 use prover_sdk::ProverSDK;
 use rand::rngs::OsRng;
+use ed25519_dalek::SecretKey;
 use reqwest::Error as ReqwestError;
 use thiserror::Error;
 use tokio::fs::File;
-use tokio::io::AsyncReadExt;
 use tokio::time::Duration;
 mod models;
 mod prover_sdk;
+use reqwest::Url;
+use url:: ParseError;
+use serde_json::Value;
+use tokio::io::AsyncReadExt;
 
-#[derive(Parser, Debug)]
-#[command(version, about, long_about = None)]
-struct Args {
-    #[arg(long, default_value_t = ("http://localhost:7003/auth".to_string()))]
-    url_auth: String,
 
-    #[arg(long, default_value_t = ("http://localhost:7003/prove/state-diff-commitment".to_string()))]
-    url_prover: String,
+// #[derive(Parser, Debug)]
+// #[command(version, about, long_about = None)]
+// struct Args {
+//     #[arg(long,default_value_t="Sample")]
+//     input_file: String,
 
-    #[arg(long)]
-    input_file: String,
+//     #[arg(long,default_value_t = "sample")]
+//     signing_key: String,
+// }
 
-    #[arg(long)]
-    signing_key: String,
-
-    #[arg(long)]
-    public_key: String,
-}
-
-#[derive(Debug, Error)]
-pub enum ValidatorErrors {
+#[derive(Debug,Error)]
+enum ProverSdkErrors {
     #[error("HTTP request failed")]
     RequestFailed(#[from] ReqwestError),
 
-    #[error("Failed to serialize")]
-    SerdeError(#[from] serde_json::Error),
-
     #[error("JSON parsing failed")]
     JsonParsingFailed,
+
+    #[error("Failed to serialize")]
+    SerdeError(#[from] serde_json::Error),
 
     #[error("Nonce not found in the response")]
     NonceNotFound,
@@ -48,37 +44,38 @@ pub enum ValidatorErrors {
 
     #[error("Reading input file failed")]
     ReadFileError(#[from] std::io::Error),
+
+    #[error("Expiration date not found")]
+    ExpirationNotFound,
+
+    #[error("Signing key not found")]
+    SigningKeyNotFound,
+    #[error("Failed to parse to url")]
+    UrlParseError(#[from] ParseError),
 }
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let args: Args = Args::parse();
-    let sdk = ProverSDK::new();
+//    let args: Args = Args::parse();
 
     // Authentication with the prover
-    let signing_key = SigningKey::generate(&mut OsRng);
-    let public_key = signing_key.verifying_key();
+    let private_key_hex = "f91350db1ca372b54376b519be8bf73a7bbbbefc4ffe169797bc3f5ea2dec740";
 
-    //    let jwt_response = sdk.authenticate_with_prover(&args.signing_key, &args.public_key, &args.url_auth).await?;
-    let jwt_response = sdk
-        .authenticate_with_prover(&signing_key, &public_key, &args.url_auth)
-        .await?;
+    let sdk = ProverSDK::new().auth(private_key_hex).await?.build()?;
 
-    let jwt_token = &jwt_response.jwt_token;
-
-    // Create a new client for proofing with cookies
-    let cookie_client = ProverSDK::with_cookies(jwt_token)?;
-
-    loop {
-        let mut file = File::open(&args.input_file).await?;
-        let mut data = String::new();
-        file.read_to_string(&mut data).await?;
-
-        cookie_client
-            .proof(serde_json::from_str(&data)?, &args.url_prover)
-            .await?;
-
-        tokio::time::sleep(Duration::from_secs(10)).await;
-    }
+    let data = read_json_file("resources/input.json").await?;
+    let result = sdk.prove(data).await?;
+     
     Ok(())
+}
+
+async fn read_json_file(file_path: &str) -> Result<Value, Box<dyn std::error::Error>> {
+    let mut file = File::open(file_path).await?;
+
+    let mut json_string = String::new();
+    file.read_to_string(&mut json_string).await?;
+
+    let json_value: Value = serde_json::from_str(&json_string)?;
+
+    Ok(json_value)
 }
