@@ -6,18 +6,20 @@ from starkware.cairo.common.signature import (
 )
 from aggregate import aggregate
 from input import (
-    Agreement, get_agreements
+    Input, get_agreements
 )
 
 func main{output_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr: felt, bitwise_ptr: felt*}() -> () {
     alloc_locals;
 
-    let (agreements_len: felt, agreements: Agreement**) = get_agreements();
-    let (a: felt, b: felt) = aggregate(agreements_len, agreements, 0, 0);
+    let (input: Input) = get_agreements();
+    let (a: felt, b: felt) = aggregate(input.agreements_len, input.agreements, 0, 0);
 
-    assert output_ptr[0] = a;
-    assert output_ptr[1] = b;
-    let output_ptr = output_ptr + 2;
+    assert output_ptr[0] = input.client_public_key;
+    assert output_ptr[1] = input.server_public_key;
+    assert output_ptr[2] = a;
+    assert output_ptr[3] = b;
+    let output_ptr = output_ptr + 4;
 
     return ();
 }
