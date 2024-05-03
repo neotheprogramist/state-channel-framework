@@ -37,7 +37,7 @@ pub struct Quote {
     pub address: String,
     pub quantity: u64,
     pub nonce: Nonce,
-    pub price: f64,
+    pub price: u64,
 }
 #[derive(Debug, Clone)]
 pub struct Nonce(Bytes);

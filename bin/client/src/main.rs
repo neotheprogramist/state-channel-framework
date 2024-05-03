@@ -49,7 +49,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("quantity: {}", request_quotation_response.quote.quantity);
     println!(
         "Sum: {}",
-        (request_quotation_response.quote.quantity as f64) * request_quotation_response.quote.price
+        (request_quotation_response.quote.quantity as u64) * request_quotation_response.quote.price
     );
     println!(
         "Client address: {}",

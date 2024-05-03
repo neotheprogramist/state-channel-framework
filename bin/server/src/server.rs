@@ -2,6 +2,7 @@ use crate::{request, Args};
 use axum::{http::StatusCode, response::IntoResponse, Json};
 use axum::{routing::get, Router};
 use serde_json::json;
+use std::num::ParseIntError;
 use std::{
     net::{AddrParseError, SocketAddr},
     time::Duration,
@@ -16,11 +17,17 @@ use tower_http::timeout::TimeoutLayer;
 use tower_http::trace::TraceLayer;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 use utils::shutdown::shutdown_signal;
-
+use reqwest::Error as ReqwestError;
 #[derive(Debug, Error)]
 pub enum ServerError {
     #[error("server error")]
     Server(#[from] std::io::Error),
+
+    #[error("Failed to parse string to int")]
+    ParseIntError(#[from] ParseIntError),
+
+    #[error("failed to parse address")]
+    ParsingError(#[from] ReqwestError),
 
     #[error("failed to parse address")]
     AddressParse(#[from] AddrParseError),
@@ -47,6 +54,9 @@ impl IntoResponse for ServerError {
                 (StatusCode::UNPROCESSABLE_ENTITY, self.to_string())
             }
             ServerError::DatabaseError(_) => (StatusCode::INTERNAL_SERVER_ERROR, self.to_string()),
+            ServerError::ParsingError(_) => (StatusCode::UNPROCESSABLE_ENTITY, self.to_string()),
+            ServerError::ParseIntError(_) => (StatusCode::UNPROCESSABLE_ENTITY, self.to_string()),
+
         };
         let body = Json(json!({ "error": error_message }));
         (status, body).into_response()

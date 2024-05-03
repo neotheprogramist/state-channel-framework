@@ -21,7 +21,7 @@ pub async fn request_settlement_proof(
 
     let contracts = get_all_contracts_for_address(&state.db, &params.address).await?;
     let price = get_btc_usdt_price().await?;
-    let mut diff: f64 = 0.0;
+    let mut diff: u64 = 0;
     let mut to_delete_contract_ids = HashSet::new();
 
     for contract in contracts {

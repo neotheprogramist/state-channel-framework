@@ -1,13 +1,12 @@
-use super::models::JWTResponse;
-use super::ProverSdkErrors;
+use crate::models::JWTResponse;
+use crate::ProverSdkErrors;
 use ed25519_dalek::SigningKey;
 use ed25519_dalek::VerifyingKey;
 use ed25519_dalek::{Signature, Signer};
 use reqwest::cookie::Jar;
 use reqwest::Client;
 use reqwest::Url;
-use serde_json::json;
-use serde_json::Value;
+use serde_json::{json,Value};
 use std::sync::Arc;
 
 #[derive(Debug)]
