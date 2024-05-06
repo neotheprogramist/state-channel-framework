@@ -31,6 +31,64 @@ struct Args {
     quantity: u64,
 }
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+    
+    #[tokio::test]
+    async fn test_main() -> Result<(),  Box<dyn std::error::Error>>  {
+        let address = "test_case";
+        let client = Client::new();
+        let quantity  = 1 ;
+        let url_request_quote ="http://localhost:7005/server/requestQuote"; 
+        let url_accept_contract ="http://localhost:7005/server/acceptContract"; 
+        let url_request_settlement_proof ="http://localhost:7005/server/requestSettlementProof"; 
+
+        // Create Contract
+        let request_quotation_response = request_quote(
+            address,
+            quantity,
+            url_request_quote,
+            &client,
+        )
+        .await?;
+
+        println!("Contract");
+        println!("price per BTC: {}", request_quotation_response.quote.price);
+        println!("quantity: {}", request_quotation_response.quote.quantity);
+        println!(
+            "Sum: {}",
+            (request_quotation_response.quote.quantity as u64) * request_quotation_response.quote.price
+        );
+        println!(
+            "Client address: {}",
+            request_quotation_response.quote.address
+        );
+        println!(
+            "Server signature: {}",
+            request_quotation_response.server_signature
+        );
+        accept_contract(
+                request_quotation_response,
+                url_accept_contract,
+                &client,
+            )
+            .await?;
+    
+          // Request settlement
+        let settlement_proof =
+         request_settlement_proof(url_request_settlement_proof, &address.to_string(), &client)
+              .await?;
+        println!("Settlement proof");
+        println!("Address: {}", settlement_proof.address);
+        println!("Balance: {}", settlement_proof.balance);
+        println!("Diff: {}", settlement_proof.diff);
+
+        Ok(())
+    }
+}
+
+
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args: Args = Args::parse();
@@ -121,19 +179,12 @@ async fn request_settlement_proof(
         None => return Err("Address not found in JSON response".into()),
     };
 
-    let balance = match json_body["balance"].as_str() {
-        Some(balance_str) => match balance_str.parse::<f64>() {
-            Ok(balance) => balance,
-            Err(_) => return Err("Failed to parse diff as f64".into()),
-        },
-        None => return Err("Balance not found in JSON response".into()),
+    let balance: f64 = match json_body["balance"].as_f64() {
+        Some(balance) => balance,
+        None => return Err("Balance not found in JSON response or not a valid float".into()),
     };
-
-    let diff = match json_body["diff"].as_str() {
-        Some(diff_str) => match diff_str.parse::<f64>() {
-            Ok(diff) => diff,
-            Err(_) => return Err("Failed to parse diff as f64".into()),
-        },
+    let diff: i64 = match json_body["diff"].as_i64() {
+        Some(diff) => diff,
         None => return Err("Diff not found in JSON response".into()),
     };
 

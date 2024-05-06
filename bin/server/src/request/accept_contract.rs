@@ -18,7 +18,8 @@ pub async fn accept_contract(
     let server_signature = payload.server_signature;
     let client_signature = payload.client_signature;
     println!(
-        " quote:{} \n server_signature:{} \n quclient_signatureote:{} \n",
+        "accept_contract\n
+         quote:{} \n server_signature:{} \n quclient_signatureote:{} \n",
         quote, server_signature, client_signature
     );
     //TODO: create contract
@@ -54,6 +55,10 @@ async fn create_contract(
     });
 
     println!("Before creating contract");
+    println!(
+        "create_contract\n server_signature:{} \n quclient_signatureote:{} \n",
+        server_signature, client_signature
+    );
     let mut result = db
         .query(query)
         .bind(params)

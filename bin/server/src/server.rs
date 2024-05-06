@@ -75,7 +75,7 @@ pub struct AppState {
 }
 
 pub async fn start(args: &Args) -> Result<(), ServerError> {
-    let db = Surreal::new::<Ws>("0.0.0.0:8080").await?;
+    let db = Surreal::new::<Ws>("0.0.0.0:8000").await?;
     db.signin(Root {
         username: "root",
         password: "root",

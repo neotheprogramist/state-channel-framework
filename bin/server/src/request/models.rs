@@ -19,7 +19,7 @@ impl std::fmt::Display for Quote {
 pub struct SettlementProofResponse {
     pub address: String,
     pub balance: f64,
-    pub diff: u64,
+    pub diff: i64,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -46,7 +46,7 @@ pub struct Quote {
     pub address: String,
     pub quantity: u64,
     pub nonce: Nonce,
-    pub price: u64,
+    pub price: i64,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -118,9 +118,9 @@ pub struct Thing {
 pub struct Contract {
     pub id: Thing,
     pub address: String,
-    pub quantity: u64,
+    pub quantity: i64,
     nonce: String,
-    pub price: u64,
+    pub price: i64,
     server_signature: String,
     client_signature: String,
 }

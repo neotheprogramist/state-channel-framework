@@ -16,7 +16,7 @@ pub struct AgreeToQuotation {
 pub struct SettlementProofResponse {
     pub address: String,
     pub balance: f64,
-    pub diff: f64,
+    pub diff: i64,
 }
 
 #[serde_as]

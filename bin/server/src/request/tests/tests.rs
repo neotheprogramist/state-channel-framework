@@ -16,7 +16,7 @@ mod test_module {
 
         let response = request_quote(Json(payload)).await;
         match response {
-            Ok(result) => println!("Success:"),
+            Ok(_result) => println!("Success:"),
             Err(e) => println!("Error: {:?}", e),
         }
         //assert!(response.is_err());
@@ -37,7 +37,7 @@ mod test_module {
         let response = request_quote(Json(payload)).await;
 
         match response {
-            Ok(result) => {
+            Ok(_result) => {
                 println!("Success:")
             }
             Err(e) => {
