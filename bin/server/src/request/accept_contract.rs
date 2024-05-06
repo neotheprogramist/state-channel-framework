@@ -17,12 +17,7 @@ pub async fn accept_contract(
     let quote: super::models::Quote = payload.quote;
     let server_signature = payload.server_signature;
     let client_signature = payload.client_signature;
-    println!(
-        "accept_contract\n
-         quote:{} \n server_signature:{} \n quclient_signatureote:{} \n",
-        quote, server_signature, client_signature
-    );
-    //TODO: create contract
+
     let result = create_contract(state.db, &quote, &server_signature, &client_signature).await?;
     println!("{}", result.to_string());
     Ok(StatusCode::NO_CONTENT)
@@ -34,7 +29,7 @@ async fn create_contract(
     server_signature: &str,
     client_signature: &str,
 ) -> Result<Contract, ServerError> {
-    let query = r#"CREATE ONLY contract SET
+    let query = r#"CREATE contract SET
         id = type::string($id),
         address = type::string($address),
         quantity = type::number($quantity),

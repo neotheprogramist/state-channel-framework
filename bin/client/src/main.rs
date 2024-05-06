@@ -36,13 +36,65 @@ mod tests {
     use super::*;
     
     #[tokio::test]
+    async fn test_set_price() -> Result<(),  Box<dyn std::error::Error>>  {
+        let address = "test_case1";
+        let client = Client::new();
+        let quantity  = 1;
+        let url_request_quote ="http://localhost:7006/server/requestQuote"; 
+        let url_accept_contract ="http://localhost:7006/server/acceptContract"; 
+        let url_request_settlement_proof ="http://localhost:7006/server/requestSettlementProofWithPrice"; 
+
+        // Create Contract
+        let request_quotation_response = request_quote(
+            address,
+            quantity,
+            url_request_quote,
+            &client,
+        )
+        .await?;
+
+        println!("Contract");
+        println!("price per BTC: {}", request_quotation_response.quote.price);
+        println!("quantity: {}", request_quotation_response.quote.quantity);
+        println!(
+            "Sum: {}",
+            (request_quotation_response.quote.quantity as u64) * request_quotation_response.quote.price
+        );
+        println!(
+            "Client address: {}",
+            request_quotation_response.quote.address
+        );
+        println!(
+            "Server signature: {}",
+            request_quotation_response.server_signature
+        );
+        accept_contract(
+                request_quotation_response,
+                url_accept_contract,
+                &client,
+            )
+            .await?;
+        let price :i64= 63023;
+          // Request settlement
+        let settlement_proof =
+        request_settlement_proof_with_set_price(url_request_settlement_proof, &address.to_string(), &client,price)
+              .await?;
+        println!("Settlement proof");
+        println!("Address: {}", settlement_proof.address);
+        println!("Balance: {}", settlement_proof.balance);
+        println!("Diff: {}", settlement_proof.diff);
+
+        Ok(())
+    }
+    
+    #[tokio::test]
     async fn test_main() -> Result<(),  Box<dyn std::error::Error>>  {
         let address = "test_case";
         let client = Client::new();
-        let quantity  = 1 ;
-        let url_request_quote ="http://localhost:7005/server/requestQuote"; 
-        let url_accept_contract ="http://localhost:7005/server/acceptContract"; 
-        let url_request_settlement_proof ="http://localhost:7005/server/requestSettlementProof"; 
+        let quantity  = 1;
+        let url_request_quote ="http://localhost:7006/server/requestQuote"; 
+        let url_accept_contract ="http://localhost:7006/server/acceptContract"; 
+        let url_request_settlement_proof ="http://localhost:7006/server/requestSettlementProof"; 
 
         // Create Contract
         let request_quotation_response = request_quote(
@@ -157,6 +209,51 @@ async fn request_settlement_proof(
     client: &Client,
 ) -> Result<SettlementProofResponse, Box<dyn std::error::Error>> {
     let url_with_params = format!("{}?address={}", url, address);
+
+    let response = match client.get(url_with_params).send().await {
+        Ok(response) => response,
+        Err(err) => return Err(err.into()),
+    };
+
+    let response_text = match response.text().await {
+        Ok(text) => {
+            println!("{}", text);
+            text
+        }
+        Err(err) => return Err(err.into()),
+    };
+    let json_body: Value = match serde_json::from_str(&response_text) {
+        Ok(json) => json,
+        Err(err) => return Err(err.into()),
+    };
+    let address = match json_body["address"].as_str() {
+        Some(address) => address.to_string(),
+        None => return Err("Address not found in JSON response".into()),
+    };
+
+    let balance: f64 = match json_body["balance"].as_f64() {
+        Some(balance) => balance,
+        None => return Err("Balance not found in JSON response or not a valid float".into()),
+    };
+    let diff: i64 = match json_body["diff"].as_i64() {
+        Some(diff) => diff,
+        None => return Err("Diff not found in JSON response".into()),
+    };
+
+    Ok(SettlementProofResponse {
+        address,
+        balance,
+        diff,
+    })
+}
+
+async fn request_settlement_proof_with_set_price(
+    url: &str,
+    address: &String,
+    client: &Client,
+    price:i64
+) -> Result<SettlementProofResponse, Box<dyn std::error::Error>> {
+    let url_with_params = format!("{}?address={}&price={}", url, address,price);
 
     let response = match client.get(url_with_params).send().await {
         Ok(response) => response,

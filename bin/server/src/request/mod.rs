@@ -18,5 +18,9 @@ pub fn router(app_state: &AppState) -> Router {
             "/requestSettlementProof",
             get(request_settlement_proof::request_settlement_proof),
         )
+        .route(
+            "/requestSettlementProofWithPrice",
+            get(request_settlement_proof::request_settlement_proof_with_set_price),
+        )
         .with_state(app_state.clone())
 }

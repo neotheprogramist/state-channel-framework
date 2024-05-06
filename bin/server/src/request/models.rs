@@ -26,6 +26,11 @@ pub struct SettlementProofResponse {
 pub struct GenerateSettlementProofRequest {
     pub address: String,
 }
+#[derive(Debug, Serialize, Deserialize)]
+pub struct GenerateSettlementProofRequestWithPrice {
+    pub address: String,
+    pub price:i64,
+}
 //TODO: is signature string ?
 #[serde_as]
 #[derive(Debug, Serialize, Deserialize)]
