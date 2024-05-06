@@ -14,8 +14,3 @@ snforge_std = { git = "https://github.com/foundry-rs/starknet-foundry", tag = "v
 
 [[target.starknet-contract]]
 casm = true
-
-[[tool.snforge.fork]]
-name = "SN_SEPOLIA"
-url = "https://starknet-sepolia.public.blastapi.io/rpc/v0_7"
-block_id.tag = "Latest"

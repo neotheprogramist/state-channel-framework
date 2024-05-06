@@ -3,19 +3,18 @@ use state_channel_framework::{
     agreement::{IAgreementDispatcher, IAgreementDispatcherTrait},
     erc20::{IErc20Dispatcher, IErc20DispatcherTrait},
 };
-use tests::utils::{DEFAULT_ACCOUNT, declare_and_deploy_via_udc};
+use tests::utils::{DEFAULT_ACCOUNT, deploy_contract};
 
 #[test]
-#[fork("SN_SEPOLIA")]
 fn test_udc_deploy() {
     let token_contract = IErc20Dispatcher {
-        contract_address: declare_and_deploy_via_udc(
+        contract_address: deploy_contract(
             "Erc20", array![DEFAULT_ACCOUNT, DEFAULT_ACCOUNT, DEFAULT_ACCOUNT, DEFAULT_ACCOUNT]
         )
     };
     let agreement_contract = IAgreementDispatcher {
-        contract_address: declare_and_deploy_via_udc(
-            "Agreement", array![37, 42, token_contract.contract_address.into(), 0, 0]
+        contract_address: deploy_contract(
+            "Agreement", array![37, 42, token_contract.contract_address.into(), 0, 0, 0, 0, 0, 0, 0]
         )
     };
 
@@ -38,4 +37,7 @@ fn test_udc_deploy() {
         'invalid token address'
     );
     assert(agreement_contract.get_client_amount() == 0, 'invalid client amount');
+    assert(agreement_contract.get_account() == 0, 'invalid account');
+    assert(agreement_contract.get_block() == 0, 'invalid block');
+    assert(agreement_contract.get_slot() == 0, 'invalid slot');
 }
