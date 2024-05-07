@@ -7,6 +7,7 @@ use axum::Json;
 use serde_json::json;
 use surrealdb::engine::remote::ws::Client;
 use surrealdb::Surreal;
+use surrealdb::engine::local::Db;
 
 pub async fn accept_contract(
     State(state): State<AppState>,
@@ -24,7 +25,7 @@ pub async fn accept_contract(
 }
 
 async fn create_contract(
-    db: Surreal<Client>,
+    db: Surreal<Db>,
     quote: &Quote,
     server_signature: &str,
     client_signature: &str,

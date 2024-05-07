@@ -18,6 +18,8 @@ use tower_http::trace::TraceLayer;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 use utils::shutdown::shutdown_signal;
 use reqwest::Error as ReqwestError;
+use surrealdb::engine::local::Mem;
+use surrealdb::engine::local::Db;
 #[derive(Debug, Error)]
 pub enum ServerError {
     #[error("server error")]
@@ -71,16 +73,12 @@ impl From<surrealdb::Error> for ServerError {
 
 #[derive(Debug, Clone)]
 pub struct AppState {
-    pub db: Surreal<Client>,
+    pub db: Surreal<Db>,
 }
 
 pub async fn start(args: &Args) -> Result<(), ServerError> {
-    let db = Surreal::new::<Ws>("0.0.0.0:8000").await?;
-    db.signin(Root {
-        username: "root",
-        password: "root",
-    })
-    .await?;
+    let db = Surreal::new::<Mem>(()).await?;
+
     db.use_ns("test").use_db("test").await?;
     let state: AppState = AppState { db };
 

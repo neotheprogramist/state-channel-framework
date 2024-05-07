@@ -42,9 +42,9 @@ pub struct RequestQuotationResponse {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Quote {
     pub address: String,
-    pub quantity: u64,
+    pub quantity: i64,
     pub nonce: Nonce,
-    pub price: u64,
+    pub price: i64,
 }
 #[derive(Debug, Clone)]
 pub struct Nonce(Bytes);

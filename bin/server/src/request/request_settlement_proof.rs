@@ -9,6 +9,7 @@ use surrealdb::engine::remote::ws::Client;
 use surrealdb::Surreal;
 use std::collections::HashMap;
 use super::models::GenerateSettlementProofRequestWithPrice;
+use surrealdb::engine::local::Db;
 
 pub async fn request_settlement_proof(
     State(state): State<AppState>,
@@ -28,20 +29,8 @@ pub async fn request_settlement_proof(
     let settlement_proof_response = SettlementProofResponse{address:params.address,balance:0.0,diff:0};
     Ok(Json(settlement_proof_response))
 }
-fn aggregate(agreements: &[Contract], a: i64, b: i64) -> (i64, i64) {
-    if agreements.is_empty() {
-        return (a, b);
-    }
-    
-    let first = &agreements[0];
-    let rest = &agreements[1..];
 
-    aggregate(
-        rest,
-        a + first.quantity,
-        b - first.quantity * first.price
-    )
-}
+
 // pub async fn request_settlement_proof(
 //     State(state): State<AppState>,
 //     Query(params): Query<GenerateSettlementProofRequest>,
@@ -76,58 +65,76 @@ fn aggregate(agreements: &[Contract], a: i64, b: i64) -> (i64, i64) {
 //     Ok(Json(settlement_proof_response))
 // }
 
-// pub async fn request_settlement_proof_with_set_price(
-//     State(state): State<AppState>,
-//     Query(params): Query<GenerateSettlementProofRequestWithPrice>,
-// ) -> Result<Json<SettlementProofResponse>, ServerError> {
-//     println!("Request settlement proof called");
-//     if params.address.trim().is_empty() {
-//         println!("Missing public key");
-//         return Err(ServerError::DatabaseError("Missing address".to_string()));
-//     }
-//     println!("Address: {}", params.address);
-
-//     // Get all contracts for the specified address
-//     let contracts = get_all_contracts_for_address(&state.db, &params.address).await?;
+fn aggregate(agreements: &[Contract], a: i64, b: i64) -> (i64, i64) {
+    if agreements.is_empty() {
+        return (a, b);
+    }
     
-//     let price: i64 = params.price;
-//     let mut diff: i64 = 0;
-//    // let mut to_delete_contract_ids = HashSet::new();
+    let first = &agreements[0];
+    let rest = &agreements[1..];
 
-//     dbg!("Current price: {}", price);
+    aggregate(
+        rest,
+        a + first.quantity,
+        b - first.quantity * first.price
+    )
+}
+pub async fn request_settlement_proof_with_set_price(
+    State(state): State<AppState>,
+    Query(params): Query<GenerateSettlementProofRequestWithPrice>,
+) -> Result<Json<SettlementProofResponse>, ServerError> {
+    println!("Request settlement proof called");
+    if params.address.trim().is_empty() {
+        println!("Missing public key");
+        return Err(ServerError::DatabaseError("Missing address".to_string()));
+    }
+    println!("Address: {}", params.address);
 
-//     for contract in &contracts {
-//         println!("Contract ID: {}", contract.id.id);
-//         dbg!("Contract price: {}", contract.price);
+    let contracts = get_all_contracts_for_address(&state.db, &params.address).await?;
 
-//         // Calculate the difference based on the current price and contract price
-//         diff += (price - ( price-1)) * contract.quantity;
+    delete_all_contracts_for_addresss(&params.address,&state.db).await?;
+    println!("DISPLAY AGGREMENTS ");
+    for contract in &contracts {
+        println!("Contract: Quantity: {}, Price: {}", contract.quantity, contract.price);
+    }
+    println!("params price {}",params.price);
+    let (a,b) = aggregate(&contracts,0, 0);
+    println!("{} {}",a ,b);
+    let diff:i64 = a *params.price + b;
+    println!("diff {}",diff);
 
-//     }
+    let settlement_proof_response = SettlementProofResponse{address:params.address,balance:0.0,diff:diff};
+    Ok(Json(settlement_proof_response))
+}
 
-//     dbg!("Difference: {}", diff);
 
-//     // Convert the set of contract IDs to a vector
-//     let to_delete_contract_ids: Vec<String> = contracts.iter().map(|contract| contract.id.id.to_string()).collect();
-//     let delete_contracts_result = delete_contracts_by_ids(&state.db, &to_delete_contract_ids).await?;
-//     // Delete contracts by IDs
-//     //verify_deletion_before_and_after(&state.db, &params.address, &to_delete_contract_ids).await?;
 
-//     //let delete_contracts_result = delete_contracts_by_ids(&state.db, &to_delete_contract_ids).await?;
-//     //println!("deleteContractsByIdsResult: {:?}", delete_contracts_result);
 
-//     println!("Settlement proof calculation complete");
 
-//     // Create the settlement proof response
-//     let settlement_proof_response = SettlementProofResponse {
-//         address: params.address.clone(),
-//         balance: 0.0,
-//         diff,
-//     };
 
-//     Ok(Json(settlement_proof_response))
-// }
 
+
+
+
+pub async fn delete_all_contracts_for_addresss(address:&str, db:&Surreal<Db>)-> Result<(), ServerError> {
+    let query = r#"DELETE FROM contract WHERE address = $address"#;
+
+    let params = json!({
+        "address": address,
+    });
+
+    println!("Before deleting contracts at address: {}", address);
+
+    let result = db
+        .query(query)
+        .bind(params)
+        .await
+        .map_err(|e| ServerError::DatabaseError(e.to_string()))?;
+
+    println!("After attempting to delete contracts");
+
+    Ok(())
+}
 // pub async fn delete_contracts_by_ids(
 //     db: &Surreal<Client>,
 //     to_delete_contract_ids: &[String], // Change the type to Vec<String>
@@ -183,7 +190,7 @@ fn aggregate(agreements: &[Contract], a: i64, b: i64) -> (i64, i64) {
 
 
 pub async fn get_all_contracts_for_address(
-    db: &Surreal<Client>,
+    db: &Surreal<Db>,
     address: &String,
 ) -> Result<Vec<Contract>, ServerError> {
 
