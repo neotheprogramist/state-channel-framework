@@ -1,5 +1,5 @@
 use super::account::MockAccount;
-use super::models::{Quote, RequestQuotation, RequestQuotationResponse};
+use super::models::{Quote, RequestQuotation, RequestQuotationResponse,RequestQuotationWithPrice};
 use super::price::get_btc_usdt_price;
 use crate::request::account::scalar_to_hex;
 use crate::request::models::Nonce;
@@ -21,6 +21,47 @@ pub async fn request_quote(
             ));
         }
     };
+    let quote = Quote {
+        address: payload.address,
+        quantity: payload.quantity,
+        nonce: nonce.clone(),
+        price: btc_price,
+    };
+
+    let mut rng = OsRng;
+    let mock_account = MockAccount::new(&mut rng);
+    let quote_json = serde_json::to_string(&quote).unwrap();
+    let server_signature = mock_account.sign_message(&quote_json.as_bytes(), &mut rng);
+    let server_signature = match server_signature {
+        Ok(signature) => {
+            let signature_json = format!(
+                "{{\"r\": \"{}\", \"s\": \"{}\"}}",
+                scalar_to_hex(&signature.r),
+                scalar_to_hex(&signature.s)
+            );
+            println!("Serialized Signature: {}", signature_json);
+            signature_json
+        }
+        Err(e) => {
+            //todo: fix the error
+            println!("Failed to sign message: {}", e);
+            return Err(ServerError::DatabaseError("ERROR".to_string()));
+        }
+    };
+
+    Ok(Json(RequestQuotationResponse {
+        quote,
+        server_signature: server_signature,
+    }))
+}
+
+
+//TOOD: Delete, this is for testing
+pub async fn request_quote_with_price(
+    Json(payload): Json<RequestQuotationWithPrice>,
+) -> Result<impl IntoResponse, ServerError> {
+    let nonce = Nonce::new(32);
+    let btc_price = payload.price;
     let quote = Quote {
         address: payload.address,
         quantity: payload.quantity,

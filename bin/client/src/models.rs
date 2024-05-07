@@ -23,9 +23,16 @@ pub struct SettlementProofResponse {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct RequestQuotation {
     pub address: String,
-    pub quantity: u64,
+    pub quantity: i64,
 }
-
+//TODO  :delete
+#[serde_as]
+#[derive(Debug, Serialize, Deserialize)]
+pub struct RequestQuotationWithPrice {
+    pub address: String,
+    pub quantity: i64,
+    pub price: i64,
+}
 #[derive(Debug, Serialize, Deserialize)]
 pub struct RequestQuotationResponse {
     pub quote: Quote,

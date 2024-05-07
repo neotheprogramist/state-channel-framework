@@ -1,15 +1,9 @@
-use clap::Parser;
-use ed25519_dalek::SigningKey;
 use prover_sdk::ProverSDK;
-use rand::rngs::OsRng;
-use ed25519_dalek::SecretKey;
 use reqwest::Error as ReqwestError;
 use thiserror::Error;
 use tokio::fs::File;
-use tokio::time::Duration;
 mod models;
 mod prover_sdk;
-use reqwest::Url;
 use url:: ParseError;
 use serde_json::Value;
 use tokio::io::AsyncReadExt;

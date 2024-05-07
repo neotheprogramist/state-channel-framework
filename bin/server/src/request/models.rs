@@ -43,13 +43,21 @@ pub struct RequestAcceptContract {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct RequestQuotation {
     pub address: String,
-    pub quantity: u64,
+    pub quantity: i64,
+}
+//TODO: delete that 
+#[serde_as]
+#[derive(Debug, Serialize, Deserialize)]
+pub struct RequestQuotationWithPrice {
+    pub address: String,
+    pub quantity: i64,
+    pub price:i64
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Quote {
     pub address: String,
-    pub quantity: u64,
+    pub quantity: i64,
     pub nonce: Nonce,
     pub price: i64,
 }
