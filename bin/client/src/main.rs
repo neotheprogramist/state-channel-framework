@@ -6,16 +6,17 @@ mod tests;
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
 struct Args {
-    #[arg(short, long, default_value_t = ("http://localhost:7005/server/requestQuote".to_string()))]
+   
+    #[arg(long, default_value_t = String::from("http://localhost:7005/server/requestQuote"))]
     url_request_quote: String,
-
-    #[arg(long, default_value_t = ("http://localhost:7005/server/acceptContract".to_string()))]
+    
+    #[arg(long, default_value_t = String::from("http://localhost:7005/server/acceptContract"))]
     url_accept_contract: String,
 
-    #[arg(long, default_value_t = ("http://localhost:7005/server/requestSettlementProof".to_string()))]
+    #[arg(long, default_value_t = String::from("http://localhost:7005/server/requestSettlementProof"))]
     url_request_settlement_proof: String,
 
-    #[arg(short, long, default_value_t = ("Sample client address".to_string()))]
+    #[arg(short, long, default_value_t = String::from("Sample client address"))]
     address: String,
 
     #[arg(short, long, default_value_t = 1)]

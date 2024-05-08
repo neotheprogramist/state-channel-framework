@@ -23,9 +23,6 @@ enum ProverSdkErrors {
     #[error("HTTP request failed")]
     RequestFailed(#[from] ReqwestError),
 
-    #[error("JSON parsing failed")]
-    JsonParsingFailed,
-
     #[error("Failed to serialize")]
     SerdeError(#[from] serde_json::Error),
 

@@ -87,7 +87,7 @@ pub async fn validate_signature(
         ))
     })?;
 
-    let signature_valid = verify_signature(&payload.signature, &user_nonce, &payload.public_key);
+    let signature_valid = verify_signature(&payload.signature, user_nonce, &payload.public_key);
 
     if !signature_valid {
         return Err(ProveError::Unauthorized("Invalid signature".to_string()));

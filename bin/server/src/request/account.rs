@@ -6,14 +6,6 @@ use rand_core::{CryptoRng, RngCore};
 use sha2::{Digest, Sha256};
 use std::ops::Mul;
 
-impl Signature {
-    pub fn serialize(&self) -> Result<String, serde_json::Error> {
-        let r_hex = scalar_to_hex(&self.r);
-        let s_hex = scalar_to_hex(&self.s);
-        let serialized = serde_json::json!({ "r": r_hex, "s": s_hex }).to_string();
-        Ok(serialized)
-    }
-}
 pub struct SigningKey {
     secret_scalar: stark_curve::Scalar,
 }
