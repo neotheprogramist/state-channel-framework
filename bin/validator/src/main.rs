@@ -4,10 +4,9 @@ use thiserror::Error;
 use tokio::fs::File;
 mod models;
 mod prover_sdk;
-use url:: ParseError;
 use serde_json::Value;
 use tokio::io::AsyncReadExt;
-
+use url::ParseError;
 
 // #[derive(Parser, Debug)]
 // #[command(version, about, long_about = None)]
@@ -19,7 +18,7 @@ use tokio::io::AsyncReadExt;
 //     signing_key: String,
 // }
 
-#[derive(Debug,Error)]
+#[derive(Debug, Error)]
 enum ProverSdkErrors {
     #[error("HTTP request failed")]
     RequestFailed(#[from] ReqwestError),
@@ -50,7 +49,7 @@ enum ProverSdkErrors {
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-//    let args: Args = Args::parse();
+    //    let args: Args = Args::parse();
 
     // Authentication with the prover
     let private_key_hex = "f91350db1ca372b54376b519be8bf73a7bbbbefc4ffe169797bc3f5ea2dec740";
@@ -59,7 +58,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let data = read_json_file("resources/input.json").await?;
     let result = sdk.prove(data).await?;
-     
+
     Ok(())
 }
 

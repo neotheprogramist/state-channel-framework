@@ -5,6 +5,9 @@ use serde_with::serde_as;
 use std::ops::Deref;
 use std::{io, str::FromStr};
 use surrealdb::sql::Id;
+use surrealdb::Surreal;
+use surrealdb::engine::local::Db;
+
 impl std::fmt::Display for Quote {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
@@ -29,15 +32,17 @@ pub struct GenerateSettlementProofRequest {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct GenerateSettlementProofRequestWithPrice {
     pub address: String,
-    pub price:i64,
+    pub price: i64,
 }
 //TODO: is signature string ?
 #[serde_as]
 #[derive(Debug, Serialize, Deserialize)]
 pub struct RequestAcceptContract {
     pub quote: Quote,
-    pub server_signature: String,
-    pub client_signature: String,
+    pub server_signature_r: String,
+    pub server_signature_s: String,
+    pub client_signature_r: String,
+    pub client_signature_s: String,
 }
 #[serde_as]
 #[derive(Debug, Serialize, Deserialize)]
@@ -45,13 +50,13 @@ pub struct RequestQuotation {
     pub address: String,
     pub quantity: i64,
 }
-//TODO: delete that 
+//TODO: delete that
 #[serde_as]
 #[derive(Debug, Serialize, Deserialize)]
 pub struct RequestQuotationWithPrice {
     pub address: String,
     pub quantity: i64,
-    pub price:i64
+    pub price: i64,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -65,7 +70,8 @@ pub struct Quote {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct RequestQuotationResponse {
     pub quote: Quote,
-    pub server_signature: String,
+    pub server_signature_r: String,
+    pub server_signature_s: String,
 }
 
 #[derive(Debug, Clone)]
@@ -134,12 +140,18 @@ pub struct Contract {
     pub quantity: i64,
     nonce: String,
     pub price: i64,
-    server_signature: String,
-    client_signature: String,
+    pub server_signature_r: String,
+    pub server_signature_s: String,
+    pub client_signature_r: String,
+    pub client_signature_s: String,
 }
 impl std::fmt::Display for Contract {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, " \n address :{} \n quantity :{} \n nonce :{} \n price :{} \n server_signature :{} \n client_signature :{} \n",
-    self.address,self.quantity,self.nonce,self.price,self.server_signature,self.client_signature)
+        write!(f, " \n address :{} \n quantity :{} \n nonce :{} \n price :{} \n server_signature_r :{} \n server_signature_s :{} \n client_signature_r :{} \n client_signature_s :{} \n",
+    self.address,self.quantity,self.nonce,self.price,self.server_signature_r,self.server_signature_s,self.client_signature_r,self.client_signature_s)
     }
+}
+#[derive(Debug, Clone)]
+pub struct AppState {
+    pub db: Surreal<Db>,
 }

@@ -1,14 +1,16 @@
 use crate::{request, Args};
 use axum::{http::StatusCode, response::IntoResponse, Json};
 use axum::{routing::get, Router};
+use reqwest::Error as ReqwestError;
 use serde_json::json;
 use std::num::ParseIntError;
 use std::{
     net::{AddrParseError, SocketAddr},
     time::Duration,
 };
-use surrealdb::engine::remote::ws::{Client, Ws};
-use surrealdb::opt::auth::Root;
+use surrealdb::engine::local::Db;
+use surrealdb::engine::local::Mem;
+
 use surrealdb::Surreal;
 use thiserror::Error;
 use tokio::net::TcpListener;
@@ -17,9 +19,8 @@ use tower_http::timeout::TimeoutLayer;
 use tower_http::trace::TraceLayer;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 use utils::shutdown::shutdown_signal;
-use reqwest::Error as ReqwestError;
-use surrealdb::engine::local::Mem;
-use surrealdb::engine::local::Db;
+use crate::request::models::AppState;
+
 #[derive(Debug, Error)]
 pub enum ServerError {
     #[error("server error")]
@@ -58,7 +59,6 @@ impl IntoResponse for ServerError {
             ServerError::DatabaseError(_) => (StatusCode::INTERNAL_SERVER_ERROR, self.to_string()),
             ServerError::ParsingError(_) => (StatusCode::UNPROCESSABLE_ENTITY, self.to_string()),
             ServerError::ParseIntError(_) => (StatusCode::UNPROCESSABLE_ENTITY, self.to_string()),
-
         };
         let body = Json(json!({ "error": error_message }));
         (status, body).into_response()
@@ -71,11 +71,8 @@ impl From<surrealdb::Error> for ServerError {
     }
 }
 
-#[derive(Debug, Clone)]
-pub struct AppState {
-    pub db: Surreal<Db>,
-}
 
+#[warn(private_interfaces)]
 pub async fn start(args: &Args) -> Result<(), ServerError> {
     let db = Surreal::new::<Mem>(()).await?;
 

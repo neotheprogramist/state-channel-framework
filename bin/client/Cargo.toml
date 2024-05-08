@@ -39,3 +39,4 @@ dialoguer= "0.11.0"
 proptest = "1.4.0"
 seq-macro = "0.3.5"
 futures = "0.3.30"
+server.workspace=true 
