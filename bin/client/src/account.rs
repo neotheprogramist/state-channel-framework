@@ -5,15 +5,7 @@ use elliptic_curve::PrimeField;
 use rand_core::{CryptoRng, RngCore};
 use sha2::{Digest, Sha256};
 use std::ops::Mul;
-
-impl Signature {
-    pub fn serialize(&self) -> Result<String, serde_json::Error> {
-        let r_hex = scalar_to_hex(&self.r);
-        let s_hex = scalar_to_hex(&self.s);
-        let serialized = serde_json::json!({ "r": r_hex, "s": s_hex }).to_string();
-        Ok(serialized)
-    }
-}
+use std::fmt::Write;
 pub struct SigningKey {
     secret_scalar: stark_curve::Scalar,
 }
@@ -30,7 +22,10 @@ pub struct Signature {
 /// Helper function to convert a `stark_curve::Scalar` to a hexadecimal string.
 pub fn scalar_to_hex(scalar: &stark_curve::Scalar) -> String {
     let bytes = scalar.to_repr();
-    bytes.iter().map(|byte| format!("{:02x}", byte)).collect()
+    bytes.iter().fold(String::new(), |mut acc, &byte| {
+        write!(acc, "{:02x}", byte).expect("Writing to string failed");
+        acc
+    })
 }
 
 impl SigningKey {
@@ -100,7 +95,6 @@ where
 
 pub struct MockAccount {
     signing_key: SigningKey,
-    verifying_key: VerifyingKey,
 }
 
 impl MockAccount {
@@ -108,10 +102,9 @@ impl MockAccount {
     where
         R: RngCore + CryptoRng,
     {
-        let (signing_key, verifying_key) = generate_keys(rng);
+        let (signing_key, _verifying_key) = generate_keys(rng);
         MockAccount {
             signing_key,
-            verifying_key,
         }
     }
 

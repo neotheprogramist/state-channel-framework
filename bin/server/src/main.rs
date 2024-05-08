@@ -1,9 +1,8 @@
 use clap::Parser;
 use server::{start, ServerError};
 
-mod request;
+pub mod request;
 pub mod server;
-
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
 struct Args {
@@ -12,7 +11,7 @@ struct Args {
     host: String,
 
     /// Port to listen on
-    #[clap(long, default_value = "7003")]
+    #[clap(long, default_value = "7007")]
     port: u16,
 }
 

@@ -1,13 +1,17 @@
 use crate::{request, Args};
 use axum::{http::StatusCode, response::IntoResponse, Json};
 use axum::{routing::get, Router};
+use reqwest::Error as ReqwestError;
 use serde_json::json;
+use std::num::ParseIntError;
 use std::{
     net::{AddrParseError, SocketAddr},
     time::Duration,
 };
-use surrealdb::engine::remote::ws::{Client, Ws};
-use surrealdb::opt::auth::Root;
+use surrealdb::engine::local::Db;
+use surrealdb::engine::local::Mem;
+
+use crate::request::models::AppState;
 use surrealdb::Surreal;
 use thiserror::Error;
 use tokio::net::TcpListener;
@@ -21,6 +25,12 @@ use utils::shutdown::shutdown_signal;
 pub enum ServerError {
     #[error("server error")]
     Server(#[from] std::io::Error),
+
+    #[error("Failed to parse string to int")]
+    ParseIntError(#[from] ParseIntError),
+
+    #[error("failed to parse address")]
+    ParsingError(#[from] ReqwestError),
 
     #[error("failed to parse address")]
     AddressParse(#[from] AddrParseError),
@@ -47,6 +57,8 @@ impl IntoResponse for ServerError {
                 (StatusCode::UNPROCESSABLE_ENTITY, self.to_string())
             }
             ServerError::DatabaseError(_) => (StatusCode::INTERNAL_SERVER_ERROR, self.to_string()),
+            ServerError::ParsingError(_) => (StatusCode::UNPROCESSABLE_ENTITY, self.to_string()),
+            ServerError::ParseIntError(_) => (StatusCode::UNPROCESSABLE_ENTITY, self.to_string()),
         };
         let body = Json(json!({ "error": error_message }));
         (status, body).into_response()
@@ -59,18 +71,10 @@ impl From<surrealdb::Error> for ServerError {
     }
 }
 
-#[derive(Debug, Clone)]
-pub struct AppState {
-    pub db: Surreal<Client>,
-}
-
+#[warn(private_interfaces)]
 pub async fn start(args: &Args) -> Result<(), ServerError> {
-    let db = Surreal::new::<Ws>("0.0.0.0:8000").await?;
-    db.signin(Root {
-        username: "root",
-        password: "root",
-    })
-    .await?;
+    let db = Surreal::new::<Mem>(()).await?;
+
     db.use_ns("test").use_db("test").await?;
     let state: AppState = AppState { db };
 
