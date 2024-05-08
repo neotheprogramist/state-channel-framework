@@ -57,7 +57,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let sdk = ProverSDK::new().auth(private_key_hex).await?.build()?;
 
     let data = read_json_file("resources/input.json").await?;
-    let result = sdk.prove(data).await?;
+    let _result = sdk.prove(data).await?;
 
     Ok(())
 }

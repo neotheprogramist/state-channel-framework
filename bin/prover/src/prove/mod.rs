@@ -58,7 +58,6 @@ impl IntoResponse for ProveError {
         (status, body).into_response()
     }
 }
-
 #[derive(Error, Debug)]
 pub enum AuthError {
     #[error("Invalid token")]
@@ -66,7 +65,6 @@ pub enum AuthError {
 
     #[error("Missing authorization header")]
     MissingAuthorizationHeader,
-
     #[error("Unauthorized")]
     Unauthorized,
 }

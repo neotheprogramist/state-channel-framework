@@ -4,9 +4,9 @@ use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use serde_with::serde_as;
 use std::ops::Deref;
 use std::{io, str::FromStr};
+use surrealdb::engine::local::Db;
 use surrealdb::sql::Id;
 use surrealdb::Surreal;
-use surrealdb::engine::local::Db;
 
 impl std::fmt::Display for Quote {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {

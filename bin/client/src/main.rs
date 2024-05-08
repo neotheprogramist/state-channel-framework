@@ -22,6 +22,4 @@ struct Args {
     quantity: u64,
 }
 
-fn main(){
-    
-}
+fn main() {}

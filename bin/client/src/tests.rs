@@ -1,155 +1,232 @@
-
 #[cfg(test)]
 mod tests {
-    const  URL_ACCEPT_CONTRACT :&str= "/acceptContract";
-    const  URL_REQUEST_QUOTE :&str= "/requestQuoteWithPrice";
-    const  URL_REQUEST_SETTLEMENT_PROOF :&str= "/requestSettlementProofWithPrice";
-    use surrealdb::Surreal;
-    use surrealdb::engine::local::Mem;
+    const URL_ACCEPT_CONTRACT: &str = "/acceptContract";
+    const URL_REQUEST_QUOTE: &str = "/requestQuoteWithPrice";
+    const URL_REQUEST_SETTLEMENT_PROOF: &str = "/requestSettlementProofWithPrice";
+    use crate::requests::{create_agreement, request_settlement_proof_with_price};
     use axum::Router;
     use server::request::models::AppState;
-    use crate::requests::{create_agreement,request_settlement_proof_with_price};
+    use surrealdb::engine::local::Mem;
+    use surrealdb::Surreal;
     #[tokio::test]
-    async fn test_main_simple() -> Result<(),  Box<dyn std::error::Error>>  {
+    async fn test_main_simple() -> Result<(), Box<dyn std::error::Error>> {
         let address = "test_case";
-        let db = Surreal::new::<Mem>(()).await.expect("Failed to initialize the database");
+        let db = Surreal::new::<Mem>(())
+            .await
+            .expect("Failed to initialize the database");
         let _ = db.use_ns("test").use_db("test").await;
 
         let state: AppState = AppState { db };
-        
-        let router:Router = server::request::router(&state);
 
-        create_agreement(1, 1000, address,URL_REQUEST_QUOTE,URL_ACCEPT_CONTRACT, router.clone()).await?;
+        let router: Router = server::request::router(&state);
 
+        create_agreement(
+            1,
+            1000,
+            address,
+            URL_REQUEST_QUOTE,
+            URL_ACCEPT_CONTRACT,
+            router.clone(),
+        )
+        .await?;
 
-        let quantity:i64  = 2;
+        let quantity: i64 = 2;
         let buying_price = 1000;
-        create_agreement(quantity, buying_price, address,URL_REQUEST_QUOTE,URL_ACCEPT_CONTRACT, router.clone()).await?;
+        create_agreement(
+            quantity,
+            buying_price,
+            address,
+            URL_REQUEST_QUOTE,
+            URL_ACCEPT_CONTRACT,
+            router.clone(),
+        )
+        .await?;
 
-
-        let quantity:i64  = -2;
+        let quantity: i64 = -2;
         let buying_price = 1000;
-        create_agreement(quantity, buying_price, address,URL_REQUEST_QUOTE,URL_ACCEPT_CONTRACT, router.clone()).await?;
+        create_agreement(
+            quantity,
+            buying_price,
+            address,
+            URL_REQUEST_QUOTE,
+            URL_ACCEPT_CONTRACT,
+            router.clone(),
+        )
+        .await?;
 
-
-
-        let quantity:i64  = -1;
+        let quantity: i64 = -1;
         let buying_price = 1000;
-        create_agreement(quantity, buying_price, address,URL_REQUEST_QUOTE,URL_ACCEPT_CONTRACT, router.clone()).await?;
+        create_agreement(
+            quantity,
+            buying_price,
+            address,
+            URL_REQUEST_QUOTE,
+            URL_ACCEPT_CONTRACT,
+            router.clone(),
+        )
+        .await?;
 
-
-        let settlement_price :i64 = 1500;
-          // Request settlement
-        let settlement_proof =
-        request_settlement_proof_with_price(URL_REQUEST_SETTLEMENT_PROOF, &address.to_string(),settlement_price, router.clone())
-              .await?;
+        let settlement_price: i64 = 1500;
+        // Request settlement
+        let settlement_proof = request_settlement_proof_with_price(
+            URL_REQUEST_SETTLEMENT_PROOF,
+            &address.to_string(),
+            settlement_price,
+            router.clone(),
+        )
+        .await?;
 
         let expected_gain = 0;
-        assert_eq!(settlement_proof.diff,expected_gain);
+        assert_eq!(settlement_proof.diff, expected_gain);
 
         Ok(())
     }
 
     #[tokio::test]
-    async fn test_idroo() -> Result<(),  Box<dyn std::error::Error>>  {
+    async fn test_idroo() -> Result<(), Box<dyn std::error::Error>> {
         let address = "test_case";
-        let db = Surreal::new::<Mem>(()).await.expect("Failed to initialize the database");
+        let db = Surreal::new::<Mem>(())
+            .await
+            .expect("Failed to initialize the database");
         let _ = db.use_ns("test").use_db("test").await;
 
         let state: AppState = AppState { db };
-        
-        let router:Router = server::request::router(&state);
 
-        let quantity:i64  = 1;
+        let router: Router = server::request::router(&state);
+
+        let quantity: i64 = 1;
         let buying_price = 1000;
-        create_agreement(quantity, buying_price, address,URL_REQUEST_QUOTE,URL_ACCEPT_CONTRACT, router.clone()).await?;
+        create_agreement(
+            quantity,
+            buying_price,
+            address,
+            URL_REQUEST_QUOTE,
+            URL_ACCEPT_CONTRACT,
+            router.clone(),
+        )
+        .await?;
 
-
-        let quantity:i64  =1;
+        let quantity: i64 = 1;
         let buying_price = 1100;
-        create_agreement(quantity, buying_price, address,URL_REQUEST_QUOTE,URL_ACCEPT_CONTRACT, router.clone()).await?;
+        create_agreement(
+            quantity,
+            buying_price,
+            address,
+            URL_REQUEST_QUOTE,
+            URL_ACCEPT_CONTRACT,
+            router.clone(),
+        )
+        .await?;
 
-
-        let quantity:i64  = -1;
+        let quantity: i64 = -1;
         let buying_price = 1200;
-        create_agreement(quantity, buying_price, address,URL_REQUEST_QUOTE,URL_ACCEPT_CONTRACT, router.clone()).await?;
+        create_agreement(
+            quantity,
+            buying_price,
+            address,
+            URL_REQUEST_QUOTE,
+            URL_ACCEPT_CONTRACT,
+            router.clone(),
+        )
+        .await?;
 
-
-
-        let quantity:i64  = -1;
+        let quantity: i64 = -1;
         let buying_price = 1300;
-        create_agreement(quantity, buying_price, address,URL_REQUEST_QUOTE,URL_ACCEPT_CONTRACT, router.clone()).await?;
+        create_agreement(
+            quantity,
+            buying_price,
+            address,
+            URL_REQUEST_QUOTE,
+            URL_ACCEPT_CONTRACT,
+            router.clone(),
+        )
+        .await?;
 
+        let settlement_price: i64 = 1500;
+        // Request settlement
+        let settlement_proof = request_settlement_proof_with_price(
+            URL_REQUEST_SETTLEMENT_PROOF,
+            &address.to_string(),
+            settlement_price,
+            router.clone(),
+        )
+        .await?;
 
-        let settlement_price :i64 = 1500;
-          // Request settlement
-          let settlement_proof =
-          request_settlement_proof_with_price(URL_REQUEST_SETTLEMENT_PROOF, &address.to_string(),settlement_price, router.clone())
-                .await?;
-    
         let expected_gain = 400;
-        assert_eq!(settlement_proof.diff,expected_gain);
+        assert_eq!(settlement_proof.diff, expected_gain);
 
         Ok(())
     }
 
     #[tokio::test]
-    async fn test_pool() -> Result<(),  Box<dyn std::error::Error>>  {
+    async fn test_pool() -> Result<(), Box<dyn std::error::Error>> {
         let address = "test_case";
-        let db = Surreal::new::<Mem>(()).await.expect("Failed to initialize the database");
+        let db = Surreal::new::<Mem>(())
+            .await
+            .expect("Failed to initialize the database");
         let _ = db.use_ns("test").use_db("test").await;
 
         let state: AppState = AppState { db };
-        
-        let router:Router = server::request::router(&state);
+
+        let router: Router = server::request::router(&state);
         let mut buying_prices = vec![1000, 1000, 1000, 1000];
         let mut buy_or_sell = vec![1, 1, -1, -1];
-    
 
         use rand::{thread_rng, Rng};
         let mut rng = thread_rng();
-
 
         while !buying_prices.is_empty() {
             let index = rng.gen_range(0..buying_prices.len());
             let quantity = buy_or_sell.remove(index);
             let buying_price = buying_prices.remove(index);
-            let router_copy=router.clone();
+            let router_copy = router.clone();
 
-            create_agreement(quantity, buying_price, address, URL_REQUEST_QUOTE,  URL_ACCEPT_CONTRACT,router_copy).await?;
+            create_agreement(
+                quantity,
+                buying_price,
+                address,
+                URL_REQUEST_QUOTE,
+                URL_ACCEPT_CONTRACT,
+                router_copy,
+            )
+            .await?;
         }
 
-        let settlement_price :i64 = 1500;
-        let settlement_proof =
-        request_settlement_proof_with_price(URL_REQUEST_SETTLEMENT_PROOF, &address.to_string(),settlement_price, router)
-              .await?;
+        let settlement_price: i64 = 1500;
+        let settlement_proof = request_settlement_proof_with_price(
+            URL_REQUEST_SETTLEMENT_PROOF,
+            &address.to_string(),
+            settlement_price,
+            router,
+        )
+        .await?;
 
         let expected_gain = 0;
-        assert_eq!(settlement_proof.diff,expected_gain);
+        assert_eq!(settlement_proof.diff, expected_gain);
 
         Ok(())
     }
 }
 
 #[cfg(test)]
-mod prop_testing{
-    use crate::requests::{request_settlement_proof_with_price,create_agreement};
-    use proptest::proptest;
-    use proptest::collection::vec;
-    use proptest::strategy::{Just, Strategy};
-    use seq_macro::seq;
-    use proptest::prelude::*;
-    use rand::seq::SliceRandom;  // Import SliceRandom to use shuffle
-    use rand::thread_rng;        // Import thread_rng for a random number generator
+mod prop_testing {
+    use crate::requests::{create_agreement, request_settlement_proof_with_price};
     use futures::future::try_join_all;
-    use surrealdb::Surreal;
-    use surrealdb::engine::local::Mem;
+    use proptest::collection::vec;
+    use proptest::prelude::*;
+    use proptest::proptest;
+    use proptest::strategy::{Just, Strategy};
+    use rand::seq::SliceRandom; // Import SliceRandom to use shuffle
+    use rand::thread_rng; // Import thread_rng for a random number generator
+    use seq_macro::seq;
     use server::request::models::AppState;
-    //TOO many global rejecs 
+    use surrealdb::engine::local::Mem;
+    use surrealdb::Surreal;
+    //TOO many global rejecs
     use axum::Router;
-    const  URL_ACCEPT_CONTRACT :&str= "/acceptContract";
-    const  URL_REQUEST_QUOTE :&str= "/requestQuoteWithPrice";
-    const  URL_REQUEST_SETTLEMENT_PROOF :&str= "/requestSettlementProofWithPrice";
+    const URL_ACCEPT_CONTRACT: &str = "/acceptContract";
+    const URL_REQUEST_QUOTE: &str = "/requestQuoteWithPrice";
+    const URL_REQUEST_SETTLEMENT_PROOF: &str = "/requestSettlementProofWithPrice";
     //TEST 50 buys and 50 sells of the same price which should be equall to 0
     fn fixed_composition_strategy() -> BoxedStrategy<Vec<i64>> {
         let ones = vec(Just(1), 50); // Creates a vector of five `1`s
@@ -171,13 +248,13 @@ mod prop_testing{
                 #[test]
                 fn test_50buys_50sells~N(ops in fixed_composition_strategy()) {
                     let  runtime = tokio::runtime::Runtime::new().unwrap();
-            
+
                     runtime.block_on(async {
                         let db = Surreal::new::<Mem>(()).await.expect("Failed to initialize the database");
                         let _ = db.use_ns("test").use_db("test").await;
-            
+
                         let state: AppState = AppState { db };
-                        
+
                         let router:Router = server::request::router(&state);
 
                         let address = "test_address".to_string();
@@ -203,8 +280,6 @@ mod prop_testing{
         }
     });
 
-
-
     //Test 100 buys and 0 sells, the expected diff is 100*settlement_price - sum(buying_prices)
     /// Generates a vector of 100 prices, each ranging from 1000 to 1500.
     fn generate_prices_strategy_gain() -> BoxedStrategy<Vec<i32>> {
@@ -225,9 +300,9 @@ mod prop_testing{
                     runtime.block_on(async {
                         let db = Surreal::new::<Mem>(()).await.expect("Failed to initialize the database");
                         let _ = db.use_ns("test").use_db("test").await;
-            
+
                         let state: AppState = AppState { db };
-                        
+
                         let router:Router = server::request::router(&state);
                         let prices_clone = prices.clone();
 
@@ -246,7 +321,7 @@ mod prop_testing{
                         let total_buying_prices: i64 = prices_clone.iter().map(|&x| x as i64).sum();
                         let settlement_price = 1500i64;
                         let expected_diff = 100 * settlement_price - total_buying_prices;
-        
+
                         // Check settlement proof
                         let settlement_price = 1500i64;
                         let settlement_proof = request_settlement_proof_with_price(URL_REQUEST_SETTLEMENT_PROOF, &address, settlement_price, router.clone()).await;
@@ -277,9 +352,9 @@ mod prop_testing{
                     runtime.block_on(async {
                         let db = Surreal::new::<Mem>(()).await.expect("Failed to initialize the database");
                         let _ = db.use_ns("test").use_db("test").await;
-            
+
                         let state: AppState = AppState { db };
-                        
+
                         let router:Router = server::request::router(&state);
                         let prices_clone = prices.clone();
 
@@ -298,7 +373,7 @@ mod prop_testing{
                         let total_buying_prices: i64 = prices_clone.iter().map(|&x| x as i64).sum();
                         let settlement_price = 1500i64;
                         let expected_diff = 100 * settlement_price - total_buying_prices;
-        
+
                         // Check settlement proof
                         let settlement_price = 1500i64;
                         let settlement_proof = request_settlement_proof_with_price(URL_REQUEST_SETTLEMENT_PROOF, &address, settlement_price, router.clone()).await;
@@ -315,11 +390,11 @@ mod prop_testing{
 
         // Create a vector of 50 prices within the specified range
         vec(price_range, 50)
-            .prop_map(| prices| {
-                let mut rng = thread_rng();  // Create a random number generator
-                let mut shuffled_prices = prices.clone();  // Clone the original prices
-                shuffled_prices.shuffle(&mut rng);  // Shuffle the cloned prices
-                (prices, shuffled_prices)  // Return the original and shuffled prices
+            .prop_map(|prices| {
+                let mut rng = thread_rng(); // Create a random number generator
+                let mut shuffled_prices = prices.clone(); // Clone the original prices
+                shuffled_prices.shuffle(&mut rng); // Shuffle the cloned prices
+                (prices, shuffled_prices) // Return the original and shuffled prices
             })
             .boxed()
     }
@@ -335,9 +410,9 @@ mod prop_testing{
                     runtime.block_on(async {
                         let db = Surreal::new::<Mem>(()).await.expect("Failed to initialize the database");
                         let _ = db.use_ns("test").use_db("test").await;
-            
+
                         let state: AppState = AppState { db };
-                        
+
                         let router:Router = server::request::router(&state);
 
                         let address = "test_address".to_string();

@@ -1,8 +1,8 @@
 use super::models::GenerateSettlementProofRequestWithPrice;
+use crate::request::models::AppState;
 use crate::request::models::Contract;
 use crate::request::models::{GenerateSettlementProofRequest, SettlementProofResponse};
 use crate::server::ServerError;
-use crate::request::models::AppState;
 use axum::extract::{Json, Query, State};
 use serde_json::json;
 use surrealdb::engine::local::Db;

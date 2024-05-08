@@ -32,10 +32,8 @@ pub async fn request_quote(
     let mock_account = MockAccount::new(&mut rng);
     let quote_json = serde_json::to_string(&quote).unwrap();
     let server_signature = mock_account.sign_message(&quote_json.as_bytes(), &mut rng);
-    let (server_signature_r,server_signature_s)= match server_signature {
-        Ok(signature) => {
-            (scalar_to_hex(&signature.r), scalar_to_hex(&signature.s))
-        }
+    let (server_signature_r, server_signature_s) = match server_signature {
+        Ok(signature) => (scalar_to_hex(&signature.r), scalar_to_hex(&signature.s)),
         Err(e) => {
             return Err(ServerError::DatabaseError(e.into()));
         }
@@ -44,7 +42,7 @@ pub async fn request_quote(
     Ok(Json(RequestQuotationResponse {
         quote,
         server_signature_r,
-        server_signature_s
+        server_signature_s,
     }))
 }
 
@@ -65,10 +63,8 @@ pub async fn request_quote_with_price(
     let mock_account = MockAccount::new(&mut rng);
     let quote_json = serde_json::to_string(&quote).unwrap();
     let server_signature = mock_account.sign_message(&quote_json.as_bytes(), &mut rng);
-    let (server_signature_r,server_signature_s)= match server_signature {
-        Ok(signature) => {
-            (scalar_to_hex(&signature.r), scalar_to_hex(&signature.s))
-        }
+    let (server_signature_r, server_signature_s) = match server_signature {
+        Ok(signature) => (scalar_to_hex(&signature.r), scalar_to_hex(&signature.s)),
         Err(e) => {
             return Err(ServerError::DatabaseError(e.into()));
         }
@@ -77,6 +73,6 @@ pub async fn request_quote_with_price(
     Ok(Json(RequestQuotationResponse {
         quote,
         server_signature_r,
-        server_signature_s
+        server_signature_s,
     }))
 }

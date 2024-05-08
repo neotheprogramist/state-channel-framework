@@ -1,6 +1,6 @@
 use super::models::{Contract, Quote, RequestAcceptContract};
-use crate::server:: ServerError;
 use crate::request::models::AppState;
+use crate::server::ServerError;
 use axum::extract::State;
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
@@ -13,14 +13,21 @@ pub async fn accept_contract(
     State(state): State<AppState>,
     Json(payload): Json<RequestAcceptContract>,
 ) -> Result<impl IntoResponse, ServerError> {
-
     let quote: super::models::Quote = payload.quote;
     let server_signature_r = payload.server_signature_r;
     let server_signature_s = payload.server_signature_s;
     let client_signature_r = payload.client_signature_r;
     let client_signature_s = payload.client_signature_s;
 
-    create_contract(state.db, &quote, &server_signature_r, &server_signature_s, &client_signature_r, &client_signature_s).await?;
+    create_contract(
+        state.db,
+        &quote,
+        &server_signature_r,
+        &server_signature_s,
+        &client_signature_r,
+        &client_signature_s,
+    )
+    .await?;
     Ok(StatusCode::NO_CONTENT)
 }
 

@@ -11,6 +11,7 @@ use std::{
 use surrealdb::engine::local::Db;
 use surrealdb::engine::local::Mem;
 
+use crate::request::models::AppState;
 use surrealdb::Surreal;
 use thiserror::Error;
 use tokio::net::TcpListener;
@@ -19,7 +20,6 @@ use tower_http::timeout::TimeoutLayer;
 use tower_http::trace::TraceLayer;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 use utils::shutdown::shutdown_signal;
-use crate::request::models::AppState;
 
 #[derive(Debug, Error)]
 pub enum ServerError {
@@ -70,7 +70,6 @@ impl From<surrealdb::Error> for ServerError {
         ServerError::DatabaseError(err.to_string())
     }
 }
-
 
 #[warn(private_interfaces)]
 pub async fn start(args: &Args) -> Result<(), ServerError> {

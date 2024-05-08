@@ -1,5 +1,5 @@
-use axum::{routing::get, routing::post, Router};
 use crate::request::models::AppState;
+use axum::{routing::get, routing::post, Router};
 mod accept_contract;
 mod account;
 pub mod models;

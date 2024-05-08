@@ -1,35 +1,37 @@
-
 use crate::account::scalar_to_hex;
 use crate::account::MockAccount;
+use crate::models::RequestQuotationWithPrice;
+use crate::models::{AgreeToQuotation, RequestQuotationResponse, SettlementProofResponse};
+use axum::{
+    body::Body,
+    http::{Method, Request},
+    Router,
+};
 use dialoguer::console::style;
 use rand::rngs::OsRng;
-use serde_json::Value;
-use crate::models::RequestQuotationWithPrice;
-use tower::util::ServiceExt;
-use crate::models::{
-    AgreeToQuotation, RequestQuotationResponse, SettlementProofResponse,
-};
-use axum::{http::{Request, Method}, body::Body, Router};
 use serde_json::json;
+use serde_json::Value;
+use tower::util::ServiceExt;
 
 #[allow(dead_code)]
-pub async fn create_agreement(quantity:i64, price:i64,address: &str,url_request_quote:&str, url_accept_contract:&str,router:Router)-> Result<(),  Box<dyn std::error::Error>> {
-   
-    let request_quotation_response = request_quote_with_price(
-        address,
-        quantity,
-        url_request_quote,
-        price,
-        router.clone()
-    )
-    .await?;
+pub async fn create_agreement(
+    quantity: i64,
+    price: i64,
+    address: &str,
+    url_request_quote: &str,
+    url_accept_contract: &str,
+    router: Router,
+) -> Result<(), Box<dyn std::error::Error>> {
+    let request_quotation_response =
+        request_quote_with_price(address, quantity, url_request_quote, price, router.clone())
+            .await?;
 
     accept_contract(
-            request_quotation_response,
-            url_accept_contract,
-            router.clone()
-        )
-        .await?;
+        request_quotation_response,
+        url_accept_contract,
+        router.clone(),
+    )
+    .await?;
 
     Ok(())
 }
@@ -38,11 +40,10 @@ pub async fn create_agreement(quantity:i64, price:i64,address: &str,url_request_
 pub async fn request_settlement_proof_with_price(
     url: &str,
     address: &String,
-    price:i64,
-    router: Router
+    price: i64,
+    router: Router,
 ) -> Result<SettlementProofResponse, Box<dyn std::error::Error>> {
-
-    let url_with_params = format!("{}?address={}&price={}",url,address, price);
+    let url_with_params = format!("{}?address={}&price={}", url, address, price);
 
     let req = Request::builder()
         .uri(url_with_params)
@@ -51,10 +52,16 @@ pub async fn request_settlement_proof_with_price(
         .expect("Failed to build request");
 
     // Send the request using the router
-    let response = router.oneshot(req).await.map_err(|err| Box::new(err) as Box<dyn  std::error::Error>)?;
+    let response = router
+        .oneshot(req)
+        .await
+        .map_err(|err| Box::new(err) as Box<dyn std::error::Error>)?;
 
     if !response.status().is_success() {
-        return Err(Box::new(std::io::Error::new(std::io::ErrorKind::Other, "Request failed")));
+        return Err(Box::new(std::io::Error::new(
+            std::io::ErrorKind::Other,
+            "Request failed",
+        )));
     }
     let body_bytes: bytes::Bytes = axum::body::to_bytes(response.into_body(), usize::MAX).await?;
     let response_text = String::from_utf8(body_bytes.to_vec())?;
@@ -63,12 +70,19 @@ pub async fn request_settlement_proof_with_price(
 
     let json_body: Value = serde_json::from_str(&response_text)?;
 
-    let client_address = json_body["address"].as_str().ok_or("Address not found in JSON response")?.to_string();
-    let balance: f64 = json_body["balance"].as_f64().ok_or("Balance not found in JSON response or not a valid float")?;
-    let diff: i64 = json_body["diff"].as_i64().ok_or("Diff not found in JSON response")?;
+    let client_address = json_body["address"]
+        .as_str()
+        .ok_or("Address not found in JSON response")?
+        .to_string();
+    let balance: f64 = json_body["balance"]
+        .as_f64()
+        .ok_or("Balance not found in JSON response or not a valid float")?;
+    let diff: i64 = json_body["diff"]
+        .as_i64()
+        .ok_or("Diff not found in JSON response")?;
 
     Ok(SettlementProofResponse {
-        address:client_address,
+        address: client_address,
         balance,
         diff,
     })
@@ -78,7 +92,7 @@ pub async fn request_settlement_proof_with_price(
 pub async fn accept_contract(
     request_quotation_response: RequestQuotationResponse,
     url: &str,
-    router:Router
+    router: Router,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let data_to_sign = serde_json::to_string(&request_quotation_response)?;
     let quote_data = serde_json::to_string(&data_to_sign).unwrap();
@@ -87,10 +101,8 @@ pub async fn accept_contract(
     let mock_account = MockAccount::new(&mut rng);
     let client_signature = mock_account.sign_message(&quote_bytes, &mut rng);
 
-    let (client_signature_r,client_signature_s)= match client_signature {
-        Ok(signature) => {
-            (scalar_to_hex(&signature.r), scalar_to_hex(&signature.s))
-        }
+    let (client_signature_r, client_signature_s) = match client_signature {
+        Ok(signature) => (scalar_to_hex(&signature.r), scalar_to_hex(&signature.s)),
         Err(e) => {
             println!("Failed to sign message: {}", e);
             return Err(e.into());
@@ -106,11 +118,11 @@ pub async fn accept_contract(
     };
 
     let req = Request::builder()
-    .method(Method::POST)
-    .uri(url)
-    .header("Content-Type", "application/json")
-    .body(Body::from(serde_json::to_string(&request_quotation)?))
-    .unwrap();
+        .method(Method::POST)
+        .uri(url)
+        .header("Content-Type", "application/json")
+        .body(Body::from(serde_json::to_string(&request_quotation)?))
+        .unwrap();
     let agree_to_quotation_response = router.oneshot(req).await?;
 
     if agree_to_quotation_response.status().is_success() {
@@ -131,9 +143,8 @@ pub async fn request_quote_with_price(
     quantity: i64,
     url: &str,
     price: i64,
-    router: Router
+    router: Router,
 ) -> Result<RequestQuotationResponse, Box<dyn std::error::Error>> {
-
     let request_quotation = RequestQuotationWithPrice {
         address: address.to_string(),
         quantity,
@@ -146,7 +157,7 @@ pub async fn request_quote_with_price(
         .body(Body::from(json!(request_quotation).to_string()))
         .unwrap();
 
-    let response =router.oneshot(req).await.unwrap();
+    let response = router.oneshot(req).await.unwrap();
 
     if response.status().is_success() {
         dbg!("SUCCES REQUEST Quote");
@@ -156,7 +167,10 @@ pub async fn request_quote_with_price(
     } else {
         dbg!("FAILURE REQUEST");
         let error_message = format!("Failed to get a successful response: {}", response.status());
-        Err(Box::new(std::io::Error::new(std::io::ErrorKind::Other, error_message)))
+        Err(Box::new(std::io::Error::new(
+            std::io::ErrorKind::Other,
+            error_message,
+        )))
     }
 }
 
@@ -166,8 +180,7 @@ async fn request_settlement_proof(
     address: &String,
     router: Router,
 ) -> Result<SettlementProofResponse, Box<dyn std::error::Error>> {
-
-    let url_with_params = format!("{}?address={}",url,address);
+    let url_with_params = format!("{}?address={}", url, address);
 
     let req = Request::builder()
         .uri(url_with_params)
@@ -176,10 +189,16 @@ async fn request_settlement_proof(
         .expect("Failed to build request");
 
     // Send the request using the router
-    let response = router.oneshot(req).await.map_err(|err| Box::new(err) as Box<dyn  std::error::Error>)?;
+    let response = router
+        .oneshot(req)
+        .await
+        .map_err(|err| Box::new(err) as Box<dyn std::error::Error>)?;
 
     if !response.status().is_success() {
-        return Err(Box::new(std::io::Error::new(std::io::ErrorKind::Other, "Request failed")));
+        return Err(Box::new(std::io::Error::new(
+            std::io::ErrorKind::Other,
+            "Request failed",
+        )));
     }
     let body_bytes: bytes::Bytes = axum::body::to_bytes(response.into_body(), usize::MAX).await?;
     let response_text = String::from_utf8(body_bytes.to_vec())?;
@@ -188,12 +207,19 @@ async fn request_settlement_proof(
 
     let json_body: Value = serde_json::from_str(&response_text)?;
 
-    let client_address = json_body["address"].as_str().ok_or("Address not found in JSON response")?.to_string();
-    let balance: f64 = json_body["balance"].as_f64().ok_or("Balance not found in JSON response or not a valid float")?;
-    let diff: i64 = json_body["diff"].as_i64().ok_or("Diff not found in JSON response")?;
+    let client_address = json_body["address"]
+        .as_str()
+        .ok_or("Address not found in JSON response")?
+        .to_string();
+    let balance: f64 = json_body["balance"]
+        .as_f64()
+        .ok_or("Balance not found in JSON response or not a valid float")?;
+    let diff: i64 = json_body["diff"]
+        .as_i64()
+        .ok_or("Diff not found in JSON response")?;
 
     Ok(SettlementProofResponse {
-        address:client_address,
+        address: client_address,
         balance,
         diff,
     })
