@@ -79,7 +79,7 @@ mod Agreement {
             .herodotus_fact_registry_address
             .write(
                 contract_address_const::<
-                    0x07d3550237ecf2d6ddef9b78e59b38647ee511467fe000ce276f245a006b40bc
+                    0x008ec19768587f3d7362d83b644253de560c9d46eda096619df5942d56079abb
                 >()
             );
         self.client_public_key.write(client_public_key);
