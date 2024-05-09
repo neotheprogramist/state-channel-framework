@@ -1,16 +1,19 @@
-use crate::account::scalar_to_hex;
-use crate::account::MockAccount;
+use crate::models::{AgreeToQuotation, RequestQuotationResponse};
 use axum::{
     body::Body,
     http::{Method, Request},
     Router,
 };
-use dialoguer::console::style;
-use rand::rngs::OsRng;
 use serde_json::json;
 use serde_json::Value;
 use tower::util::ServiceExt;
-use server::request::models::{SettlementProofResponse,RequestQuotationWithPrice,RequestQuotationResponse,AgreeToQuotation};
+use dialoguer::console::style;
+use server::request::models::SettlementProofResponseWithData;
+use server::request::models::Contract;
+use server::request::models::RequestQuotationWithPrice;
+use server::request::models::SettlementProofResponse;
+use server::request::account::MockAccount;
+use server::request::account::scalar_to_hex;
 
 #[allow(dead_code)]
 pub async fn create_agreement(
@@ -20,6 +23,7 @@ pub async fn create_agreement(
     url_request_quote: &str,
     url_accept_contract: &str,
     router: Router,
+    client_mock_account:MockAccount
 ) -> Result<(), Box<dyn std::error::Error>> {
     let request_quotation_response =
         request_quote_with_price(address, quantity, url_request_quote, price, router.clone())
@@ -29,6 +33,7 @@ pub async fn create_agreement(
         request_quotation_response,
         url_accept_contract,
         router.clone(),
+        client_mock_account
     )
     .await?;
 
@@ -36,12 +41,12 @@ pub async fn create_agreement(
 }
 
 #[allow(dead_code)]
-pub async fn request_settlement_proof_with_price(
+pub async fn request_settlement_proof_with_price_and_data(
     url: &str,
     address: &String,
     price: i64,
     router: Router,
-) -> Result<SettlementProofResponse, Box<dyn std::error::Error>> {
+) -> Result<SettlementProofResponseWithData, Box<dyn std::error::Error>> {
     let url_with_params = format!("{}?address={}&price={}", url, address, price);
 
     let req = Request::builder()
@@ -79,8 +84,11 @@ pub async fn request_settlement_proof_with_price(
     let diff: i64 = json_body["diff"]
         .as_i64()
         .ok_or("Diff not found in JSON response")?;
+    let contracts: Vec<Contract> = serde_json::from_value(json_body["contracts"].clone())
+    .map_err(|_| "Failed to parse contracts")?;
 
-    Ok(SettlementProofResponse {
+    Ok(SettlementProofResponseWithData {
+        contracts,
         address: client_address,
         balance,
         diff,
@@ -92,13 +100,14 @@ pub async fn accept_contract(
     request_quotation_response: RequestQuotationResponse,
     url: &str,
     router: Router,
+    client_mock_account: MockAccount
 ) -> Result<(), Box<dyn std::error::Error>> {
     let data_to_sign = serde_json::to_string(&request_quotation_response)?;
     let quote_data = serde_json::to_string(&data_to_sign).unwrap();
     let quote_bytes = quote_data.as_bytes();
-    let mut rng = OsRng;
-    let mock_account = MockAccount::new(&mut rng);
-    let client_signature = mock_account.sign_message(quote_bytes, &mut rng);
+
+    let mock_account =client_mock_account;
+    let client_signature = mock_account.sign_message(quote_bytes);
 
     let (client_signature_r, client_signature_s) = match client_signature {
         Ok(signature) => (scalar_to_hex(&signature.r), scalar_to_hex(&signature.s)),

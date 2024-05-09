@@ -5,14 +5,29 @@ use elliptic_curve::PrimeField;
 use rand_core::{CryptoRng, RngCore};
 use sha2::{Digest, Sha256};
 use std::ops::Mul;
-
+use elliptic_curve::group::GroupEncoding;
+use rand_core::OsRng;
+#[derive(Debug,Clone)]
 pub struct SigningKey {
     secret_scalar: stark_curve::Scalar,
 }
 
 // Verifying key structure
+#[derive(Debug,Clone)]
 pub struct VerifyingKey {
     public_point: stark_curve::ProjectivePoint,
+}
+
+impl VerifyingKey{
+    pub fn to_string(&self) -> String {
+        let affine_point =  self.public_point.to_affine();
+        let public_key_bytes = affine_point.to_bytes();
+
+        let public_key_hex: String=  public_key_bytes.iter().map(|byte| format!("{:02x}",byte))
+        .collect::<Vec<String>>().join("");
+
+        format!("0x{}",public_key_hex)
+    }
 }
 
 #[derive(Debug)]
@@ -41,7 +56,7 @@ impl SigningKey {
     pub fn sign_message<R: RngCore + CryptoRng>(
         &self,
         message: &[u8],
-        rng: &mut R,
+        rng:R,
     ) -> Result<Signature, &'static str> {
         // Step 1: Hash the message
         let mut hasher = Sha256::new();
@@ -91,9 +106,10 @@ where
     (signing_key, verifying_key)
 }
 
+#[derive(Debug,Clone)]
 pub struct MockAccount {
-    signing_key: SigningKey,
-    verifying_key: VerifyingKey,
+    pub signing_key: SigningKey,
+    pub verifying_key: VerifyingKey,
 }
 
 impl MockAccount {
@@ -108,11 +124,11 @@ impl MockAccount {
         }
     }
 
-    pub fn sign_message<R: RngCore + CryptoRng>(
+    pub fn sign_message(
         &self,
         message: &[u8],
-        rng: &mut R,
     ) -> Result<Signature, &'static str> {
-        self.signing_key.sign_message(message, rng)
+        let  rng = OsRng;
+        self.signing_key.sign_message(message,rng)
     }
 }

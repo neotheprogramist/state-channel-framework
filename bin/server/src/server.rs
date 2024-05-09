@@ -10,7 +10,7 @@ use std::{
 };
 use surrealdb::engine::local::Db;
 use surrealdb::engine::local::Mem;
-
+use crate::request::account::MockAccount;
 use crate::request::models::AppState;
 use surrealdb::Surreal;
 use thiserror::Error;
@@ -20,7 +20,7 @@ use tower_http::timeout::TimeoutLayer;
 use tower_http::trace::TraceLayer;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 use utils::shutdown::shutdown_signal;
-
+use rand_core::OsRng;
 #[derive(Debug, Error)]
 pub enum ServerError {
     #[error("server error")]
@@ -76,7 +76,9 @@ pub async fn start(args: &Args) -> Result<(), ServerError> {
     let db = Surreal::new::<Mem>(()).await?;
 
     db.use_ns("test").use_db("test").await?;
-    let state: AppState = AppState { db };
+    let mut rng = OsRng;
+    let mock_account = MockAccount::new(&mut rng);
+    let state: AppState = AppState { db,mock_account };
 
     tracing_subscriber::registry()
         .with(

@@ -69,18 +69,6 @@ pub enum AuthError {
     Unauthorized,
 }
 
-#[derive(Error, Debug)]
-pub enum AuthError {
-    #[error("Invalid token")]
-    InvalidToken,
-
-    #[error("Missing authorization header")]
-    MissingAuthorizationHeader,
-
-    #[error("Unauthorized")]
-    Unauthorized,
-}
-
 pub fn router() -> Router {
     Router::new().route("/state-diff-commitment", post(state_diff_commitment::root))
 }

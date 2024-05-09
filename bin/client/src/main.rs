@@ -1,6 +1,5 @@
 use clap::Parser;
 mod account;
-mod models;
 mod requests;
 mod tests;
 #[derive(Parser, Debug)]

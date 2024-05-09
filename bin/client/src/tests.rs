@@ -8,6 +8,8 @@ mod tests {
     use server::request::models::AppState;
     use surrealdb::engine::local::Mem;
     use surrealdb::Surreal;
+    use server::request::account::MockAccount;
+    use rand_core::OsRng;
     #[tokio::test]
     async fn test_main_simple() -> Result<(), Box<dyn std::error::Error>> {
         let address = "test_case";
@@ -16,7 +18,9 @@ mod tests {
             .expect("Failed to initialize the database");
         let _ = db.use_ns("test").use_db("test").await;
 
-        let state: AppState = AppState { db };
+        let mut rng = OsRng;
+        let mock_account = MockAccount::new(&mut rng);
+        let state: AppState = AppState { db,mock_account };
 
         let router: Router = server::request::router(&state);
 
@@ -90,7 +94,10 @@ mod tests {
             .expect("Failed to initialize the database");
         let _ = db.use_ns("test").use_db("test").await;
 
-        let state: AppState = AppState { db };
+        let mut rng = OsRng;
+        let mock_account = MockAccount::new(&mut rng);
+        let state: AppState = AppState { db,mock_account };
+    
 
         let router: Router = server::request::router(&state);
 
@@ -166,7 +173,10 @@ mod tests {
             .expect("Failed to initialize the database");
         let _ = db.use_ns("test").use_db("test").await;
 
-        let state: AppState = AppState { db };
+        let mut rng = OsRng;
+        let mock_account = MockAccount::new(&mut rng);
+        let state: AppState = AppState { db,mock_account };
+    
 
         let router: Router = server::request::router(&state);
         let mut buying_prices = vec![1000, 1000, 1000, 1000];
@@ -227,6 +237,8 @@ mod prop_testing {
     const URL_ACCEPT_CONTRACT: &str = "/acceptContract";
     const URL_REQUEST_QUOTE: &str = "/requestQuoteWithPrice";
     const URL_REQUEST_SETTLEMENT_PROOF: &str = "/requestSettlementProofWithPrice";
+    use server::request::account::MockAccount;
+    use rand_core::OsRng;
     //TEST 50 buys and 50 sells of the same price which should be equall to 0
     fn fixed_composition_strategy() -> BoxedStrategy<Vec<i64>> {
         let ones = vec(Just(1), 50); // Creates a vector of five `1`s
@@ -253,7 +265,10 @@ mod prop_testing {
                         let db = Surreal::new::<Mem>(()).await.expect("Failed to initialize the database");
                         let _ = db.use_ns("test").use_db("test").await;
 
-                        let state: AppState = AppState { db };
+                        let mut rng = OsRng;
+                        let mock_account = MockAccount::new(&mut rng);
+                        let state: AppState = AppState { db,mock_account };
+                    
 
                         let router:Router = server::request::router(&state);
 
@@ -301,7 +316,10 @@ mod prop_testing {
                         let db = Surreal::new::<Mem>(()).await.expect("Failed to initialize the database");
                         let _ = db.use_ns("test").use_db("test").await;
 
-                        let state: AppState = AppState { db };
+                        let mut rng = OsRng;
+                        let mock_account = MockAccount::new(&mut rng);
+                        let state: AppState = AppState { db,mock_account };
+                    
 
                         let router:Router = server::request::router(&state);
                         let prices_clone = prices.clone();
@@ -353,7 +371,10 @@ mod prop_testing {
                         let db = Surreal::new::<Mem>(()).await.expect("Failed to initialize the database");
                         let _ = db.use_ns("test").use_db("test").await;
 
-                        let state: AppState = AppState { db };
+                        let mut rng = OsRng;
+                        let mock_account = MockAccount::new(&mut rng);
+                        let state: AppState = AppState { db,mock_account };
+                    
 
                         let router:Router = server::request::router(&state);
                         let prices_clone = prices.clone();
@@ -411,7 +432,10 @@ mod prop_testing {
                         let db = Surreal::new::<Mem>(()).await.expect("Failed to initialize the database");
                         let _ = db.use_ns("test").use_db("test").await;
 
-                        let state: AppState = AppState { db };
+                        let mut rng = OsRng;
+                        let mock_account = MockAccount::new(&mut rng);
+                        let state: AppState = AppState { db,mock_account };
+                    
 
                         let router:Router = server::request::router(&state);
 

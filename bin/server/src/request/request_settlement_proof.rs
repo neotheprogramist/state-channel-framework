@@ -1,4 +1,5 @@
 use super::models::GenerateSettlementProofRequestWithPrice;
+use crate::request::models::SettlementProofResponseWithData;
 use crate::request::models::AppState;
 use crate::request::models::Contract;
 use crate::request::models::{GenerateSettlementProofRequest, SettlementProofResponse};
@@ -30,6 +31,29 @@ pub async fn request_settlement_proof(
         address: params.address,
         balance: 0.0,
         diff: 0,
+    };
+    Ok(Json(settlement_proof_response))
+}
+
+// HELPER FUNCTION : Returns settlement and all the contracts data for cairo 0 program
+pub async fn request_settlement_proof_with_set_price_and_data(
+    State(state): State<AppState>,
+    Query(params): Query<GenerateSettlementProofRequestWithPrice>,
+) -> Result<Json<SettlementProofResponseWithData>, ServerError> {
+    if params.address.trim().is_empty() {
+        return Err(ServerError::DatabaseError("Missing address".to_string()));
+    }
+    let contracts = get_all_contracts_for_address(&state.db, &params.address).await?;
+
+    delete_all_contracts_for_addresss(&params.address, &state.db).await?;
+    let (a, b) = aggregate(&contracts, 0, 0);
+    let diff: i64 = a * params.price + b;
+
+    let settlement_proof_response = SettlementProofResponseWithData {
+        contracts,
+        address: params.address,
+        balance: 0.0,
+        diff: diff,
     };
     Ok(Json(settlement_proof_response))
 }
