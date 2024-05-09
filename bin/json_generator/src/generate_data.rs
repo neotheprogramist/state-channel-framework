@@ -1,6 +1,6 @@
-use rand::seq::SliceRandom;
-use rand::thread_rng; 
 use rand::distributions::{Distribution, Uniform};
+use rand::seq::SliceRandom;
+use rand::thread_rng;
 /// Generates two vectors of 50 prices each, ranging from 1500 to 2000, with the same sums but shuffled differently.
 pub fn generate_identical_but_shuffled_prices(agreements_count: u64) -> (Vec<i32>, Vec<i32>) {
     let mut rng = thread_rng();

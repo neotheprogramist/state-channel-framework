@@ -1,14 +1,12 @@
 use clap::Parser;
-mod account;
 mod requests;
 mod tests;
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
 struct Args {
-   
     #[arg(long, default_value_t = String::from("http://localhost:7005/server/requestQuote"))]
     url_request_quote: String,
-    
+
     #[arg(long, default_value_t = String::from("http://localhost:7005/server/acceptContract"))]
     url_accept_contract: String,
 

@@ -1,7 +1,7 @@
 use super::models::GenerateSettlementProofRequestWithPrice;
-use crate::request::models::SettlementProofResponseWithData;
 use crate::request::models::AppState;
 use crate::request::models::Contract;
+use crate::request::models::SettlementProofResponseWithData;
 use crate::request::models::{GenerateSettlementProofRequest, SettlementProofResponse};
 use crate::server::ServerError;
 use axum::extract::{Json, Query, State};
@@ -53,7 +53,7 @@ pub async fn request_settlement_proof_with_set_price_and_data(
         contracts,
         address: params.address,
         balance: 0.0,
-        diff: diff,
+        diff,
     };
     Ok(Json(settlement_proof_response))
 }
@@ -84,7 +84,7 @@ pub async fn request_settlement_proof_with_set_price(
     let settlement_proof_response = SettlementProofResponse {
         address: params.address,
         balance: 0.0,
-        diff: diff,
+        diff,
     };
     Ok(Json(settlement_proof_response))
 }

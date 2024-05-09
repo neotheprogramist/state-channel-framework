@@ -20,7 +20,6 @@ impl std::fmt::Display for Quote {
     }
 }
 
-
 #[serde_as]
 #[derive(Debug, Serialize, Deserialize)]
 pub struct RequestQuotation {
@@ -65,9 +64,9 @@ pub struct SettlementProofResponse {
     pub balance: f64,
     pub diff: i64,
 }
-#[derive(Debug, Serialize, Deserialize,Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct SettlementProofResponseWithData {
-    pub contracts :Vec<Contract>,
+    pub contracts: Vec<Contract>,
     pub address: String,
     pub balance: f64,
     pub diff: i64,
@@ -146,12 +145,12 @@ impl<'de> Deserialize<'de> for Nonce {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize,Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Thing {
     pub id: Id,
 }
 
-#[derive(Debug, Serialize, Deserialize,Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Contract {
     pub id: Thing,
     pub address: String,
@@ -172,5 +171,5 @@ impl std::fmt::Display for Contract {
 #[derive(Debug, Clone)]
 pub struct AppState {
     pub db: Surreal<Db>,
-    pub mock_account:MockAccount
+    pub mock_account: MockAccount,
 }

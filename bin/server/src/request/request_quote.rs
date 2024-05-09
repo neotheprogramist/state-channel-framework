@@ -1,14 +1,12 @@
-use super::account::MockAccount;
 use super::models::{Quote, RequestQuotation, RequestQuotationResponse, RequestQuotationWithPrice};
 use super::price::get_btc_usdt_price;
 use crate::request::account::scalar_to_hex;
 use crate::request::models::Nonce;
+use crate::request::AppState;
 use crate::server::ServerError;
+use axum::extract::State;
 use axum::response::IntoResponse;
 use axum::Json;
-use rand::rngs::OsRng;
-use axum::extract::State;
-use crate::request::AppState;
 
 pub async fn request_quote(
     State(state): State<AppState>,
@@ -33,7 +31,7 @@ pub async fn request_quote(
 
     let mock_account = state.mock_account;
     let quote_json = serde_json::to_string(&quote).unwrap();
-    let server_signature = mock_account.sign_message(&quote_json.as_bytes());
+    let server_signature = mock_account.sign_message(quote_json.as_bytes());
     let (server_signature_r, server_signature_s) = match server_signature {
         Ok(signature) => (scalar_to_hex(&signature.r), scalar_to_hex(&signature.s)),
         Err(e) => {
@@ -62,9 +60,9 @@ pub async fn request_quote_with_price(
         price: btc_price,
     };
 
-    let mock_account =state.mock_account;
+    let mock_account = state.mock_account;
     let quote_json = serde_json::to_string(&quote).unwrap();
-    let server_signature = mock_account.sign_message(&quote_json.as_bytes());
+    let server_signature = mock_account.sign_message(quote_json.as_bytes());
     let (server_signature_r, server_signature_s) = match server_signature {
         Ok(signature) => (scalar_to_hex(&signature.r), scalar_to_hex(&signature.s)),
         Err(e) => {

@@ -51,7 +51,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Authentication with the prover
     let private_key_hex = "f91350db1ca372b54376b519be8bf73a7bbbbefc4ffe169797bc3f5ea2dec740";
 
-    let sdk = ProverSDK::new().auth(private_key_hex).await?.build()?;
+    let sdk = ProverSDK::create().auth(private_key_hex).await?.build()?;
 
     let data = read_json_file("resources/input.json").await?;
     let _result = sdk.prove(data).await?;

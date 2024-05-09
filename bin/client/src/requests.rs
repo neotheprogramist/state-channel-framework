@@ -1,5 +1,3 @@
-use crate::account::scalar_to_hex;
-use crate::account::MockAccount;
 use axum::{
     body::Body,
     http::{Method, Request},
@@ -9,8 +7,12 @@ use dialoguer::console::style;
 use rand::rngs::OsRng;
 use serde_json::json;
 use serde_json::Value;
+use server::request::account::scalar_to_hex;
+use server::request::account::MockAccount;
+use server::request::models::{
+    AgreeToQuotation, RequestQuotationResponse, RequestQuotationWithPrice, SettlementProofResponse,
+};
 use tower::util::ServiceExt;
-use server::request::models::{SettlementProofResponse,RequestQuotationWithPrice,RequestQuotationResponse,AgreeToQuotation};
 
 #[allow(dead_code)]
 pub async fn create_agreement(
@@ -98,7 +100,7 @@ pub async fn accept_contract(
     let quote_bytes = quote_data.as_bytes();
     let mut rng = OsRng;
     let mock_account = MockAccount::new(&mut rng);
-    let client_signature = mock_account.sign_message(quote_bytes, &mut rng);
+    let client_signature = mock_account.sign_message(quote_bytes);
 
     let (client_signature_r, client_signature_s) = match client_signature {
         Ok(signature) => (scalar_to_hex(&signature.r), scalar_to_hex(&signature.s)),

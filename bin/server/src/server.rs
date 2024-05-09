@@ -1,6 +1,9 @@
+use crate::request::account::MockAccount;
+use crate::request::models::AppState;
 use crate::{request, Args};
 use axum::{http::StatusCode, response::IntoResponse, Json};
 use axum::{routing::get, Router};
+use rand_core::OsRng;
 use reqwest::Error as ReqwestError;
 use serde_json::json;
 use std::num::ParseIntError;
@@ -8,10 +11,7 @@ use std::{
     net::{AddrParseError, SocketAddr},
     time::Duration,
 };
-use surrealdb::engine::local::Db;
 use surrealdb::engine::local::Mem;
-use crate::request::account::MockAccount;
-use crate::request::models::AppState;
 use surrealdb::Surreal;
 use thiserror::Error;
 use tokio::net::TcpListener;
@@ -20,7 +20,6 @@ use tower_http::timeout::TimeoutLayer;
 use tower_http::trace::TraceLayer;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 use utils::shutdown::shutdown_signal;
-use rand_core::OsRng;
 #[derive(Debug, Error)]
 pub enum ServerError {
     #[error("server error")]
@@ -71,14 +70,13 @@ impl From<surrealdb::Error> for ServerError {
     }
 }
 
-#[warn(private_interfaces)]
 pub async fn start(args: &Args) -> Result<(), ServerError> {
     let db = Surreal::new::<Mem>(()).await?;
 
     db.use_ns("test").use_db("test").await?;
     let mut rng = OsRng;
     let mock_account = MockAccount::new(&mut rng);
-    let state: AppState = AppState { db,mock_account };
+    let state: AppState = AppState { db, mock_account };
 
     tracing_subscriber::registry()
         .with(
