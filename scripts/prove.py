@@ -114,10 +114,13 @@ async def test_validate_signature_unauthorized():
 # Get the nonce by passing public_key in auth url params
 async def get_nonce(public_key):
     url = "http://localhost:7003/auth"
-
+    print(url)
     async with aiohttp.ClientSession() as session:
         params = {'public_key': public_key}
         async with session.get(url, params=params) as response:
+            if response.status != 200:
+                raise Exception(f"Failed to get nonce. Status code: {response.status}")
+            
             response_data = await response.json()
             print("Status Code:", response.status)
             print("Making a request to:", response.url) 
@@ -198,10 +201,16 @@ async def test_expiration_time(url,data):
 
 async def main():
     # Read JSON data from stdin
+    print("Maine")
     input_json = sys.stdin.read()
     data = json.loads(input_json)
     url = "http://localhost:7003/auth"
     # await test_prover_with_JWT(url,data)
-    await test_prover_with_invalid_JWT(url,data)
+    signing_key = SigningKey.generate()
+    public_key = signing_key.verify_key.encode(encoder=HexEncoder)
+
+    await get_nonce(public_key.decode())
+
+
 if __name__ == "__main__":
     asyncio.run(main())

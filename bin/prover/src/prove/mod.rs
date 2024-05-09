@@ -49,16 +49,12 @@ impl IntoResponse for ProveError {
                     StatusCode::UNAUTHORIZED,
                     "Missing authorization header".to_string(),
                 ),
-                AuthError::Unauthorized => {
-                    (StatusCode::UNAUTHORIZED, "Unauthorized access".to_string())
-                }
             },
         };
         let body = Json(json!({ "error": error_message }));
         (status, body).into_response()
     }
 }
-
 #[derive(Error, Debug)]
 pub enum AuthError {
     #[error("Invalid token")]
@@ -66,9 +62,6 @@ pub enum AuthError {
 
     #[error("Missing authorization header")]
     MissingAuthorizationHeader,
-
-    #[error("Unauthorized")]
-    Unauthorized,
 }
 
 pub fn router() -> Router {

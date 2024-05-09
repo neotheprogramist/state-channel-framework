@@ -32,7 +32,10 @@ pub async fn generate_nonce(
     State(state): State<AppState>,
     Query(params): Query<GenerateNonceRequest>,
 ) -> Result<Json<GenerateNonceResponse>, ProveError> {
+    println!(" Generate key");
+
     if params.public_key.trim().is_empty() {
+        println!("Missing public key");
         return Err(ProveError::MissingPublicKey);
     }
 
@@ -84,7 +87,7 @@ pub async fn validate_signature(
         ))
     })?;
 
-    let signature_valid = verify_signature(&payload.signature, &user_nonce, &payload.public_key);
+    let signature_valid = verify_signature(&payload.signature, user_nonce, &payload.public_key);
 
     if !signature_valid {
         return Err(ProveError::Unauthorized("Invalid signature".to_string()));

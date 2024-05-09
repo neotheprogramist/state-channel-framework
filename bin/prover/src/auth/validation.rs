@@ -18,6 +18,6 @@ pub fn verify_signature(signature: &Signature, nonce: &str, public_key_hex: &str
     };
 
     public_key
-        .verify_strict(nonce.as_bytes(), &signature)
+        .verify_strict(nonce.as_bytes(), signature)
         .is_ok()
 }

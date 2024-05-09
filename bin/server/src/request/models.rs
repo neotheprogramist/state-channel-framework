@@ -4,6 +4,12 @@ use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use serde_with::serde_as;
 use std::ops::Deref;
 use std::{io, str::FromStr};
+use surrealdb::engine::local::Db;
+use surrealdb::sql::Id;
+use surrealdb::Surreal;
+
+use super::account::MockAccount;
+
 impl std::fmt::Display for Quote {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
@@ -14,33 +20,75 @@ impl std::fmt::Display for Quote {
     }
 }
 
-//TODO: is signature string ?
-#[serde_as]
-#[derive(Debug, Serialize, Deserialize)]
-pub struct RequestAcceptContract {
-    pub quote: Quote,
-    pub server_signature: String,
-    pub client_signature: String,
-}
 #[serde_as]
 #[derive(Debug, Serialize, Deserialize)]
 pub struct RequestQuotation {
     pub address: String,
-    pub quantity: u64,
+    pub quantity: i64,
+}
+//TODO  :delete
+#[serde_as]
+#[derive(Debug, Serialize, Deserialize)]
+pub struct RequestQuotationWithPrice {
+    pub address: String,
+    pub quantity: i64,
+    pub price: i64,
+}
+#[derive(Debug, Serialize, Deserialize)]
+pub struct RequestQuotationResponse {
+    pub quote: Quote,
+    pub server_signature_r: String,
+    pub server_signature_s: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Quote {
     pub address: String,
-    pub quantity: u64,
+    pub quantity: i64,
     pub nonce: Nonce,
-    pub price: f64,
+    pub price: i64,
+}
+#[serde_as]
+#[derive(Debug, Serialize, Deserialize)]
+pub struct AgreeToQuotation {
+    pub quote: Quote,
+    pub server_signature_r: String,
+    pub server_signature_s: String,
+    pub client_signature_r: String,
+    pub client_signature_s: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct RequestQuotationResponse {
+pub struct SettlementProofResponse {
+    pub address: String,
+    pub balance: f64,
+    pub diff: i64,
+}
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct SettlementProofResponseWithData {
+    pub contracts: Vec<Contract>,
+    pub address: String,
+    pub balance: f64,
+    pub diff: i64,
+}
+#[derive(Debug, Serialize, Deserialize)]
+pub struct GenerateSettlementProofRequest {
+    pub address: String,
+}
+#[derive(Debug, Serialize, Deserialize)]
+pub struct GenerateSettlementProofRequestWithPrice {
+    pub address: String,
+    pub price: i64,
+}
+//TODO: is signature string ?
+#[serde_as]
+#[derive(Debug, Serialize, Deserialize)]
+pub struct RequestAcceptContract {
     pub quote: Quote,
-    pub server_signature: String,
+    pub server_signature_r: String,
+    pub server_signature_s: String,
+    pub client_signature_r: String,
+    pub client_signature_s: String,
 }
 
 #[derive(Debug, Clone)]
@@ -97,24 +145,31 @@ impl<'de> Deserialize<'de> for Nonce {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
-pub struct Id {
-    tb: String,
-    id: String,
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct Thing {
+    pub id: Id,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Contract {
-    address: String,
-    quantity: u64,
-    nonce: String,
-    price: f64,
-    server_signature: String,
-    client_signature: String,
+    pub id: Thing,
+    pub address: String,
+    pub quantity: i64,
+    pub nonce: String,
+    pub price: i64,
+    pub server_signature_r: String,
+    pub server_signature_s: String,
+    pub client_signature_r: String,
+    pub client_signature_s: String,
 }
 impl std::fmt::Display for Contract {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, " \n address :{} \n quantity :{} \n nonce :{} \n price :{} \n server_signature :{} \n client_signature :{} \n",
-    self.address,self.quantity,self.nonce,self.price,self.server_signature,self.client_signature)
+        write!(f, " \n address :{} \n quantity :{} \n nonce :{} \n price :{} \n server_signature_r :{} \n server_signature_s :{} \n client_signature_r :{} \n client_signature_s :{} \n",
+    self.address,self.quantity,self.nonce,self.price,self.server_signature_r,self.server_signature_s,self.client_signature_r,self.client_signature_s)
     }
+}
+#[derive(Debug, Clone)]
+pub struct AppState {
+    pub db: Surreal<Db>,
+    pub mock_account: MockAccount,
 }

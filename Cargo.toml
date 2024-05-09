@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = [ "bin/client", "bin/prover", "bin/server", "crates/podman", "crates/utils" ]
+members = [ "bin/client", "bin/json_generator", "bin/prover", "bin/server", "bin/validator", "crates/podman", "crates/utils"]
 
 [workspace.package]
 version = "0.1.0"
@@ -12,7 +12,8 @@ edition = "2021"
 axum = { version = "0.7.5", features = ["http2", "macros", "multipart", "ws"] }
 cairo-proof-parser ={ git = "https://github.com/cartridge-gg/cairo-proof-parser.git" }
 clap = { version = "4.5.4", features = ["derive"] }
-podman ={ path = "crates/podman" }
+podman = { path = "crates/podman" }
+server = { path = "bin/server" }
 thiserror = "1.0.59"
 utils = { path = "crates/utils" }
 tokio = { version = "1.37.0", features = ["full"] }

@@ -1,21 +1,21 @@
 use clap::Parser;
 use server::{start, ServerError};
 
-mod request;
+pub mod request;
 pub mod server;
-
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
-struct Args {
+pub struct Args {
     /// Host address to bind the server
     #[clap(long, default_value = "0.0.0.0")]
     host: String,
 
     /// Port to listen on
-    #[clap(long, default_value = "7003")]
+    #[clap(long, default_value = "7007")]
     port: u16,
 }
 
+#[allow(dead_code)]
 #[tokio::main]
 async fn main() -> Result<(), ServerError> {
     let args: Args = Args::parse();
