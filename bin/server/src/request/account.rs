@@ -1,18 +1,38 @@
+use elliptic_curve::group::GroupEncoding;
 use elliptic_curve::point::AffineCoordinates;
 use elliptic_curve::Field;
 use elliptic_curve::Group;
 use elliptic_curve::PrimeField;
+use rand_core::OsRng;
 use rand_core::{CryptoRng, RngCore};
 use sha2::{Digest, Sha256};
 use std::ops::Mul;
 
+#[derive(Debug, Clone)]
 pub struct SigningKey {
     secret_scalar: stark_curve::Scalar,
 }
 
 // Verifying key structure
+#[derive(Debug, Clone)]
 pub struct VerifyingKey {
     public_point: stark_curve::ProjectivePoint,
+}
+use std::fmt;
+
+impl fmt::Display for VerifyingKey {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let affine_point = self.public_point.to_affine();
+        let public_key_bytes = affine_point.to_bytes();
+
+        let public_key_hex: String = public_key_bytes
+            .iter()
+            .map(|byte| format!("{:02x}", byte))
+            .collect::<Vec<String>>()
+            .join("");
+
+        write!(f, "0x{}", public_key_hex)
+    }
 }
 
 #[derive(Debug)]
@@ -24,7 +44,12 @@ pub struct Signature {
 /// Helper function to convert a `stark_curve::Scalar` to a hexadecimal string.
 pub fn scalar_to_hex(scalar: &stark_curve::Scalar) -> String {
     let bytes = scalar.to_repr();
-    bytes.iter().map(|byte| format!("{:02x}", byte)).collect()
+    let scalar_hex = bytes
+        .iter()
+        .map(|byte| format!("{:02x}", byte))
+        .collect::<Vec<String>>()
+        .join("");
+    format!("0x{}", scalar_hex)
 }
 impl SigningKey {
     pub fn new(scalar: stark_curve::Scalar) -> Self {
@@ -41,7 +66,7 @@ impl SigningKey {
     pub fn sign_message<R: RngCore + CryptoRng>(
         &self,
         message: &[u8],
-        rng: &mut R,
+        rng: R,
     ) -> Result<Signature, &'static str> {
         // Step 1: Hash the message
         let mut hasher = Sha256::new();
@@ -91,9 +116,10 @@ where
     (signing_key, verifying_key)
 }
 
+#[derive(Debug, Clone)]
 pub struct MockAccount {
-    signing_key: SigningKey,
-    verifying_key: VerifyingKey,
+    pub signing_key: SigningKey,
+    pub verifying_key: VerifyingKey,
 }
 
 impl MockAccount {
@@ -108,11 +134,8 @@ impl MockAccount {
         }
     }
 
-    pub fn sign_message<R: RngCore + CryptoRng>(
-        &self,
-        message: &[u8],
-        rng: &mut R,
-    ) -> Result<Signature, &'static str> {
+    pub fn sign_message(&self, message: &[u8]) -> Result<Signature, &'static str> {
+        let rng = OsRng;
         self.signing_key.sign_message(message, rng)
     }
 }

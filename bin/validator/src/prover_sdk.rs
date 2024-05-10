@@ -143,7 +143,7 @@ impl ProverSDKBuilder {
 }
 
 impl ProverSDK {
-    pub fn new() -> ProverSDKBuilder {
+    pub fn create() -> ProverSDKBuilder {
         ProverSDKBuilder::new()
     }
 

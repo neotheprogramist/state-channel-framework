@@ -1,7 +1,7 @@
 use crate::request::models::AppState;
 use axum::{routing::get, routing::post, Router};
 mod accept_contract;
-mod account;
+pub mod account;
 pub mod models;
 mod price;
 mod request_quote;
@@ -23,6 +23,10 @@ pub fn router(app_state: &AppState) -> Router {
         .route(
             "/requestSettlementProofWithPrice",
             get(request_settlement_proof::request_settlement_proof_with_set_price),
+        )
+        .route(
+            "/requestSettlementProofWithPriceAndData",
+            get(request_settlement_proof::request_settlement_proof_with_set_price_and_data),
         )
         .with_state(app_state.clone())
 }

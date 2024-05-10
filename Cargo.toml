@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = [ "bin/client", "bin/prover", "bin/server", "bin/validator", "crates/podman", "crates/utils"]
+members = [ "bin/client", "bin/json_generator", "bin/prover", "bin/server", "bin/validator", "crates/podman", "crates/utils"]
 
 [workspace.package]
 version = "0.1.0"
