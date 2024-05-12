@@ -94,7 +94,7 @@ async fn main() -> Result<(), Box<dyn StdError>> {
     .await?;
     //Save to files
     // TODO : HARDCODED FILE PATH
-    let path_in: &str = "bin/json_generator/output/in.json";
+    let path_in: &str = "resources/json_generator_out/in.json";
     prepare_and_save_data(
         path_in.to_string(),
         settlement_proof.clone(),
@@ -102,7 +102,7 @@ async fn main() -> Result<(), Box<dyn StdError>> {
         server_mock_account.clone(),
     )
     .await?;
-    let path_out: &str = "bin/json_generator/output/out.json";
+    let path_out: &str = "resources/json_generator_out/out.json";
     save_out(
         path_out.to_string(),
         settlement_price,
