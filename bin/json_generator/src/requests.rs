@@ -7,7 +7,6 @@ use axum::{
 use dialoguer::console::style;
 use serde_json::json;
 use serde_json::Value;
-use server::request::account::scalar_to_hex;
 use server::request::account::MockAccount;
 use server::request::models::Contract;
 use server::request::models::RequestQuotationWithPrice;
@@ -107,15 +106,8 @@ pub async fn accept_contract(
     let quote_bytes = quote_data.as_bytes();
 
     let mock_account = client_mock_account;
-    let client_signature = mock_account.sign_message(quote_bytes);
 
-    let (client_signature_r, client_signature_s) = match client_signature {
-        Ok(signature) => (scalar_to_hex(&signature.r), scalar_to_hex(&signature.s)),
-        Err(e) => {
-            println!("Failed to sign message: {}", e);
-            return Err(e.into());
-        }
-    };
+    let (client_signature_r, client_signature_s) = mock_account.sign_message(quote_bytes);
 
     let request_quotation = AgreeToQuotation {
         quote: request_quotation_response.quote,

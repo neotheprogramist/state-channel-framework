@@ -82,7 +82,7 @@ async fn main() -> Result<(), Box<dyn StdError>> {
         )
         .await?;
     }
-
+    println!("CORRECT");
     let settlement_price = 1500i64;
     // Request settlement
     let settlement_proof = request_settlement_proof_with_price_and_data(

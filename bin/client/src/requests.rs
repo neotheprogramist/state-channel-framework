@@ -100,16 +100,7 @@ pub async fn accept_contract(
     let quote_bytes = quote_data.as_bytes();
     let mut rng = OsRng;
     let mock_account = MockAccount::new(&mut rng);
-    let client_signature = mock_account.sign_message(quote_bytes);
-
-    let (client_signature_r, client_signature_s) = match client_signature {
-        Ok(signature) => (scalar_to_hex(&signature.r), scalar_to_hex(&signature.s)),
-        Err(e) => {
-            println!("Failed to sign message: {}", e);
-            return Err(e.into());
-        }
-    };
-
+    let (client_signature_r, client_signature_s) = mock_account.sign_message(quote_bytes);
     let request_quotation = AgreeToQuotation {
         quote: request_quotation_response.quote,
         server_signature_r: request_quotation_response.server_signature_r,

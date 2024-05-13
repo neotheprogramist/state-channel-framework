@@ -1,15 +1,17 @@
 use bytes::{Bytes, BytesMut};
+use hex::ToHex;
 use rand::RngCore;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use serde_with::serde_as;
+use std::io::Read;
 use std::ops::Deref;
 use std::{io, str::FromStr};
 use surrealdb::engine::local::Db;
 use surrealdb::sql::Id;
 use surrealdb::Surreal;
-
+use rand_core::OsRng;
 use super::account::MockAccount;
-
+use elliptic_curve::Field;
 impl std::fmt::Display for Quote {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
@@ -95,10 +97,13 @@ pub struct RequestAcceptContract {
 pub struct Nonce(Bytes);
 
 impl Nonce {
-    pub fn new(size: usize) -> Self {
-        let mut bytes = BytesMut::zeroed(size);
-        rand::thread_rng().fill_bytes(bytes.as_mut());
-        Self(bytes.into())
+    pub fn new() -> Self {
+        let os = OsRng;
+        let nonce=secp256k1::scalar::Scalar::random_custom(os);
+        let bytes_repr = nonce.to_be_bytes(); // Assuming this returns [u8; 32]
+        // Convert [u8; 32] to Bytes
+        let bytes = Bytes::copy_from_slice(&bytes_repr); // Use the array directly
+        Self(bytes)
     }
 }
 
