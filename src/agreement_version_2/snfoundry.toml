@@ -6,3 +6,8 @@ url = "http://localhost:5050"
 account = "testingnet"
 accounts-file = "/home/adampal/.starknet_accounts/starknet_open_zeppelin_accounts.json"
 url = "http://localhost:5050"
+
+[sncast.testingnet2]
+account = "testingnet2"
+accounts-file = "/home/adampal/.starknet_accounts/starknet_open_zeppelin_accounts.json"
+url = "http://localhost:5050/rpc"

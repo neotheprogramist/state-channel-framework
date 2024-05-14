@@ -2,13 +2,13 @@ use starknet::ContractAddress;
 
 #[derive(Drop, Serde,starknet::Store,PartialEq)]
 pub struct Agreement {
-    pub quantity: felt252,
-    pub nonce: felt252,
-    pub price: felt252,
-    pub server_signature_r: felt252,
-    pub server_signature_s: felt252,
-    pub client_signature_r: felt252,
-    pub client_signature_s: felt252,
+    pub quantity: u256,
+    pub nonce: u256,
+    pub price: u256,
+    pub server_signature_r: u256,
+    pub server_signature_s: u256,
+    pub client_signature_r: u256,
+    pub client_signature_s: u256,
 }
 
 #[starknet::interface]
@@ -18,19 +18,20 @@ pub trait IAgreementVersion2<TContractState> {
     fn get_client_balance(self: @TContractState)-> u256;
     fn get_server_balance(self: @TContractState)-> u256;
     fn get_agreement_by_id(self: @TContractState,id:felt252)-> Agreement;
-    fn get_client_public_key(self: @TContractState) -> felt252;
-    fn get_server_public_key(self: @TContractState) -> felt252;
+    fn get_client_public_key(self: @TContractState) -> u256;
+    fn get_server_public_key(self: @TContractState) -> u256;
 }
 
 #[starknet::contract]
 mod AgreementVersion2 {
     use core::traits::Into;
     use agreement_version_2::agreement_version_2::Agreement;
+    use core::ecdsa::check_ecdsa_signature;
     
     #[storage]
     struct Storage {
-        client_public_key:felt252,
-        server_public_key:felt252,
+        client_public_key:u256,
+        server_public_key:u256,
         client_balance:u256, 
         server_balance:u256,
         agreements_len: felt252,
@@ -44,8 +45,8 @@ mod AgreementVersion2 {
         ref self: ContractState,
         client_balance: felt252,
         server_balance: felt252,
-        client_public_key: felt252,
-        server_public_key: felt252,
+        client_public_key: u256,
+        server_public_key: u256,
         a:felt252,
         b:felt252
     ) {
@@ -62,6 +63,10 @@ mod AgreementVersion2 {
         fn apply(ref self: ContractState, agreement: Agreement) -> felt252 {
             //TODO : Validate agreement's signatures with stark curve
 
+            //    message, public_key, signature_r, signature_s
+            // agreemenet.nonce
+            
+            // check_ecdsa_signature()
             let curr_a = self.a.read() + agreement.quantity.into();
             self.a.write(curr_a);
 
@@ -82,10 +87,10 @@ mod AgreementVersion2 {
         fn result(self: @ContractState,x:u256) -> u256{
             self.a.read()*x +self.b.read()
         }
-        fn get_client_public_key(self: @ContractState) -> felt252 {
+        fn get_client_public_key(self: @ContractState) -> u256 {
             self.client_public_key.read()
         }
-        fn get_server_public_key(self: @ContractState) -> felt252 {
+        fn get_server_public_key(self: @ContractState) -> u256 {
             self.server_public_key.read()
         }
         fn get_client_balance(self: @ContractState)  -> u256 {

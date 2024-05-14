@@ -9,4 +9,4 @@ fi
 # Assign argument to variable
 class_hash=$1
 
-sncast --profile testingnet --wait deploy --class-hash "$class_hash" -
+sncast --profile testingnet2 --wait deploy --class-hash "$class_hash"

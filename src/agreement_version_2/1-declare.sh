@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 
-sncast --profile testingnet --wait declare --contract-name AgreementVersion2
+sncast --profile testingnet2 --wait declare --contract-name AgreementVersion2

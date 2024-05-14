@@ -9,7 +9,7 @@ fi
 contract_address=$1
 fact_hash=$2
 
-sncast--profile testingnet \
+sncast --profile testingnet \
     --wait \
     call \
     --contract-address  "$contract_address" \ 
