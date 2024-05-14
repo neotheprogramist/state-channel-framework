@@ -18,8 +18,7 @@ mod tests {
             .expect("Failed to initialize the database");
         let _ = db.use_ns("test").use_db("test").await;
 
-        let mut rng = OsRng;
-        let mock_account = MockAccount::new(&mut rng);
+        let mock_account = MockAccount::new();
         let state: AppState = AppState { db, mock_account };
 
         let router: Router = server::request::router(&state);

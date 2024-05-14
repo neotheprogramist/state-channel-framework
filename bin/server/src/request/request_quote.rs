@@ -1,6 +1,5 @@
 use super::models::{Quote, RequestQuotation, RequestQuotationResponse, RequestQuotationWithPrice};
 use super::price::get_btc_usdt_price;
-use crate::request::account::scalar_to_hex;
 use crate::request::models::Nonce;
 use crate::request::AppState;
 use crate::server::ServerError;
@@ -41,14 +40,13 @@ pub async fn request_quote(
     }))
 }
 
-//TOOD: Delete, this is for testing
 pub async fn request_quote_with_price(
     State(state): State<AppState>,
     Json(payload): Json<RequestQuotationWithPrice>,
 ) -> Result<impl IntoResponse, ServerError> {
     let nonce = Nonce::new();
 
-    let btc_price = payload.price.into();
+    let btc_price = payload.price;
     let quote = Quote {
         address: payload.address,
         quantity: payload.quantity,

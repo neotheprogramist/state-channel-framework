@@ -2,7 +2,6 @@ use crate::requests::{create_agreement, request_settlement_proof_with_price_and_
 use axum::Router;
 use clap::Parser;
 use generate_data::generate_identical_but_shuffled_prices;
-use rand_core::OsRng;
 use serde::ser::StdError;
 use server::request::account::MockAccount;
 use server::request::models::AppState;
@@ -44,15 +43,13 @@ async fn main() -> Result<(), Box<dyn StdError>> {
         .await
         .expect("Failed to initialize the database");
     let _ = db.use_ns("test").use_db("test").await;
-    let mut rng = OsRng;
-    let server_mock_account = MockAccount::new(&mut rng);
+    let server_mock_account = MockAccount::new();
     let state: AppState = AppState {
         db,
         mock_account: server_mock_account.clone(),
     };
 
-    let mut rng = OsRng;
-    let client_mock_account = MockAccount::new(&mut rng);
+    let client_mock_account = MockAccount::new();
 
     let router: Router = server::request::router(&state);
 

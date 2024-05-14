@@ -3,7 +3,6 @@ use crate::request::models::AppState;
 use crate::{request, Args};
 use axum::{http::StatusCode, response::IntoResponse, Json};
 use axum::{routing::get, Router};
-use rand_core::OsRng;
 use reqwest::Error as ReqwestError;
 use serde_json::json;
 use starknet::core::types::FromByteArrayError;
@@ -68,7 +67,9 @@ impl IntoResponse for ServerError {
             ServerError::ParsingError(_) => (StatusCode::UNPROCESSABLE_ENTITY, self.to_string()),
             ServerError::ParseIntError(_) => (StatusCode::UNPROCESSABLE_ENTITY, self.to_string()),
             ServerError::FromStrError(_) => (StatusCode::BAD_REQUEST, self.to_string()),
-            ServerError::FromByteArrayError(_) => (StatusCode::INTERNAL_SERVER_ERROR, self.to_string()),
+            ServerError::FromByteArrayError(_) => {
+                (StatusCode::INTERNAL_SERVER_ERROR, self.to_string())
+            }
         };
         let body = Json(json!({ "error": error_message }));
         (status, body).into_response()
@@ -85,8 +86,7 @@ pub async fn start(args: &Args) -> Result<(), ServerError> {
     let db = Surreal::new::<Mem>(()).await?;
 
     db.use_ns("test").use_db("test").await?;
-    let mut rng = OsRng;
-    let mock_account = MockAccount::new(&mut rng);
+    let mock_account = MockAccount::new();
     let state: AppState = AppState { db, mock_account };
 
     tracing_subscriber::registry()

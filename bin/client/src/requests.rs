@@ -4,10 +4,8 @@ use axum::{
     Router,
 };
 use dialoguer::console::style;
-use rand::rngs::OsRng;
 use serde_json::json;
 use serde_json::Value;
-use server::request::account::scalar_to_hex;
 use server::request::account::MockAccount;
 use server::request::models::{
     AgreeToQuotation, RequestQuotationResponse, RequestQuotationWithPrice, SettlementProofResponse,
@@ -95,10 +93,9 @@ pub async fn accept_contract(
     url: &str,
     router: Router,
 ) -> Result<(), Box<dyn std::error::Error>> {
-    let mut rng = OsRng;
-    let mock_account = MockAccount::new(&mut rng);
+    let mock_account = MockAccount::new();
     let (client_signature_r, client_signature_s) =
-        mock_account.sign_message(request_quotation_response.quote)?;
+        mock_account.sign_message(request_quotation_response.quote.clone())?;
     let request_quotation = AgreeToQuotation {
         quote: request_quotation_response.quote,
         server_signature_r: request_quotation_response.server_signature_r,

@@ -1,15 +1,8 @@
 use super::account::MockAccount;
-use crate::ServerError;
-use bytes::{Bytes, BytesMut};
-use elliptic_curve::Field;
-use hex::ToHex;
-use rand::RngCore;
-use rand_core::OsRng;
+use bytes::Bytes;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use serde_with::serde_as;
-use starknet::core::types::FieldElement;
 use starknet::signers::SigningKey;
-use std::io::Read;
 use std::ops::Deref;
 use std::{io, str::FromStr};
 use surrealdb::engine::local::Db;
@@ -39,7 +32,7 @@ pub struct RequestQuotationWithPrice {
     pub quantity: i64,
     pub price: i64,
 }
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct RequestQuotationResponse {
     pub quote: Quote,
     pub server_signature_r: String,
@@ -107,12 +100,11 @@ impl Nonce {
 
         Self(bytes)
     }
-    pub fn new_field_element() -> Result<FieldElement, ServerError> {
-        let secret_key = SigningKey::from_random();
-        let bytes_repr: [u8; 32] = secret_key.secret_scalar().to_bytes_be(); // Assuming this returns [u8; 32]
-        let bytes = Bytes::copy_from_slice(&bytes_repr); // Use the array directly
-        let field_element = FieldElement::from_bytes_be(&bytes_repr)?;
-        Ok(field_element)
+}
+
+impl Default for Nonce {
+    fn default() -> Self {
+        Self::new()
     }
 }
 

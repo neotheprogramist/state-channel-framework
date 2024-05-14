@@ -1,18 +1,9 @@
 use crate::request::models::Quote;
 use crate::server::ServerError;
-use axum::extract::multipart::Field;
-use hex::FromHex;
-use rand_core::{CryptoRng, RngCore};
-use sha2::{Digest, Sha256};
 use starknet::core::crypto::compute_hash_on_elements;
 use starknet::core::types::FieldElement;
-use starknet::signers::VerifyingKey;
-use starknet::{
-    accounts::{Account, ConnectedAccount},
-    core::crypto::Signature,
-    macros::selector,
-    signers::{LocalWallet, Signer, SigningKey},
-};
+use starknet::signers::{SigningKey, VerifyingKey};
+
 /// Helper function to convert a `stark_curve::Scalar` to a hexadecimal string.
 pub fn scalar_to_hex(bytes: &[u8]) -> String {
     prefix_hex::encode(bytes.to_vec())
@@ -30,11 +21,14 @@ pub struct MockAccount {
     pub public_key: VerifyingKey,
 }
 
+impl Default for MockAccount {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl MockAccount {
-    pub fn new<R>(rng: &mut R) -> Self
-    where
-        R: RngCore + CryptoRng,
-    {
+    pub fn new() -> Self {
         let secret_key = SigningKey::from_random();
         let public_key = secret_key.verifying_key();
 
