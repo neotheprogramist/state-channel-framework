@@ -118,7 +118,7 @@ To create a new account, use (you can use sncast account create --help to see th
 
 1. **Create account**
 ```bash
-  sncast --url http://localhost:5050/rpc account create --name new_account --class-hash <br /> 0x19...8dd6 --add-profile
+  sncast --url http://localhost:5050/rpc account create --name new_account --class-hash  0x19...8dd6 --add-profile
 ```
 Where the --clash-hash comes from the output of starknet-devnet
 Note: --add-profile creates profile in snfoundry.toml file.
@@ -129,7 +129,7 @@ Example:
 
 2. **Fund the account**
 ```bash
-  curl -d '{"amount":8646000000000000, "address":"0x6e...eadf"}' -H "Content-Type: <br /> application/json" -X POST http://127.0.0.1:5050/mint
+  curl -d '{"amount":8646000000000000, "address":"0x6e...eadf"}' -H "Content-Type: application/json" -X POST http://127.0.0.1:5050/mint
 ```
 3. **Account deployment**
 Deploy the account to the starknet devnet local node to register it with the chain:
