@@ -92,6 +92,7 @@
 
 This setup guide will help you to configure and run the necessary components for the project. Make sure you follow the steps in order to ensure everything functions as expected.
 
+# Naive method of contract settlements
 
 ## Generate Sample Agreements
 
@@ -137,7 +138,7 @@ Deploy the account to the starknet devnet local node to register it with the cha
   sncast --url http://localhost:5050/rpc account deploy --name new_account
 ```
 
-## Declarng and Deploying Contract
+## Declaring and Deploying Contract
 
 To declare agreement contract and apply it follow the steps below.
 
