@@ -1,0 +1,96 @@
+{
+  "clientPublicKey": "0x02051b52c68004c19333ac2965b12401ab70f62a38a0cba06e651dfa7b072b0cbe",
+  "serverPublicKey": "0x030087d69e463636f38da56ff8b32f364e21a5a60cc05b9961c296211aac3d74b3",
+  "agreements": [
+    {
+      "quantity": "-1",
+      "nonce": "0xc157e4d0c0e840bb5fd4cccd5ba030efb415c6fbe72091a78b2d2257195065fa",
+      "price": "1643",
+      "serverSignatureR": "0x06ab7b07edf25f879e5df0cc61aede1966d53fe3a2fdfcf33d797a4eaabcb089",
+      "serverSignatureS": "0x007d8843f166c6bbc1817af0afd3d151c4f1b89850d29a4525dcfb4228150459",
+      "clientSignatureR": "0x0648e2dd9b93679be665e89d4243ecbc1044700fb3a5630028ecd090277352d5",
+      "clientSignatureS": "0x0124736fdb3f85821de027ea2723caedaf09265fb755b495eebe8b9dcb599c57"
+    },
+    {
+      "quantity": "1",
+      "nonce": "0x6bce59155b840cf7a802f60e78fa62e4bc0c8e2756cd6b45e0b63c499423fff3",
+      "price": "1654",
+      "serverSignatureR": "0x067aca2d9d53f0bdc4b57703a9f340e0b4ebbbfe8e726ef043346623441c0f65",
+      "serverSignatureS": "0x05d6816cbdb774c8a77d352a0137a65f8f5367188bf7f26997ecc7b562584834",
+      "clientSignatureR": "0x02694d4bfd3923543d8aeca07e90be92b01ec9e0c6d742d72573f488a6ba168b",
+      "clientSignatureS": "0x04ecd561f9f517fce8cd34740188152514e41a71ddd090393d66d6eae54c0531"
+    },
+    {
+      "quantity": "1",
+      "nonce": "0xe96cba719584c77bc39a1307680333f5975ad1977761d08db17483014658200d",
+      "price": "1822",
+      "serverSignatureR": "0x0717efb0b8ae17ebf04eb99bdb8fd3f76e62686f66f2209b86d000a2490f544b",
+      "serverSignatureS": "0x01a5f2c928c2c293a31e1760423398356370d56a8ad4cab2d53f167770abb3e6",
+      "clientSignatureR": "0x040b1984515ad6f799b3067e8a7fea39d5b0b7dcf1d4e984eaaecd22a8836cdf",
+      "clientSignatureS": "0x038dabee2cc3ae1ed5e9e25bfe4d34d5583c9c9b853c2c634c8a59cc1c759aaf"
+    },
+    {
+      "quantity": "1",
+      "nonce": "0x62c7ed3e8497eb6e751cf3063fd9b47b28476504e62cecb0721036cd68aecc31",
+      "price": "1709",
+      "serverSignatureR": "0x00ea49278ce5d4c73c9f24ca8f347c0c49c393022af4f111ddc23f96bd2dad2b",
+      "serverSignatureS": "0x005e726ddf82bc8b95bf12097e9d523893368d98b3d64645c2cce29d1c5e79e0",
+      "clientSignatureR": "0x001a9807c91d130fd14b567108784003cde8cf582a9de12aeab9a109e1943b04",
+      "clientSignatureS": "0x035eae9be461c7bb5d58f235f0ffc118c40bfc0e98793ab20eb4c7f011532a04"
+    },
+    {
+      "quantity": "1",
+      "nonce": "0x77f69867d58a4f9fc15f8d6bc9efe3322a3adb35515cc92df80fd3370ac5ff11",
+      "price": "1643",
+      "serverSignatureR": "0x07d67fbf916e0a25d513648f4215f1714974f478bf352ce7bde5401908c5577c",
+      "serverSignatureS": "0x035a87f5b12e3bb1443f24e1fb36c64e58ab30bc5c105ad29d7c1982f48fc851",
+      "clientSignatureR": "0x0066ef3bfb1e725b995b1d7732f35ab8208e196d9f4d482fbf92f5fa365c6795",
+      "clientSignatureS": "0x01a1147c0d55eb9544bb2a1c36752a1f2b1a422e298aca26215396aaa6a3bab6"
+    },
+    {
+      "quantity": "-1",
+      "nonce": "0xa798dd9e76d52c05c6c7c0580b04f25a4da6b6c4fbada6078678057296c3b5ce",
+      "price": "1709",
+      "serverSignatureR": "0x05f8d58578d44a225bfc527d0cad86923a604218b144b9a3c1cef6d9e0e49411",
+      "serverSignatureS": "0x043055b3ff6b673039be3dbbb6fe2be4cbf3781e326e03ea8569333f1b32b7f6",
+      "clientSignatureR": "0x071f0a51b80e87cc9bc4feedf9eb80c99e9e64fc25dd0bc74890a209fd470aae",
+      "clientSignatureS": "0x00b18f49987df88d3953efb54d29a9d252ccddee33ae8da6daa20b6590860ec8"
+    },
+    {
+      "quantity": "1",
+      "nonce": "0x616038a67264dcf018b003212fa18104a7f6b7d85c104b614493a010d0dd0100",
+      "price": "1530",
+      "serverSignatureR": "0x036f477116bd0fe816177b90fbed3267a0ce91597cb21ba83d674db40e671ac4",
+      "serverSignatureS": "0x00057726fd9117f133e963f38ad568926415537baba01d6f4ce57c0c7673bebf",
+      "clientSignatureR": "0x000e97c2d08cb6f3d5a1209ca4ae639413b0037bab19e38d3ebbcb57bb463263",
+      "clientSignatureS": "0x045075d34dc4c900ae9869406dc7f04caa46786d29f197987cd5288680fb9885"
+    },
+    {
+      "quantity": "-1",
+      "nonce": "0x7cf72f9f4d74c2c1677b26cdade4dd290e776e985128fd00038e201a26d015d6",
+      "price": "1822",
+      "serverSignatureR": "0x07c3faa60a3b73b1564906d99c4cf248bc77690cb048d262175e7f6208cfa4be",
+      "serverSignatureS": "0x06ba4382ca026546ed7c8ad0565056633b91009badb24c2c8428b183e9932447",
+      "clientSignatureR": "0x03ab03eed8fa6861d8c4d84b58cedb52eeba8cff765bed9ab6b36babba0312b3",
+      "clientSignatureS": "0x04be30d8c13b721d696cc703225282dd4aab978c87575a48243e33c82b38e9d0"
+    },
+    {
+      "quantity": "-1",
+      "nonce": "0xaac1a451daa6430d272dc9a81ad4c288dda7de10e6a83c0ae5ceb98dc4c3717d",
+      "price": "1530",
+      "serverSignatureR": "0x040de56236802dca9c0c50620f5b6ca269b257b43ef3b4252fa76f5d9c2b35f9",
+      "serverSignatureS": "0x0233746d01d4eefffabfaed2e09fdb1be84b301fdc28f82259e3c02c84f65880",
+      "clientSignatureR": "0x045730a3511f612e8c1f6ddae63b063a6153303b1cad9b65b7f5fd2e5d592ffe",
+      "clientSignatureS": "0x0590c537be63f1084dc78ee52b4eb98af5a936855a351ed86007cc5c3ed9f287"
+    },
+    {
+      "quantity": "-1",
+      "nonce": "0xfc4989accd0f3d29d32b797be8999fa3972483054d31ab0b9dc1d2dad52e715c",
+      "price": "1654",
+      "serverSignatureR": "0x00b568cb60d32d099e6c6572d7c1e0aca7755e4602fed39d38525ed774ca208d",
+      "serverSignatureS": "0x0782f9ced1afd087d876d8db69ad6e0de925334d204690c14d917ea9fce4c640",
+      "clientSignatureR": "0x012781b9831a53d48df9cffdf58a808a30e1a89e5bcbd1ca40ad7c1ef6a7fa69",
+      "clientSignatureS": "0x0690e1f9371038386f5f98019f23efea77c191d8917bc48f76e808e33f85779a"
+    }
+  ]
+}

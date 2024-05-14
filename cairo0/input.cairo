@@ -24,18 +24,18 @@ func get_agreements() -> (input: Input) {
         program_input_agreements = program_input["agreements"]
         agreements = [
             (
-                int(agreement["quantity"]),
-                int(agreement["nonce"]),
-                int(agreement["price"]),
-                int(agreement["serverSignatureR"]),
-                int(agreement["serverSignatureS"]),
-                int(agreement["clientSignatureR"]),
-                int(agreement["clientSignatureS"]),
+                int(agreement["quantity"], 16),
+                int(agreement["nonce"], 16),
+                int(agreement["price"], 16),
+                int(agreement["serverSignatureR"], 16),
+                int(agreement["serverSignatureS"], 16),
+                int(agreement["clientSignatureR"], 16),
+                int(agreement["clientSignatureS"], 16),
             )
             for agreement in program_input_agreements
         ]
-        ids.input.client_public_key = int(program_input["clientPublicKey"])
-        ids.input.server_public_key = int(program_input["serverPublicKey"])
+        ids.input.client_public_key = int(program_input["clientPublicKey"], 16)
+        ids.input.server_public_key = int(program_input["serverPublicKey"], 16)
         ids.input.agreements_len = len(agreements)
         ids.input.agreements = segments.gen_arg(agreements)
     %}

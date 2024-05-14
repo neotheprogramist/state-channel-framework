@@ -50,7 +50,7 @@ mod AgreementFactory {
     use core::panic_with_felt252;
     use starknet::{ClassHash, ContractAddress, contract_address_const};
 
-    use state_channel_framework::{
+    use contracts::{
         agreement_factory::{
             Agreement, AgreementAcceptance, AgreementProposal, errors, ProposedAgreement
         },

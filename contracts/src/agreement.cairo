@@ -34,7 +34,7 @@ mod errors {
 mod Agreement {
     use core::option::OptionTrait;
     use core::traits::Into;
-    use state_channel_framework::{
+    use contracts::{
         agreement::{ProgramOutput, errors}, erc20::{IErc20Dispatcher, IErc20DispatcherTrait},
         facts_registry::{IFactsRegistryDispatcher, IFactsRegistryDispatcherTrait},
         herodotus::{IEVMFactsRegistryDispatcher, IEVMFactsRegistryDispatcherTrait},

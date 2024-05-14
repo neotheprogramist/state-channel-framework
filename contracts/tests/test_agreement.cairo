@@ -1,5 +1,5 @@
 use starknet::contract_address_const;
-use state_channel_framework::{
+use contracts::{
     agreement::{IAgreementDispatcher, IAgreementDispatcherTrait},
     erc20::{IErc20Dispatcher, IErc20DispatcherTrait},
 };
