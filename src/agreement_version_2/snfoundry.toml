@@ -11,3 +11,8 @@ url = "http://localhost:5050"
 account = "testingnet2"
 accounts-file = "/home/adampal/.starknet_accounts/starknet_open_zeppelin_accounts.json"
 url = "http://localhost:5050/rpc"
+
+[sncast.mateotest]
+account = "drs"
+accounts-file = "/home/mateo/.starknet_accounts/starknet_open_zeppelin_accounts.json"
+url = "http://localhost:5060/rpc"

@@ -1,24 +1,13 @@
 #!/usr/bin/env bash
 
 # Check if the arguments are provided
-if [ $# -ne 2 ]; then
-    echo "Usage: $0 <contract_address> <fact_hash>"
+if [ $# -ne 8 ]; then
+    echo "Usage: $0 <contract_address> <quantity> <nonce> <price> <server_signature_r> <server_signature_s> <client_signature_r> <client_signature_s>"
     exit 1
 fi
 
-# Assign arguments to variables
-contract_address=$1
-fact_hash=$2
-
-sncast --profile testingnet  \ 
+sncast --profile mateotest \
     --wait call \
-    --contract-address "$contract_address" \ 
+    --contract-address "$1" \
     --function apply  \
-    --calldata "$fact_hash"
-# Pass the calldata to the sncast command
-# sncast --profile testnet \
-#   --wait \
-#   call \
-#   --contract-address "$contract_address" \
-#   --function "is_valid" \
-#   --calldata 1 2 3 4 5 6 7
+    --calldata "$2" "$3" "$4" "$5" "$6" "$7" "$8" 
