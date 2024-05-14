@@ -12,10 +12,10 @@ mod tests {
     fn test_balance() {
         let contract = declare("AgreementVersion2").unwrap();
 
-        let client_public_key: u256 =
-            0x028830b4feaac0dba3b980fd2acd69d8a5cc9a26177e25c91afa3faccc81b90945;
+        let client_public_key: felt252 =
+            0xe5f5c0f64f7d753a3094d012a62d714f0fe3ca320df466cee03bf393d352f;
         let server_public_key: felt252 =
-            0x42c7039e826bef2b9d83499beff64744c1fcdbc811bd303d6b4396f74f9110d0;
+            0x70bf7cc40c6ea06a861742fa98c2a22e077672a1dd9ed2aa025ec2f8258a2e5;
     }
 
     #[test]
@@ -25,17 +25,17 @@ mod tests {
         let (contract_address, _) = contract.deploy(@array![10000000, 10000000]).unwrap();
 
         let dispatcher = IAgreementVersion2Dispatcher { contract_address };
-        let quantity: u256 = 1;
-        let nonce: u256 = 0x2bd287bb6b61ff3d8239ecedb9fc6e62e774d3acaf4b3ca16bca06d33b241160;
-        let price: u256 = 1604;
-        let server_signature_r: u256 =
-            0x9413e24b39e26e5ceda98cc31cb731a718ac1c0d541b654f9f33142115c39003;
-        let server_signature_s: u256 =
-            0x505cf6311743d21af706f3a641b0449feb9a8a9b959e577bd0b35a2023f900c6;
-        let client_signature_r: u256 =
-            0x46f2f636d13cc4fc449cdff97467f6e35a30a84129c2e6c6b5344dcac0b52185;
-        let client_signature_s: u256 =
-            0x20ebf5f27a45b00d9715a43725fdde3ca33647194d215cc5b1231c5edb1b9d58;
+        let quantity: felt252 = 1;
+        let nonce: felt252 = 0x01b868544003173ba975b7de48fadcb48065bd6aab2582d9e08714e8e42edc41;
+        let price: felt252 = 1604;
+        let server_signature_r: felt252 =
+            0x5b52138ac22bc3ff92860dc3cc24247ed405724c243c7c9d3b2db72aa159cc5;
+        let server_signature_s: felt252 =
+            0x687f73155b96e2373d432bf3dc245eea1daeb1edce8a2c65f8af2f2a3f2a604;
+        let client_signature_r: felt252 =
+            0x6fdc481b6a9aa77bea31afd26bd104bf25fc6824ff04f0bc12cc0cba6dd292;
+        let client_signature_s: felt252 =
+        0x40c7a9291e466b2342eba3f18e917bab860f4fa060e9a7c6cc50933b9684331;
 
         let agreement = Agreement {
             quantity: quantity,

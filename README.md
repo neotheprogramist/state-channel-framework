@@ -92,16 +92,76 @@
 
 This setup guide will help you to configure and run the necessary components for the project. Make sure you follow the steps in order to ensure everything functions as expected.
 
-## Applying contract
+
+## Generate Sample Agreements
+
+To generate agreements please follow the steps below.
+
+```bash
+  cargo run --bin json_generator -- --agreements-count <number_of_agreements>
+```
+
+The outputs of the generator will be located at **resources/json_generator_out/** and will provide you with the data needed to deploy the contract and apply agreements.
+
+## Setting up Starknet Devnet
+
+To launch starknet devnet, use the command:
+
+```bash
+  starknet-devnet
+```
+
+## Creating and Deploying a New Account to Starknet Devnet
+
+To create a new account, use (you can use sncast account create --help to see the available options):
+
+1. **Create account**
+```bash
+  sncast --url http://localhost:5050/rpc account create --name new_account --class-hash  0x19...8dd6 --add-profile
+```
+Where the --clash-hash comes from the output of starknet-devnet
+Note: --add-profile creates profile in snfoundry.toml file.
+Example:
+```bash
+  Predeployed accounts using class with hash: 0x61dac032f228abef9c6626f995015233097ae253a7f72d68552db02f2971b8f
+```
+
+2. **Fund the account**
+```bash
+  curl -d '{"amount":8646000000000000, "address":"0x6e...eadf"}' -H "Content-Type: application/json" -X POST http://127.0.0.1:5050/mint
+```
+3. **Account deployment**
+Deploy the account to the starknet devnet local node to register it with the chain:
+
+```bash
+  sncast --url http://localhost:5050/rpc account deploy --name new_account
+```
+
+## Declarng and Deploying Contract
 
 To declare agreement contract and apply it follow the steps below.
 
+1. **Navigate to contract module**
 ```bash
   cd src/agreement_version_2/
-  scarb build
+```
 
-  # Change the snforge profile name if necessary/
-  ./1-declare.sh
-  ./2-deploy.sh # Args  <class_hash> <client_balance> <server_balance> <client_public_key> <server_public_key> <a> <b>
-  ./3-apply # Args <contract_address> <quantity> <nonce> <price> <server_signature_r> <server_signature_s> <client_signature_r> <client_signature_s>
+2. **Bulding the contract**
+```bash
+  scarb build
+```
+
+3. **Declaring the contract**
+```bash
+  ./1-declare.sh # Args <profile>
+```
+
+4. **Deploying the contract**
+```bash
+  ./2-deploy.sh # Args  <profile> <class_hash> <client_public_key> <server_public_key>
+```
+
+5. **Apply agreement to contract**
+```bash
+  ./3-apply # Args <profile> <contract_address> <quantity> <nonce> <price> <server_signature_r> <server_signature_s> <client_signature_r> <client_signature_s>
 ```

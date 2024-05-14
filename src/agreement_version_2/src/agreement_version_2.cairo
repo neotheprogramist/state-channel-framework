@@ -82,7 +82,6 @@ mod AgreementVersion2 {
                 return Result::Err('Invalid server signature');
             }
 
-            // check_ecdsa_signature()
             let curr_a = self.a.read() + agreement.quantity.into();
             self.a.write(curr_a);
 
