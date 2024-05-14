@@ -43,8 +43,8 @@ pub async fn prepare_and_save_data(
         .collect();
 
     let output = InputData {
-        client_public_key: format!("0x{}",client_mock_account.public_key.to_string()),
-        server_public_key: format!("0x{}",server_mock_account.public_key.to_string()),
+        client_public_key: format!("0x{:x}", client_mock_account.public_key.scalar()),
+        server_public_key: format!("0x{:x}", server_mock_account.public_key.scalar()),
         agreements,
     };
 

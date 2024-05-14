@@ -12,7 +12,7 @@ pub async fn request_quote(
     State(state): State<AppState>,
     Json(payload): Json<RequestQuotation>,
 ) -> Result<impl IntoResponse, ServerError> {
-    let nonce = Nonce::new();    
+    let nonce = Nonce::new();
     let btc_price = match get_btc_usdt_price().await {
         Ok(price) => price,
         Err(err) => {
@@ -25,13 +25,14 @@ pub async fn request_quote(
     let quote = Quote {
         address: payload.address,
         quantity: payload.quantity,
-        nonce: nonce.clone(),
+        nonce: nonce.clone().to_string(),
         price: btc_price,
     };
 
     let mock_account = state.mock_account;
-    let quote_json = serde_json::to_string(&quote).unwrap();
-    let (server_signature_r, server_signature_s) = mock_account.sign_message(quote_json.as_bytes());
+    let quote_clone = quote.clone();
+
+    let (server_signature_r, server_signature_s) = mock_account.sign_message(quote_clone)?;
 
     Ok(Json(RequestQuotationResponse {
         quote,
@@ -47,18 +48,18 @@ pub async fn request_quote_with_price(
 ) -> Result<impl IntoResponse, ServerError> {
     let nonce = Nonce::new();
 
-    let btc_price = payload.price;
+    let btc_price = payload.price.into();
     let quote = Quote {
         address: payload.address,
         quantity: payload.quantity,
-        nonce: nonce.clone(),
+        nonce: nonce.clone().to_string(),
         price: btc_price,
     };
 
     let mock_account = state.mock_account;
-    let quote_json = serde_json::to_string(&quote).unwrap();
-    let (server_signature_r, server_signature_s) = mock_account.sign_message(quote_json.as_bytes());
 
+    let quote_clone = quote.clone();
+    let (server_signature_r, server_signature_s) = mock_account.sign_message(quote_clone)?;
 
     Ok(Json(RequestQuotationResponse {
         quote,

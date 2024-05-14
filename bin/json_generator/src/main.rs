@@ -39,7 +39,7 @@ async fn main() -> Result<(), Box<dyn StdError>> {
     let agreements_count = args.agreements_count / 2;
     let (buy_prices, sell_prices) = generate_identical_but_shuffled_prices(agreements_count);
 
-    let address = "test_case";
+    let address = "0x4b3f4ba8c00a02b66142a4b1dd41a4dfab4f92650922a3280977b0f03c75ee1";
     let db = Surreal::new::<Mem>(())
         .await
         .expect("Failed to initialize the database");

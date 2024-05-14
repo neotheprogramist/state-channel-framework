@@ -6,6 +6,8 @@ use axum::{routing::get, Router};
 use rand_core::OsRng;
 use reqwest::Error as ReqwestError;
 use serde_json::json;
+use starknet::core::types::FromByteArrayError;
+use starknet::core::types::FromStrError;
 use std::num::ParseIntError;
 use std::{
     net::{AddrParseError, SocketAddr},
@@ -20,6 +22,7 @@ use tower_http::timeout::TimeoutLayer;
 use tower_http::trace::TraceLayer;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 use utils::shutdown::shutdown_signal;
+
 #[derive(Debug, Error)]
 pub enum ServerError {
     #[error("server error")]
@@ -42,6 +45,12 @@ pub enum ServerError {
 
     #[error("Database error: {0}")]
     DatabaseError(String),
+
+    #[error("Database error: {0}")]
+    FromStrError(#[from] FromStrError),
+
+    #[error("Database error: {0}")]
+    FromByteArrayError(#[from] FromByteArrayError),
 }
 
 impl IntoResponse for ServerError {
@@ -58,6 +67,8 @@ impl IntoResponse for ServerError {
             ServerError::DatabaseError(_) => (StatusCode::INTERNAL_SERVER_ERROR, self.to_string()),
             ServerError::ParsingError(_) => (StatusCode::UNPROCESSABLE_ENTITY, self.to_string()),
             ServerError::ParseIntError(_) => (StatusCode::UNPROCESSABLE_ENTITY, self.to_string()),
+            ServerError::FromStrError(_) => (StatusCode::BAD_REQUEST, self.to_string()),
+            ServerError::FromByteArrayError(_) => (StatusCode::INTERNAL_SERVER_ERROR, self.to_string()),
         };
         let body = Json(json!({ "error": error_message }));
         (status, body).into_response()

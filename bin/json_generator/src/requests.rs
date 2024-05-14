@@ -101,13 +101,9 @@ pub async fn accept_contract(
     router: Router,
     client_mock_account: MockAccount,
 ) -> Result<(), Box<dyn std::error::Error>> {
-    let data_to_sign = serde_json::to_string(&request_quotation_response)?;
-    let quote_data = serde_json::to_string(&data_to_sign).unwrap();
-    let quote_bytes = quote_data.as_bytes();
-
     let mock_account = client_mock_account;
-
-    let (client_signature_r, client_signature_s) = mock_account.sign_message(quote_bytes);
+    let quote_clone = request_quotation_response.quote.clone();
+    let (client_signature_r, client_signature_s) = mock_account.sign_message(quote_clone)?;
 
     let request_quotation = AgreeToQuotation {
         quote: request_quotation_response.quote,

@@ -1,19 +1,20 @@
-use bytes::Buf;
-use elliptic_curve::group::GroupEncoding;
-use elliptic_curve::point::AffineCoordinates;
-use elliptic_curve::Field;
-use elliptic_curve::Group;
-use elliptic_curve::PrimeField;
-use rand_core::OsRng;
+use crate::request::models::Quote;
+use crate::server::ServerError;
+use axum::extract::multipart::Field;
+use hex::FromHex;
 use rand_core::{CryptoRng, RngCore};
 use sha2::{Digest, Sha256};
-use secp256k1::{Secp256k1, Message};
-use secp256k1::hashes::{sha256, Hash};
-use secp256k1::{PublicKey,SecretKey};
-use secp256k1::All;
-
+use starknet::core::crypto::compute_hash_on_elements;
+use starknet::core::types::FieldElement;
+use starknet::signers::VerifyingKey;
+use starknet::{
+    accounts::{Account, ConnectedAccount},
+    core::crypto::Signature,
+    macros::selector,
+    signers::{LocalWallet, Signer, SigningKey},
+};
 /// Helper function to convert a `stark_curve::Scalar` to a hexadecimal string.
-pub fn scalar_to_hex(bytes:&[u8]) -> String {
+pub fn scalar_to_hex(bytes: &[u8]) -> String {
     prefix_hex::encode(bytes.to_vec())
 }
 
@@ -23,12 +24,10 @@ pub struct SeverSignature {
     pub server_signature_s: String,
 }
 
-
 #[derive(Debug, Clone)]
 pub struct MockAccount {
-    pub secret_key: SecretKey,
-    pub public_key: PublicKey,
-    pub secp:Secp256k1<All>
+    pub secret_key: SigningKey,
+    pub public_key: VerifyingKey,
 }
 
 impl MockAccount {
@@ -36,25 +35,30 @@ impl MockAccount {
     where
         R: RngCore + CryptoRng,
     {
-        let secp = Secp256k1::new();
-        let (secret_key, public_key) = secp.generate_keypair(&mut OsRng);
-    
+        let secret_key = SigningKey::from_random();
+        let public_key = secret_key.verifying_key();
+
         MockAccount {
             secret_key,
             public_key,
-            secp
         }
     }
+    pub fn sign_message(&self, quote: Quote) -> Result<(String, String), ServerError> {
+        let price = FieldElement::from_dec_str(&quote.price.to_string())?;
+        let address = FieldElement::from_hex_be(&quote.address)?;
+        let quantity_hex = format!("{:x}", &quote.quantity);
+        let quantity = FieldElement::from_hex_be(&quantity_hex)?;
+        let nonce = FieldElement::from_hex_be(&quote.nonce.to_string())?;
 
-    pub fn sign_message(&self, message: &[u8]) -> (String, String){
-        let digest = sha256::Hash::hash(message);
-        let message = Message::from_digest(digest.to_byte_array());
-        let sig = self.secp.sign_ecdsa(&message, &self.secret_key);
-        let compact_signature  = sig.serialize_compact();
-        let r = &compact_signature[0..32];  // First 32 bytes
-        let s = &compact_signature[32..64]; // Second 32 bytes
-        let server_signature_r = scalar_to_hex(r);
-        let server_signature_s = scalar_to_hex(s);
-        (server_signature_r,server_signature_s)
+        let data = [price, nonce, quantity, address];
+        let hash = compute_hash_on_elements(&data);
+
+        let signature = self.secret_key.sign(&hash).unwrap();
+
+        // Converting signature parts to hex string
+        let r_hex = format!("0x{:x}", signature.r);
+        let s_hex = format!("0x{:x}", signature.s);
+
+        Ok((r_hex, s_hex))
     }
 }
