@@ -42,17 +42,14 @@ where
             if data.revert_error.contains("is already declared") {
                 parse_class_hash_from_error(&data.revert_error)
             } else {
-                return Err(RunnerError::AccountError(format!(
+                return Err(RunnerError::AccountFailure(format!(
                     "Contract error: {}",
                     data.revert_error
                 )));
             }
         }
         Err(e) => {
-            return Err(RunnerError::AccountError(format!(
-                "Account error: {}",
-                e.to_string()
-            )));
+            return Err(RunnerError::AccountFailure(format!("Account error: {}", e)));
         }
     };
 

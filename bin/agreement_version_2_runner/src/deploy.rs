@@ -51,16 +51,16 @@ pub async fn deploy_contract(
             if data.revert_error.contains("is unavailable for deployment") {
                 parse_contract_address_from_error(&data.revert_error)
             } else {
-                return Err(RunnerError::AccountError(format!(
+                return Err(RunnerError::AccountFailure(format!(
                     "Contract error: {}",
                     data.revert_error
                 )));
             }
         }
         Err(e) => {
-            return Err(RunnerError::AccountError(format!(
+            return Err(RunnerError::AccountFailure(format!(
                 "Account error: {}",
-                e.to_string()
+                e
             )));
         }
     };

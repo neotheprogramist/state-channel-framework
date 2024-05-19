@@ -10,22 +10,23 @@ pub enum RunnerError {
     #[error("failed to parse url")]
     ParsingError(#[from] ParseError),
 
-    #[error("Database error: {0}")]
+    #[error("FromStrError error: {0}")]
     FromStrError(#[from] FromStrError),
 
-    #[error("Database error: {0}")]
+    #[error("SerdeJsonError error: {0}")]
     SerdeJsonError(#[from] serde_json::Error),
 
-    #[error("Database error: {0}")]
+    #[error("ReadFileError error: {0}")]
     ReadFileError(#[from] std::io::Error),
-    #[error("Database error: {0}")]
+
+    #[error("JsonError error: {0}")]
     JsonError(#[from] starknet::core::types::contract::JsonError),
 
-    #[error("Database error: {0}")]
+    #[error("ClassHashError error: {0}")]
     ClassHashError(#[from] ComputeClassHashError),
 
     #[error("Account error: {0}")]
-    AccountError(String),
+    AccountFailure(String),
 }
 
 pub fn parse_contract_address_from_error(error_msg: &str) -> FieldElement {
