@@ -1,0 +1,9 @@
+[sncast.default]
+account = "testnet-sepolia"
+accounts-file = "~/.starknet_accounts/starknet_open_zeppelin_accounts.json"
+url = "https://free-rpc.nethermind.io/sepolia-juno/v0_7"
+
+[sncast.testingnet2]
+account = "testingnet2"
+accounts-file = "/home/adampal/.starknet_accounts/starknet_open_zeppelin_accounts.json"
+url = "http://localhost:5040/rpc"

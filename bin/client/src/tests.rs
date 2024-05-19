@@ -5,7 +5,6 @@ mod tests {
     const URL_REQUEST_SETTLEMENT_PROOF: &str = "/requestSettlementProofWithPrice";
     use crate::requests::{create_agreement, request_settlement_proof_with_price};
     use axum::Router;
-    use rand_core::OsRng;
     use server::request::account::MockAccount;
     use server::request::models::AppState;
     use surrealdb::engine::local::Mem;
@@ -93,8 +92,7 @@ mod tests {
             .expect("Failed to initialize the database");
         let _ = db.use_ns("test").use_db("test").await;
 
-        let mut rng = OsRng;
-        let mock_account = MockAccount::new(&mut rng);
+        let mock_account = MockAccount::new();
         let state: AppState = AppState { db, mock_account };
 
         let router: Router = server::request::router(&state);
@@ -171,8 +169,7 @@ mod tests {
             .expect("Failed to initialize the database");
         let _ = db.use_ns("test").use_db("test").await;
 
-        let mut rng = OsRng;
-        let mock_account = MockAccount::new(&mut rng);
+        let mock_account = MockAccount::new();
         let state: AppState = AppState { db, mock_account };
 
         let router: Router = server::request::router(&state);
@@ -262,8 +259,7 @@ mod prop_testing {
                         let db = Surreal::new::<Mem>(()).await.expect("Failed to initialize the database");
                         let _ = db.use_ns("test").use_db("test").await;
 
-                        let mut rng = OsRng;
-                        let mock_account = MockAccount::new(&mut rng);
+                        let mock_account = MockAccount::new();
                         let state: AppState = AppState { db,mock_account };
 
 
@@ -313,8 +309,7 @@ mod prop_testing {
                         let db = Surreal::new::<Mem>(()).await.expect("Failed to initialize the database");
                         let _ = db.use_ns("test").use_db("test").await;
 
-                        let mut rng = OsRng;
-                        let mock_account = MockAccount::new(&mut rng);
+                        let mock_account = MockAccount::new();
                         let state: AppState = AppState { db,mock_account };
 
 
@@ -368,8 +363,7 @@ mod prop_testing {
                         let db = Surreal::new::<Mem>(()).await.expect("Failed to initialize the database");
                         let _ = db.use_ns("test").use_db("test").await;
 
-                        let mut rng = OsRng;
-                        let mock_account = MockAccount::new(&mut rng);
+                        let mock_account = MockAccount::new();
                         let state: AppState = AppState { db,mock_account };
 
 
@@ -396,9 +390,10 @@ mod prop_testing {
                         let settlement_price = 1500i64;
                         let settlement_proof = request_settlement_proof_with_price(URL_REQUEST_SETTLEMENT_PROOF, &address, settlement_price, router.clone()).await;
                         assert_eq!(settlement_proof.unwrap().diff, expected_diff, "Expected gain did not match.");
-                });
 
-            }
+                     });
+
+                }
         }
     });
 
@@ -429,8 +424,7 @@ mod prop_testing {
                         let db = Surreal::new::<Mem>(()).await.expect("Failed to initialize the database");
                         let _ = db.use_ns("test").use_db("test").await;
 
-                        let mut rng = OsRng;
-                        let mock_account = MockAccount::new(&mut rng);
+                        let mock_account = MockAccount::new();
                         let state: AppState = AppState { db,mock_account };
 
 

@@ -46,20 +46,14 @@ mod AgreementVersion2 {
 
     #[constructor]
     fn constructor(
-        ref self: ContractState,
-        client_balance: felt252,
-        server_balance: felt252,
-        client_public_key: felt252,
-        server_public_key: felt252,
-        a: felt252,
-        b: felt252
+        ref self: ContractState, client_public_key: felt252, server_public_key: felt252,
     ) {
         self.client_public_key.write(client_public_key);
         self.server_public_key.write(server_public_key);
-        self.client_balance.write(client_balance.into());
-        self.server_balance.write(server_balance.into());
-        self.a.write(a.into());
-        self.b.write(b.into());
+        self.client_balance.write(1000000.into());
+        self.server_balance.write(1000000.into());
+        self.a.write(0.into());
+        self.b.write(0.into());
     }
 
     #[abi(embed_v0)]
