@@ -30,7 +30,7 @@ where
         .declare(Arc::new(flattened_class), casm_class_hash)
         .send()
         .await;
-
+    println!("DECLARING ");
     let class_hash = match result {
         Ok(hash) => {
             // If the contract is successfully declared, use this hash

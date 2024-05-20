@@ -27,6 +27,9 @@ pub enum RunnerError {
 
     #[error("Account error: {0}")]
     AccountFailure(String),
+
+    #[error("Box error: {0}")]
+    BoxError(#[from] Box<dyn std::error::Error>),
 }
 
 pub fn parse_contract_address_from_error(error_msg: &str) -> FieldElement {

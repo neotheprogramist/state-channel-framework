@@ -58,10 +58,7 @@ pub async fn deploy_contract(
             }
         }
         Err(e) => {
-            return Err(RunnerError::AccountFailure(format!(
-                "Account error: {}",
-                e
-            )));
+            return Err(RunnerError::AccountFailure(format!("Account error: {}", e)));
         }
     };
     let deploy_result = DeployResult {
