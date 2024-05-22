@@ -138,31 +138,43 @@ Deploy the account to the starknet devnet local node to register it with the cha
   sncast --url http://localhost:5050/rpc account deploy --name new_account
 ```
 
-## Declaring and Deploying Contract
+## Declaring and Deploying Contract on Devnet
 
 To declare agreement contract and apply it follow the steps below.
 
-1. **Navigate to contract module**
+1. **Declare the necessary enviroment variables**
+
 ```bash
-  cd src/agreement_version_2/
+
+  ADDRESS_DEVNET = "0x18...69"
+  SALT_DEVNET = "0xc...72"
+  PRIVATE_KEY_DEVNET = "0x26..."
+  RPC_URL_DEVNET = "http://localhost:5050/rpc"
+
 ```
 
-2. **Bulding the contract**
+2. **Run the program**
 ```bash
-  scarb build
+  cargo run --bin agreement_version_2_runner
 ```
 
-3. **Declaring the contract**
+
+## Declaring and Deploying Contract on Sepolia
+
+To declare agreement contract and apply it follow the steps below.
+
+1. **Declare the necessary enviroment variables**
+
 ```bash
-  ./1-declare.sh # Args <profile>
+  PRIVATE_KEY = "0x07...8a3"
+  RPC_URL = "https://free-rpc.nethermind.io/sepolia-juno/v0_7"
+  ADDRESS = "0x028d...52DF30"
+  SALT = "0x023ba0a...418c29d"
 ```
 
-4. **Deploying the contract**
+2. **Run the program**
 ```bash
-  ./2-deploy.sh # Args  <profile> <class_hash> <client_public_key> <server_public_key>
+  cargo run --bin agreement_version_2_runner
 ```
 
-5. **Apply agreement to contract**
-```bash
-  ./3-apply # Args <profile> <contract_address> <quantity> <nonce> <price> <server_signature_r> <server_signature_s> <client_signature_r> <client_signature_s>
-```
+

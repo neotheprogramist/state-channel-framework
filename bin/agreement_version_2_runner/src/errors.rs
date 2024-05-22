@@ -28,6 +28,9 @@ pub enum RunnerError {
     #[error("Account error: {0}")]
     AccountFailure(String),
 
+    #[error("Deployment error: {0}")]
+    DeploymentFailure(String),
+
     #[error("Box error: {0}")]
     BoxError(#[from] Box<dyn std::error::Error>),
 }

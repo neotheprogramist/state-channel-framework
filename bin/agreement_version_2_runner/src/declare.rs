@@ -32,10 +32,7 @@ where
         .await;
     println!("DECLARING ");
     let class_hash = match result {
-        Ok(hash) => {
-            // If the contract is successfully declared, use this hash
-            hash.class_hash
-        }
+        Ok(hash) => hash.class_hash,
         Err(AccountError::Provider(ProviderError::StarknetError(
             StarknetError::ContractError(data),
         ))) => {
@@ -52,6 +49,6 @@ where
             return Err(RunnerError::AccountFailure(format!("Account error: {}", e)));
         }
     };
-
+    println!("OK");
     Ok(class_hash)
 }

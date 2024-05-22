@@ -19,6 +19,5 @@ pub fn get_account(
     let mut account =
         SingleOwnerAccount::new(provider, signer, address, chain_id, ExecutionEncoding::New);
     account.set_block_id(BlockId::Tag(BlockTag::Pending));
-
     account
 }
