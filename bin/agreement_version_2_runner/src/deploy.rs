@@ -56,7 +56,7 @@ pub async fn deploy_contract_on_sepolia(
             prefunded_account.provider(),
             result.transaction_hash,
             deployment.deployed_address(),
-            get_wait_config(),
+            get_wait_config(true),
         )
         .await
         .map_err(StarknetCommandError::from),
@@ -79,9 +79,12 @@ pub async fn deploy_contract_on_sepolia(
 
     match result {
         Ok(deployed_address) => Ok(deployed_address),
-        Err(_) => Err(RunnerError::DeploymentFailure(
-            "Failed to deploy contract".to_string(),
-        )),
+        Err(e) => {
+            println!("Failed to deploy contract: {:?}", e);
+            Err(RunnerError::DeploymentFailure(
+                "Failed to deploy contract".to_string(),
+            ))
+        }
     }
 }
 
@@ -123,7 +126,7 @@ pub async fn deploy_contract_on_devnet(
             prefunded_account.provider(),
             result.transaction_hash,
             deployment.deployed_address(),
-            get_wait_config(),
+            get_wait_config(true),
         )
         .await
         .map_err(StarknetCommandError::from),
@@ -151,11 +154,11 @@ pub async fn deploy_contract_on_devnet(
         )),
     }
 }
-pub fn get_wait_config() -> WaitForTx {
-    let waiter_params = ValidatedWaitParams::new(5, 5);
+pub fn get_wait_config(wait: bool) -> WaitForTx {
+    let waiter_params = ValidatedWaitParams::new(5, 60);
 
     let wait_config = WaitForTx {
-        wait: true,
+        wait: wait,
         wait_params: waiter_params,
     };
     wait_config

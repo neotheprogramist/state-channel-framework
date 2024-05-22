@@ -19,7 +19,10 @@ pub(crate) async fn devnet_run(
         args.address_devnet,
         args.private_key_devnet,
     );
-    let prefunded_account = get_account;
+    let prefunded_account: starknet::accounts::SingleOwnerAccount<
+        starknet::providers::JsonRpcClient<starknet::providers::jsonrpc::HttpTransport>,
+        starknet::signers::LocalWallet,
+    > = get_account;
     let class_hash: FieldElement = declare_contract(&prefunded_account).await?;
     println!("DECLARED CONTRACT");
     let deployed_address = deploy_contract_on_devnet(

@@ -1,10 +1,12 @@
 use crate::apply::apply_agreements;
+use crate::declare::declare_contract;
 use crate::deploy::deploy_contract_on_sepolia;
 use crate::devnet::devnet_run;
 use crate::errors::RunnerError;
 use crate::models::get_agreements_data;
 use clap::Parser;
 use models::FieldElementAgreement;
+use sepolia::sepolia_run;
 use starknet::core::types::FieldElement;
 use url::Url;
 mod apply;
@@ -14,10 +16,9 @@ pub mod devnet;
 mod errors;
 mod get_account;
 mod models;
+mod sepolia;
 use dialoguer::{theme::ColorfulTheme, Select};
 use get_account::get_account;
-use std::thread::sleep;
-use std::time::Duration;
 
 #[derive(Parser, Debug, Clone)]
 #[command(version, about, long_about = None)]
@@ -52,7 +53,6 @@ struct Args {
     #[arg(long, env)]
     salt_devnet: FieldElement,
 }
-use starknet::macros::felt;
 
 #[tokio::main]
 async fn main() -> Result<(), RunnerError> {
@@ -77,45 +77,5 @@ async fn main() -> Result<(), RunnerError> {
         _ => unreachable!(),
     }
 
-    Ok(())
-}
-
-pub(crate) async fn sepolia_run(
-    args: Args,
-    agreements: Vec<FieldElementAgreement>,
-    server_public_key: String,
-    client_public_key: String,
-) -> Result<(), RunnerError> {
-    println!("GOT ACCOUNT");
-    let class_hash = felt!("0x026c4d6961674f8c33c55d2f7c9e78c32d00e73552bd0c1df8652db0b42bdd9c");
-    let deployed_address = deploy_contract_on_sepolia(
-        args.clone(),
-        client_public_key,
-        server_public_key,
-        class_hash,
-        args.salt,
-        args.udc_address,
-    )
-    .await?;
-    println!("DEPLOYED NEW CONTRACT");
-    const DELAY_SECONDS: u64 = 10;
-
-    println!("Waiting for contract deployment...");
-    sleep(Duration::new(DELAY_SECONDS, 0));
-    println!("cntract deployment...");
-    let gas_sum = apply_agreements(
-        agreements.clone(),
-        deployed_address,
-        args.rpc_url,
-        args.chain_id,
-        args.address,
-        args.private_key,
-    )
-    .await?;
-    println!(
-        "Gas consumed by {} contracts: : {}",
-        agreements.len(),
-        gas_sum
-    );
     Ok(())
 }

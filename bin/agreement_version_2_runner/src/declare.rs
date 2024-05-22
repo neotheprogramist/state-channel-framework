@@ -30,14 +30,19 @@ where
         .declare(Arc::new(flattened_class), casm_class_hash)
         .send()
         .await;
-    println!("DECLARING ");
     let class_hash = match result {
-        Ok(hash) => hash.class_hash,
+        Ok(hash) => {
+            println!("Declaration successful, class hash: {:?}", hash.class_hash);
+            hash.class_hash
+        }
         Err(AccountError::Provider(ProviderError::StarknetError(
             StarknetError::ContractError(data),
         ))) => {
+            println!("StarknetError encountered: {:?}", data.revert_error);
             if data.revert_error.contains("is already declared") {
-                parse_class_hash_from_error(&data.revert_error)
+                let parsed_class_hash = parse_class_hash_from_error(&data.revert_error);
+                println!("Parsed class hash from error: {:?}", parsed_class_hash);
+                parsed_class_hash
             } else {
                 return Err(RunnerError::AccountFailure(format!(
                     "Contract error: {}",
@@ -46,6 +51,7 @@ where
             }
         }
         Err(e) => {
+            println!("General account error encountered: {:?}", e);
             return Err(RunnerError::AccountFailure(format!("Account error: {}", e)));
         }
     };

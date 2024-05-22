@@ -101,10 +101,10 @@ async fn wait_for_receipt(
                 return Ok(receipt);
             }
             Err(ProviderError::StarknetError(err))
-                if err == StarknetError::TransactionHashNotFound && attempts < 10 =>
+                if err == StarknetError::TransactionHashNotFound && attempts < 20 =>
             {
                 attempts += 1;
-                sleep(Duration::from_secs(5)).await;
+                sleep(Duration::from_secs(1)).await;
             }
             Err(err) => return Err(err),
         }
