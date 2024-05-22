@@ -54,9 +54,9 @@ async fn create_contract(
     let params = json!({
         "id": id.to_string(),
         "address": quote.address.to_string(),
-        "quantity": quote.quantity,
+        "quantity": quote.quantity.to_string(),
         "nonce": quote.nonce.to_string(),
-        "price": quote.price,
+        "price": quote.price.to_string(),
         "server_signature_r": server_signature_r.to_string(),
         "server_signature_s": server_signature_s.to_string(),
         "client_signature_r": client_signature_r.to_string(),
