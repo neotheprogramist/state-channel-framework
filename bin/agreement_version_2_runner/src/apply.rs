@@ -23,6 +23,8 @@ pub async fn apply_agreements(
     let mut gas_fee_sum: FieldElement = FieldElement::from_hex_be("0x0").unwrap();
 
     for agreement in agreements {
+        let nonce = prefunded_account.get_nonce().await?;
+
         let send_result = prefunded_account
             .execute(vec![Call {
                 to: deployed_address,
@@ -37,6 +39,7 @@ pub async fn apply_agreements(
                     agreement.client_signature_s,
                 ],
             }])
+            .nonce(nonce)
             .fee_estimate_multiplier(2f64)
             .send()
             .await;
@@ -48,7 +51,7 @@ pub async fn apply_agreements(
 
                 if let Some(overall_fee) = extract_gas_fee(&receipt) {
                     println!("RECEIPT {}", overall_fee);
-                    gas_fee_sum = gas_fee_sum + overall_fee;
+                    gas_fee_sum += overall_fee;
                 } else {
                     eprintln!("Failed to extract gas fee from receipt.");
                     return Err(Box::new(std::io::Error::new(

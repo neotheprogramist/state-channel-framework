@@ -1,11 +1,7 @@
-use crate::apply::apply_agreements;
-use crate::declare::declare_contract;
-use crate::deploy::deploy_contract_on_sepolia;
 use crate::devnet::devnet_run;
 use crate::errors::RunnerError;
 use crate::models::get_agreements_data;
 use clap::Parser;
-use models::FieldElementAgreement;
 use sepolia::sepolia_run;
 use starknet::core::types::FieldElement;
 use url::Url;
@@ -18,7 +14,6 @@ mod get_account;
 mod models;
 mod sepolia;
 use dialoguer::{theme::ColorfulTheme, Select};
-use get_account::get_account;
 
 #[derive(Parser, Debug, Clone)]
 #[command(version, about, long_about = None)]

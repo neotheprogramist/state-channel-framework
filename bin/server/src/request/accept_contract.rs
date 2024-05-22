@@ -72,10 +72,10 @@ async fn create_contract(
         quantity: quote.quantity,
         nonce: &quote.nonce,
         price: quote.price,
-        server_signature_r: server_signature_r,
-        server_signature_s: server_signature_s,
-        client_signature_r: client_signature_r,
-        client_signature_s: client_signature_s,
+        server_signature_r,
+        server_signature_s,
+        client_signature_r,
+        client_signature_s,
     };
 
     let mut result = db

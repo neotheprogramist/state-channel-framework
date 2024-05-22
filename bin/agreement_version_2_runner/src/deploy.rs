@@ -1,6 +1,6 @@
+use crate::get_account::get_account;
 use crate::{
     errors::{parse_contract_address_from_error, RunnerError},
-    get_account,
     models::AgreementConstructor,
     Args,
 };
@@ -16,7 +16,6 @@ use starknet::{
     providers::{jsonrpc::HttpTransport, JsonRpcClient, ProviderError},
     signers::LocalWallet,
 };
-
 pub async fn deploy_contract_on_sepolia(
     args: Args,
     client_public_key: String,
@@ -126,7 +125,7 @@ pub async fn deploy_contract_on_devnet(
             prefunded_account.provider(),
             result.transaction_hash,
             deployment.deployed_address(),
-            get_wait_config(true),
+            get_wait_config(false),
         )
         .await
         .map_err(StarknetCommandError::from),
@@ -157,11 +156,10 @@ pub async fn deploy_contract_on_devnet(
 pub fn get_wait_config(wait: bool) -> WaitForTx {
     let waiter_params = ValidatedWaitParams::new(5, 60);
 
-    let wait_config = WaitForTx {
-        wait: wait,
+    WaitForTx {
+        wait,
         wait_params: waiter_params,
-    };
-    wait_config
+    }
 }
 
 fn create_contract_factory(

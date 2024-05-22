@@ -112,32 +112,6 @@ To launch starknet devnet, use the command:
   starknet-devnet
 ```
 
-## Creating and Deploying a New Account to Starknet Devnet
-
-To create a new account, use (you can use sncast account create --help to see the available options):
-
-1. **Create account**
-```bash
-  sncast --url http://localhost:5050/rpc account create --name new_account --class-hash  0x19...8dd6 --add-profile
-```
-Where the --clash-hash comes from the output of starknet-devnet
-Note: --add-profile creates profile in snfoundry.toml file.
-Example:
-```bash
-  Predeployed accounts using class with hash: 0x61dac032f228abef9c6626f995015233097ae253a7f72d68552db02f2971b8f
-```
-
-2. **Fund the account**
-```bash
-  curl -d '{"amount":8646000000000000, "address":"0x6e...eadf"}' -H "Content-Type: application/json" -X POST http://127.0.0.1:5050/mint
-```
-3. **Account deployment**
-Deploy the account to the starknet devnet local node to register it with the chain:
-
-```bash
-  sncast --url http://localhost:5050/rpc account deploy --name new_account
-```
-
 ## Declaring and Deploying Contract on Devnet
 
 To declare agreement contract and apply it follow the steps below.
@@ -145,12 +119,10 @@ To declare agreement contract and apply it follow the steps below.
 1. **Declare the necessary enviroment variables**
 
 ```bash
-
   ADDRESS_DEVNET = "0x18...69"
-  SALT_DEVNET = "0xc...72"
+  SALT_DEVNET = "0xcca64674ab8db572"
   PRIVATE_KEY_DEVNET = "0x26..."
   RPC_URL_DEVNET = "http://localhost:5050/rpc"
-
 ```
 
 2. **Run the program**

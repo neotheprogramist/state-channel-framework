@@ -1,3 +1,5 @@
+use std::time::Instant;
+
 use starknet::macros::felt;
 
 use crate::{
@@ -25,6 +27,7 @@ pub(crate) async fn sepolia_run(
     )
     .await?;
     println!("DEPLOYED NEW CONTRACT");
+    let start = Instant::now();
     let gas_sum = apply_agreements(
         agreements.clone(),
         deployed_address,
@@ -34,10 +37,14 @@ pub(crate) async fn sepolia_run(
         args.private_key,
     )
     .await?;
+    let duration = start.elapsed();
+
     println!(
         "Gas consumed by {} contracts: : {}",
         agreements.len(),
         gas_sum
     );
+    println!("Time taken to execute apply_agreements: {:?}", duration);
+
     Ok(())
 }
