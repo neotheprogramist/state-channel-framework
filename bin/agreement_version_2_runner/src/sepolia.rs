@@ -13,8 +13,6 @@ pub(crate) async fn sepolia_run(
     server_public_key: String,
     client_public_key: String,
 ) -> Result<(), RunnerError> {
-    println!("GOT ACCOUNT");
-
     let class_hash = felt!("0x026c4d6961674f8c33c55d2f7c9e78c32d00e73552bd0c1df8652db0b42bdd9c");
 
     let deployed_address = deploy_contract_on_sepolia(
@@ -26,7 +24,7 @@ pub(crate) async fn sepolia_run(
         args.udc_address,
     )
     .await?;
-    println!("DEPLOYED NEW CONTRACT");
+
     let start = Instant::now();
     let gas_sum = apply_agreements(
         agreements.clone(),

@@ -92,61 +92,56 @@
 
 This setup guide will help you to configure and run the necessary components for the project. Make sure you follow the steps in order to ensure everything functions as expected.
 
-# Naive method of contract settlements
+# Naive Method of Contract Settlements
+
+## Overview
+
+This guide provides instructions to generate sample agreements, set up Starknet Devnet, and deploy contracts on both Devnet and Sepolia.
 
 ## Generate Sample Agreements
 
-To generate agreements please execute.
+To generate sample agreements, **ensure you have created the directory resources/json_generator_out/** to avoid a "no such file" error. Then, execute the following command:
 
 ```bash
-  cargo run --bin json_generator -- --agreements-count <number_of_agreements>
+cargo run --bin json_generator -- --agreements-count <number_of_agreements>
 ```
 
-The outputs of the generator will be located at **resources/json_generator_out/** and will provide you with the data needed to deploy the contract and apply agreements.
+The generated outputs will be located in **resources/json_generator_out/**, which will contain the necessary data for deploying the contract and applying agreements.
 
-## Setting up Starknet Devnet
+## Setting Up Starknet Devnet
 
-To launch starknet devnet, use the command:
+To launch Starknet Devnet, use the command:
 
 ```bash
-  starknet-devnet
+starknet-devnet
 ```
 
-## Declaring and Deploying Contract on Devnet
+## Declaring and Deploying Contract on Devnet and Sepolia
 
-To declare agreement contract and apply it follow the steps below.
+Follow these steps to declare and deploy the agreement contract on Devnet:
 
-1. **Declare the necessary enviroment variables**
+1. **Set Environment Variables**
 
-```bash
-  ADDRESS_DEVNET = "0x18...69"
-  SALT_DEVNET = "0xcca64674ab8db572"
-  PRIVATE_KEY_DEVNET = "0x26..."
-  RPC_URL_DEVNET = "http://localhost:5050/rpc"
-```
+   Use the address and private key from the predeployed account, or create one yourself:
 
-2. **Run the program**
-```bash
-  cargo run --bin agreement_version_2_runner
-```
+   ```bash
+   export UDC_ADDRESS = "0x41A78E741E5AF2FEC34B695679BC6891742439F7AFB8484ECD7766661AD02BF"
+   export CHAIN_ID = "0x534e5f5345504f4c4941"
+   export ADDRESS_DEVNET="0x18...69"
+   export SALT_DEVNET="0xcca64674ab8db572"
+   export PRIVATE_KEY_DEVNET="0x26..."
+   export RPC_URL_DEVNET="http://localhost:5050/rpc"
+   export PRIVATE_KEY="0x07...8a3"
+   export RPC_URL="https://free-rpc.nethermind.io/sepolia-juno/v0_7"
+   export ADDRESS="0x028d...52DF30"
+   export SALT="0x023ba0a...418c29d"
+   export DECLARED_CONTRACT_ADDRESS = "0x026c4d6961674f8c33c55d2f7c9e78c32d00e73552bd0c1df8652db0b42bdd9c"
+   ```
 
+2. **Run the Program**
 
-## Declaring and Deploying Contract on Sepolia
+   ```bash
+   cargo run --bin agreement_version_2_runner
+   ```
 
-To declare agreement contract and apply it follow the steps below.
-
-1. **Declare the necessary enviroment variables**
-
-```bash
-  PRIVATE_KEY = "0x07...8a3"
-  RPC_URL = "https://free-rpc.nethermind.io/sepolia-juno/v0_7"
-  ADDRESS = "0x028d...52DF30"
-  SALT = "0x023ba0a...418c29d"
-```
-
-2. **Run the program**
-```bash
-  cargo run --bin agreement_version_2_runner
-```
-
-
+This streamlined guide ensures that you have all the necessary steps to generate agreements and deploy contracts on Starknet Devnet and Sepolia.

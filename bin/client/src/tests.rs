@@ -231,7 +231,7 @@ mod prop_testing {
     const URL_ACCEPT_CONTRACT: &str = "/acceptContract";
     const URL_REQUEST_QUOTE: &str = "/requestQuoteWithPrice";
     const URL_REQUEST_SETTLEMENT_PROOF: &str = "/requestSettlementProofWithPrice";
-    use rand_core::OsRng;
+
     use server::request::account::MockAccount;
     //TEST 50 buys and 50 sells of the same price which should be equall to 0
     fn fixed_composition_strategy() -> BoxedStrategy<Vec<i64>> {

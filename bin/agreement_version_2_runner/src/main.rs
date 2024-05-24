@@ -47,6 +47,9 @@ struct Args {
 
     #[arg(long, env)]
     salt_devnet: FieldElement,
+
+    #[arg(long, env)]
+    declared_contract_address: FieldElement,
 }
 
 #[tokio::main]
@@ -63,6 +66,7 @@ async fn main() -> Result<(), RunnerError> {
 
     match selections[selection] {
         "Sepolia" => {
+            println!("You selected Sepolia. Proceeding with Sepolia...");
             let _ = sepolia_run(args, agreements, server_public_key, client_public_key).await;
         }
         "Devnet" => {

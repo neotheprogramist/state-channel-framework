@@ -16,6 +16,7 @@ use starknet::{
     providers::{jsonrpc::HttpTransport, JsonRpcClient, ProviderError},
     signers::LocalWallet,
 };
+
 pub async fn deploy_contract_on_sepolia(
     args: Args,
     client_public_key: String,
@@ -62,7 +63,7 @@ pub async fn deploy_contract_on_sepolia(
         Err(AccountError::Provider(ProviderError::StarknetError(
             StarknetError::ContractError(data),
         ))) => {
-            println!("StarknetError encountered: {}", data.revert_error); // Debugging print
+            println!("StarknetError encountered: {}", data.revert_error);
             if data.revert_error.contains("is unavailable for deployment") {
                 Ok(parse_contract_address_from_error(&data.revert_error))
             } else {
@@ -155,7 +156,6 @@ pub async fn deploy_contract_on_devnet(
 }
 pub fn get_wait_config(wait: bool, retry_interval: u8) -> WaitForTx {
     let waiter_params = ValidatedWaitParams::new(retry_interval, 60);
-
     WaitForTx {
         wait,
         wait_params: waiter_params,

@@ -11,7 +11,6 @@ use starknet::{
 use std::sync::Arc;
 
 pub const SIERRA_STR: &str = include_str!("../../../src/agreement_version_2/target/dev/agreement_version_2_AgreementVersion2.contract_class.json");
-// We can store only the class_hash and thus te casm_str would not be needed but for now it is
 pub const CASM_STR: &str = include_str!("../../../src/agreement_version_2/target/dev/agreement_version_2_AgreementVersion2.compiled_contract_class.json");
 
 pub async fn declare_contract<P, S>(
@@ -55,6 +54,5 @@ where
             return Err(RunnerError::AccountFailure(format!("Account error: {}", e)));
         }
     };
-    println!("OK");
     Ok(class_hash)
 }

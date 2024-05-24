@@ -1,8 +1,6 @@
 use crate::deploy::get_wait_config;
 use crate::{get_account::get_account, models::FieldElementAgreement};
-use sncast::{
-    handle_wait_for_tx, response::errors::StarknetCommandError, ValidatedWaitParams, WaitForTx,
-};
+use sncast::{handle_wait_for_tx, response::errors::StarknetCommandError};
 use starknet::core::types::{InvokeTransactionResult, PendingTransactionReceipt, StarknetError};
 use starknet::{
     accounts::{Account, Call, ConnectedAccount, SingleOwnerAccount},
@@ -27,7 +25,6 @@ pub async fn apply_agreements(
     let nonce = prefunded_account.get_nonce().await?;
 
     for (i, agreement) in agreements.iter().enumerate() {
-        // Execute the command to estimate the fee
         let fee_estimate_result = prefunded_account
             .execute(vec![Call {
                 to: deployed_address,
@@ -46,15 +43,14 @@ pub async fn apply_agreements(
             .estimate_fee()
             .await;
 
-        // Check for errors in fee estimation and handle them
         let estimated_fee = match fee_estimate_result {
             Ok(fee) => {
                 println!("Estimated Fee for transaction {}: {}", i, fee.overall_fee);
-                fee.overall_fee // Use the overall_fee directly if it's all you need
+                fee.overall_fee
             }
             Err(e) => {
                 eprintln!("Error estimating fee for transaction {}: {:?}", i, e);
-                return Err(Box::new(e)); // Exit the function if fee estimation fails
+                return Err(Box::new(e));
             }
         };
         println!("Estimated Fee for transaction {}: {}", i, estimated_fee);
@@ -106,7 +102,6 @@ pub async fn apply_agreements(
             }
         };
         let receipt = wait_for_receipt(&prefunded_account, result?.transaction_hash).await?;
-        println!("NUMBERR {}", i);
         if let Some(overall_fee) = extract_gas_fee(&receipt) {
             println!("RECEIPT {}", overall_fee);
             gas_fee_sum += overall_fee;
@@ -124,8 +119,6 @@ pub async fn apply_agreements(
 
 // Function to extract gas fee from the receipt
 fn extract_gas_fee(receipt: &MaybePendingTransactionReceipt) -> Option<FieldElement> {
-    println!("extract_gas_fee");
-
     match receipt {
         MaybePendingTransactionReceipt::Receipt(receipt) => match receipt {
             TransactionReceipt::Invoke(receipt) => Some(receipt.actual_fee.amount),
@@ -142,6 +135,7 @@ fn extract_gas_fee(receipt: &MaybePendingTransactionReceipt) -> Option<FieldElem
         },
     }
 }
+
 // Function to poll for transaction receipt until it's available
 async fn wait_for_receipt(
     provider: &SingleOwnerAccount<JsonRpcClient<HttpTransport>, LocalWallet>,
@@ -152,7 +146,6 @@ async fn wait_for_receipt(
         println!("Transaction_hash {:x}", tx_hash);
         match provider.provider().get_transaction_receipt(tx_hash).await {
             Ok(receipt) => {
-                println!("Got receipt");
                 return Ok(receipt);
             }
             Err(ProviderError::StarknetError(err))

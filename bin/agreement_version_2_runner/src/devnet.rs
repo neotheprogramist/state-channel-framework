@@ -12,7 +12,6 @@ pub(crate) async fn devnet_run(
     server_public_key: String,
     client_public_key: String,
 ) -> Result<(), RunnerError> {
-    println!("DECLARED CONTRACT");
     let get_account = get_account(
         args.rpc_url_devnet.clone(),
         args.chain_id,
@@ -24,7 +23,7 @@ pub(crate) async fn devnet_run(
         starknet::signers::LocalWallet,
     > = get_account;
     let class_hash: FieldElement = declare_contract(&prefunded_account).await?;
-    println!("DECLARED CONTRACT");
+
     let deployed_address = deploy_contract_on_devnet(
         args.clone(),
         client_public_key,
@@ -34,9 +33,7 @@ pub(crate) async fn devnet_run(
         args.udc_address,
     )
     .await?;
-    println!("DEPLOYED CONTRACT {:x}", deployed_address);
 
-    println!("contract deployment...");
     let start = Instant::now();
 
     let gas_sum = apply_agreements(
