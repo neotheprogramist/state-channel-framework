@@ -55,7 +55,7 @@ pub async fn deploy_contract_on_sepolia(
             prefunded_account.provider(),
             result.transaction_hash,
             deployment.deployed_address(),
-            get_wait_config(true),
+            get_wait_config(true, 5),
         )
         .await
         .map_err(StarknetCommandError::from),
@@ -125,7 +125,7 @@ pub async fn deploy_contract_on_devnet(
             prefunded_account.provider(),
             result.transaction_hash,
             deployment.deployed_address(),
-            get_wait_config(false),
+            get_wait_config(false, 5),
         )
         .await
         .map_err(StarknetCommandError::from),
@@ -153,8 +153,8 @@ pub async fn deploy_contract_on_devnet(
         )),
     }
 }
-pub fn get_wait_config(wait: bool) -> WaitForTx {
-    let waiter_params = ValidatedWaitParams::new(5, 60);
+pub fn get_wait_config(wait: bool, retry_interval: u8) -> WaitForTx {
+    let waiter_params = ValidatedWaitParams::new(retry_interval, 60);
 
     WaitForTx {
         wait,
