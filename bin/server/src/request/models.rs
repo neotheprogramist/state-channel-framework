@@ -1,15 +1,13 @@
-use bytes::{Bytes, BytesMut};
-use rand::RngCore;
+use super::account::MockAccount;
+use bytes::Bytes;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use serde_with::serde_as;
+use starknet::signers::SigningKey;
 use std::ops::Deref;
 use std::{io, str::FromStr};
 use surrealdb::engine::local::Db;
 use surrealdb::sql::Id;
 use surrealdb::Surreal;
-
-use super::account::MockAccount;
-
 impl std::fmt::Display for Quote {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
@@ -34,18 +32,18 @@ pub struct RequestQuotationWithPrice {
     pub quantity: i64,
     pub price: i64,
 }
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct RequestQuotationResponse {
     pub quote: Quote,
     pub server_signature_r: String,
     pub server_signature_s: String,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Quote {
     pub address: String,
     pub quantity: i64,
-    pub nonce: Nonce,
+    pub nonce: String,
     pub price: i64,
 }
 #[serde_as]
@@ -95,10 +93,18 @@ pub struct RequestAcceptContract {
 pub struct Nonce(Bytes);
 
 impl Nonce {
-    pub fn new(size: usize) -> Self {
-        let mut bytes = BytesMut::zeroed(size);
-        rand::thread_rng().fill_bytes(bytes.as_mut());
-        Self(bytes.into())
+    pub fn new() -> Self {
+        let secret_key = SigningKey::from_random();
+        let bytes_repr: [u8; 32] = secret_key.secret_scalar().to_bytes_be(); // Assuming this returns [u8; 32]
+        let bytes = Bytes::copy_from_slice(&bytes_repr); // Use the array directly
+
+        Self(bytes)
+    }
+}
+
+impl Default for Nonce {
+    fn default() -> Self {
+        Self::new()
     }
 }
 

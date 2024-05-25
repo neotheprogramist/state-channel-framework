@@ -4,10 +4,8 @@ use axum::{
     Router,
 };
 use dialoguer::console::style;
-use rand::rngs::OsRng;
 use serde_json::json;
 use serde_json::Value;
-use server::request::account::scalar_to_hex;
 use server::request::account::MockAccount;
 use server::request::models::{
     AgreeToQuotation, RequestQuotationResponse, RequestQuotationWithPrice, SettlementProofResponse,
@@ -95,21 +93,9 @@ pub async fn accept_contract(
     url: &str,
     router: Router,
 ) -> Result<(), Box<dyn std::error::Error>> {
-    let data_to_sign = serde_json::to_string(&request_quotation_response)?;
-    let quote_data = serde_json::to_string(&data_to_sign).unwrap();
-    let quote_bytes = quote_data.as_bytes();
-    let mut rng = OsRng;
-    let mock_account = MockAccount::new(&mut rng);
-    let client_signature = mock_account.sign_message(quote_bytes);
-
-    let (client_signature_r, client_signature_s) = match client_signature {
-        Ok(signature) => (scalar_to_hex(&signature.r), scalar_to_hex(&signature.s)),
-        Err(e) => {
-            println!("Failed to sign message: {}", e);
-            return Err(e.into());
-        }
-    };
-
+    let mock_account = MockAccount::new();
+    let (client_signature_r, client_signature_s) =
+        mock_account.sign_message(request_quotation_response.quote.clone())?;
     let request_quotation = AgreeToQuotation {
         quote: request_quotation_response.quote,
         server_signature_r: request_quotation_response.server_signature_r,

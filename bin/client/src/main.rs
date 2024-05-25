@@ -7,9 +7,6 @@ struct Args {
     #[arg(long, default_value_t = String::from("http://localhost:7005/server/requestQuote"))]
     url_request_quote: String,
 
-    #[arg(long, default_value_t = String::from("http://localhost:7005/server/acceptContract"))]
-    url_accept_contract: String,
-
     #[arg(long, default_value_t = String::from("http://localhost:7005/server/requestSettlementProof"))]
     url_request_settlement_proof: String,
 

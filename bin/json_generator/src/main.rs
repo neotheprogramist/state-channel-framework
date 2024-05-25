@@ -2,7 +2,6 @@ use crate::requests::{create_agreement, request_settlement_proof_with_price_and_
 use axum::Router;
 use clap::Parser;
 use generate_data::generate_identical_but_shuffled_prices;
-use rand_core::OsRng;
 use serde::ser::StdError;
 use server::request::account::MockAccount;
 use server::request::models::AppState;
@@ -39,20 +38,18 @@ async fn main() -> Result<(), Box<dyn StdError>> {
     let agreements_count = args.agreements_count / 2;
     let (buy_prices, sell_prices) = generate_identical_but_shuffled_prices(agreements_count);
 
-    let address = "test_case";
+    let address = "0x4b3f4ba8c00a02b66142a4b1dd41a4dfab4f92650922a3280977b0f03c75ee1";
     let db = Surreal::new::<Mem>(())
         .await
         .expect("Failed to initialize the database");
     let _ = db.use_ns("test").use_db("test").await;
-    let mut rng = OsRng;
-    let server_mock_account = MockAccount::new(&mut rng);
+    let server_mock_account = MockAccount::new();
     let state: AppState = AppState {
         db,
         mock_account: server_mock_account.clone(),
     };
 
-    let mut rng = OsRng;
-    let client_mock_account = MockAccount::new(&mut rng);
+    let client_mock_account = MockAccount::new();
 
     let router: Router = server::request::router(&state);
 
@@ -82,7 +79,7 @@ async fn main() -> Result<(), Box<dyn StdError>> {
         )
         .await?;
     }
-
+    println!("CORRECT");
     let settlement_price = 1500i64;
     // Request settlement
     let settlement_proof = request_settlement_proof_with_price_and_data(
@@ -94,7 +91,7 @@ async fn main() -> Result<(), Box<dyn StdError>> {
     .await?;
     //Save to files
     // TODO : HARDCODED FILE PATH
-    let path_in: &str = "bin/json_generator/output/in.json";
+    let path_in: &str = "resources/json_generator_out/in.json";
     prepare_and_save_data(
         path_in.to_string(),
         settlement_proof.clone(),
@@ -102,7 +99,7 @@ async fn main() -> Result<(), Box<dyn StdError>> {
         server_mock_account.clone(),
     )
     .await?;
-    let path_out: &str = "bin/json_generator/output/out.json";
+    let path_out: &str = "resources/json_generator_out/out.json";
     save_out(
         path_out.to_string(),
         settlement_price,

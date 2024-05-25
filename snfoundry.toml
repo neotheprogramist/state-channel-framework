@@ -1,0 +1,24 @@
+[sncast.default]
+account = "testnet-sepolia"
+accounts-file = "~/.starknet_accounts/starknet_open_zeppelin_accounts.json"
+url = "https://free-rpc.nethermind.io/sepolia-juno/v0_7"
+
+[sncast.testingnet2]
+account = "testingnet2"
+accounts-file = "/home/adampal/.starknet_accounts/starknet_open_zeppelin_accounts.json"
+url = "http://localhost:5040/rpc"
+
+[sncast.adampal]
+account = "adampal"
+accounts-file = "/home/adampal/.starknet_accounts/starknet_open_zeppelin_accounts.json"
+url = "https://free-rpc.nethermind.io/sepolia-juno/v0_7"
+
+[sncast.adamtest]
+account = "adamtest"
+accounts-file = "/home/adampal/.starknet_accounts/starknet_open_zeppelin_accounts.json"
+url = "https://starknet-sepolia.public.blastapi.io/rpc/v0_7"
+
+[sncast.my_imported_account]
+account = "my_imported_account"
+accounts-file = "/home/adampal/.starknet_accounts/starknet_open_zeppelin_accounts.json"
+url = "https://free-rpc.nethermind.io/sepolia-juno/v0_7"

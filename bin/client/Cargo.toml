@@ -27,16 +27,16 @@ reqwest = { version = "0.11", features = ["blocking", "json"] }
 serde_with = "=1.6.1"
 rand = "0.8.5"
 prefix-hex = "0.7.1"
-ed25519-dalek ={version = "2.1.1", features = ["rand_core"]} 
+ed25519-dalek = { version = "2.1.1", features = ["rand_core"] }
 stark-curve = "0.1.1"
 rand_core = "0.6.4"
 elliptic-curve = "0.13.8"
 primeorder = "0.13.6"
-sha2="0.10.8"
+sha2 = "0.10.8"
 num-bigint = "0.4.4"
 surrealdb = "1.4.2"
-dialoguer= "0.11.0"
+dialoguer = "0.11.0"
 proptest = "1.4.0"
 seq-macro = "0.3.5"
 futures = "0.3.30"
-server.workspace=true 
+server.workspace = true
