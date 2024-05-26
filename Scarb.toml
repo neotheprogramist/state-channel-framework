@@ -1,21 +1,11 @@
-[package]
-name = "state_channel_framework"
+[workspace]
+members = ["contracts", "provable"]
+
+[workspace.package]
+edition = "2023_10"
 version = "0.1.0"
-edition = "2023_11"
 
-# See more keys and their definitions at https://docs.swmansion.com/scarb/docs/reference/manifest.html
-
-[dependencies]
+[workspace.dependencies]
 openzeppelin = { git = "https://github.com/OpenZeppelin/cairo-contracts.git", tag = "v0.12.0" }
+snforge_std = { git = "https://github.com/foundry-rs/starknet-foundry", tag = "v0.24.0" }
 starknet = "2.6.3"
-
-[dev-dependencies]
-snforge_std = { git = "https://github.com/foundry-rs/starknet-foundry", tag = "v0.22.0" }
-
-[[target.starknet-contract]]
-casm = true
-
-[[tool.snforge.fork]]
-name = "SN_SEPOLIA"
-url = "https://starknet-sepolia.public.blastapi.io/rpc/v0_7"
-block_id.tag = "Latest"

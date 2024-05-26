@@ -28,7 +28,7 @@ mod errors {
 
 #[starknet::contract]
 mod Agreement {
-    use state_channel_framework::{
+    use contracts::{
         agreement::{ProgramOutput, errors},
         facts_registry::{IFactsRegistryDispatcher, IFactsRegistryDispatcherTrait},
     };

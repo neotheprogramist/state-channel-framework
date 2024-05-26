@@ -2,7 +2,7 @@ use starknet::{ContractAddress, contract_address_const};
 
 use snforge_std::{declare, ContractClassTrait};
 
-use state_channel_framework::udc::{IUniversalDeployerDispatcher, IUniversalDeployerDispatcherTrait};
+use contracts::udc::{IUniversalDeployerDispatcher, IUniversalDeployerDispatcherTrait};
 
 pub const DEFAULT_ACCOUNT: felt252 = selector!("DEFAULT_ACCOUNT");
 
