@@ -1,11 +1,22 @@
-pub fn fib(mut n: felt252) -> felt252 {
-    let mut a: felt252 = 0;
-    let mut b: felt252 = 1;
-    while n != 0 {
-        n = n - 1;
-        let temp = b;
-        b = a + b;
-        a = temp;
-    };
-    a
+use super::agreement::Agreement;
+
+struct LineCoefficients {
+    a: felt252,
+    b: felt252,
+}
+
+pub fn aggregate(
+    client_public_key: felt252, server_public_key: felt252, agreements: Array<Agreement>
+) -> LineCoefficients {
+    let mut a = 0;
+    let mut b = 0;
+    let mut i = 0;
+    while i != agreements
+        .len() {
+            a += *agreements.at(i).quantity;
+            b -= *agreements.at(i).quantity * *agreements.at(i).price;
+            i += 1;
+        };
+
+    LineCoefficients { a, b }
 }

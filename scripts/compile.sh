@@ -1,10 +1,5 @@
-#!/usr/bin/env bash
+#!/usr/bin/env zsh
 
-source .venv/bin/activate && \
-mkdir -p resources/$1 && \
-cairo-compile \
-  cairo0/$1.cairo \
-  --cairo_path cairo0 \
-  --output resources/$1/compiled.json \
-  --proof_mode && \
-deactivate
+mkdir -p target/provable && \
+cairo1-compile compile provable/src/lib.cairo > target/provable/compiled.sierra.json && \
+cairo1-compile merge --output target/provable/compiled_with_input.json target/provable/compiled.sierra.json provable/input.json

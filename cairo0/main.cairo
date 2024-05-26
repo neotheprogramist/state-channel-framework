@@ -14,12 +14,15 @@ func main{output_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr: felt, 
 
     let (input: Input) = get_agreements();
     let (a: felt, b: felt) = aggregate(input.agreements_len, input.agreements, 0, 0);
+    let result = a * input.settlement_price + b;
 
     assert output_ptr[0] = input.client_public_key;
     assert output_ptr[1] = input.server_public_key;
-    assert output_ptr[2] = a;
-    assert output_ptr[3] = b;
-    let output_ptr = output_ptr + 4;
+    assert output_ptr[2] = input.settlement_price;
+    assert output_ptr[3] = a;
+    assert output_ptr[4] = b;
+    assert output_ptr[5] = result;
+    let output_ptr = output_ptr + 6;
 
     return ();
 }

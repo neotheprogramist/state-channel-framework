@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 source .venv/bin/activate && \
-mkdir -p resources/$1 && \
+mkdir -p target/cairo0 && \
 cairo-hash-program \
-  --program resources/$1/compiled.json && \
+  --program target/cairo0/program.casm.json && \
 deactivate

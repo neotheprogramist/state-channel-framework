@@ -3,6 +3,7 @@ struct Input {
     server_public_key: felt,
     agreements_len: felt,
     agreements: Agreement**,
+    settlement_price: felt,
 }
 
 struct Agreement {
@@ -36,6 +37,7 @@ func get_agreements() -> (input: Input) {
         ]
         ids.input.client_public_key = int(program_input["clientPublicKey"])
         ids.input.server_public_key = int(program_input["serverPublicKey"])
+        ids.input.settlement_price = int(program_input["settlementPrice"])
         ids.input.agreements_len = len(agreements)
         ids.input.agreements = segments.gen_arg(agreements)
     %}
