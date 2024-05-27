@@ -1,7 +1,5 @@
 use std::time::Instant;
 
-use starknet::macros::felt;
-
 use crate::{
     apply::apply_agreements, deploy::deploy_contract_on_sepolia, errors::RunnerError,
     models::FieldElementAgreement, Args,
@@ -13,7 +11,7 @@ pub(crate) async fn sepolia_run(
     server_public_key: String,
     client_public_key: String,
 ) -> Result<(), RunnerError> {
-    let class_hash = felt!("0x026c4d6961674f8c33c55d2f7c9e78c32d00e73552bd0c1df8652db0b42bdd9c");
+    let class_hash: starknet::core::types::FieldElement = args.declared_contract_address;
 
     let deployed_address = deploy_contract_on_sepolia(
         args.clone(),

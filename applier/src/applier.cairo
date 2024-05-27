@@ -1,5 +1,4 @@
 use starknet::ContractAddress;
-
 #[derive(Drop, Serde, starknet::Store, PartialEq)]
 pub struct Agreement {
     pub quantity: felt252,
@@ -12,7 +11,7 @@ pub struct Agreement {
 }
 
 #[starknet::interface]
-pub trait IAgreementVersion2<TContractState> {
+pub trait IApplier<TContractState> {
     fn apply(ref self: TContractState, agreement: Agreement,) -> Result<felt252, felt252>;
     fn result(self: @TContractState, x: u256) -> u256;
     fn get_client_balance(self: @TContractState) -> u256;
@@ -23,14 +22,13 @@ pub trait IAgreementVersion2<TContractState> {
 }
 
 #[starknet::contract]
-mod AgreementVersion2 {
+mod Applier {
     use core::traits::Into;
     use core::ecdsa::check_ecdsa_signature;
     use core::poseidon::{PoseidonImpl, PoseidonTrait};
     use core::hash::HashStateTrait;
     use core::result::ResultTrait;
-
-    use agreement_version_2::agreement_version_2::Agreement;
+    use applier::applier::Agreement;
 
     #[storage]
     struct Storage {
@@ -57,7 +55,7 @@ mod AgreementVersion2 {
     }
 
     #[abi(embed_v0)]
-    impl AgreementVersion2Impl of super::IAgreementVersion2<ContractState> {
+    impl ApplierImpl of super::IApplier<ContractState> {
         fn apply(ref self: ContractState, agreement: Agreement) -> Result<felt252, felt252> {
             let agreement_hash = PoseidonImpl::new()
                 .update(self.client_public_key.read())
@@ -74,6 +72,16 @@ mod AgreementVersion2 {
             );
             if !valid_server_signature {
                 return Result::Err('Invalid server signature');
+            }
+
+            let valid_client_signature = check_ecdsa_signature(
+                agreement_hash,
+                self.client_public_key.read(),
+                agreement.client_signature_r,
+                agreement.client_signature_s
+            );
+            if !valid_client_signature {
+                return Result::Err('Invalid client signature');
             }
 
             let curr_a = self.a.read() + agreement.quantity.into();

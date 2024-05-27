@@ -1,7 +1,7 @@
 [workspace]
 resolver = "2"
 members = [
-    "bin/agreement_version_2_runner",
+    "bin/applier_runner",
     "bin/client",
     "bin/json_generator",
     "bin/prover",
@@ -37,3 +37,40 @@ tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
 serde = { version = "^1", features = ["derive"] }
 serde_json = "^1"
 starknet = { git = "https://github.com/xJonathanLEI/starknet-rs", rev = "d980869" }
+url = "2.5.0"
+sncast = { git = "https://github.com/neotheprogramist/starknet-foundry", branch = "fix/unlock" }
+dialoguer = "0.9"
+regex = "1.10.4"
+anyhow = "1"
+bytes = "1.4.0"
+tower = "0.4.13"
+hyper-util = "0.1.3"
+http-body-util = "0.1.1"
+http = "1.1.0"
+reqwest = { version = "0.12.4", features = ["blocking", "json"] }
+serde_with = "=1.6.1"
+rand = "0.8.5"
+prefix-hex = "0.7.1"
+ed25519-dalek = { version = "2.1.1", features = ["rand_core"] }
+stark-curve = "0.1.1"
+hex = "0.4.3"
+chrono = "0.4.38"
+reqwest_cookie_store = "0.7.0"
+cookie_store = "0.21.0"
+rand_core = "0.6.4"
+surrealdb = { version = "1.4.2", features = ["kv-mem"] }
+elliptic-curve = "0.13.8"
+primeorder = "0.13.6"
+sha2 = "0.10.8"
+num-bigint = "0.4.4"
+uuid = "1.8.0"
+secp256k1 = { version = "0.29.0", features = ["rand", "hashes", "rand-std"] }
+ecdsa = { version = "0.16.9", features = ["arithmetic"] }
+sha256 = "1.5.0"
+lazy_static = "1.4.0"
+curve25519-dalek = "4"
+jsonwebtoken = "9"
+once_cell = "1.19.0"
+proptest = "1.4.0"
+futures = "0.3.30"
+seq-macro = "0.3.5"

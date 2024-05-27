@@ -10,8 +10,10 @@ use starknet::{
 };
 use std::sync::Arc;
 
-pub const SIERRA_STR: &str = include_str!("../../../src/agreement_version_2/target/dev/agreement_version_2_AgreementVersion2.contract_class.json");
-pub const CASM_STR: &str = include_str!("../../../src/agreement_version_2/target/dev/agreement_version_2_AgreementVersion2.compiled_contract_class.json");
+pub const SIERRA_STR: &str =
+    include_str!("../../../applier/target/dev/applier_Applier.contract_class.json");
+pub const CASM_STR: &str =
+    include_str!("../../../applier/target/dev/applier_Applier.compiled_contract_class.json");
 
 pub async fn declare_contract<P, S>(
     prefunded_account: &SingleOwnerAccount<P, S>,

@@ -1,0 +1,1 @@
+{"version":1,"contracts":[{"id":"6kpoufj7nn5ss","package_name":"applier","contract_name":"Applier","module_path":"applier::applier::Applier","artifacts":{"sierra":"applier_Applier.contract_class.json","casm":"applier_Applier.compiled_contract_class.json"}}]}

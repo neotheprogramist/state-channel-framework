@@ -1,5 +1,5 @@
 [package]
-name = "agreement_version_2"
+name = "applier"
 version = "0.1.0"
 edition = "2023_11"
 
