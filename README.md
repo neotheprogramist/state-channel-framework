@@ -100,7 +100,7 @@ This guide provides instructions to generate sample agreements, set up Starknet 
 
 ## Generate Sample Agreements
 
-To generate sample agreements, **ensure you have created the directory target/generator_output/** inside state-channel-framework, to avoid a "no such file" error. Then, execute the following command:
+To generate sample agreements, **ensure you have created the directory resources/json_generator_out/** to avoid a "no such file" error. Then, execute the following command:
 
 ```bash
 cargo run --bin json_generator -- --agreements-count <number_of_agreements>
@@ -121,6 +121,8 @@ starknet-devnet
 Follow these steps to declare and deploy the agreement contract on Devnet:
 
 1. **Set Environment Variables**
+    
+    If non-existent, create file **.cargo/config.toml** to hold our enviroment variables.
     
     If non-existent, create file **.cargo/config.toml** to hold our enviroment variables.
 
