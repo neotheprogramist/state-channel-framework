@@ -27,13 +27,8 @@ mod errors {
 }
 
 #[starknet::contract]
-<<<<<<<< Updated upstream:verifier_applier/src/verifier_applier.cairo
 mod VerifierApplier {
     use verifier_applier::{
-========
-mod IVerifierApplier {
-    use state_channel_framework::{
->>>>>>>> Stashed changes:verifier_contract/verifier_applier.cairo
         verifier_applier::{ProgramOutput, errors},
         facts_registry::{IFactsRegistryDispatcher, IFactsRegistryDispatcherTrait},
     };

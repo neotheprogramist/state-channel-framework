@@ -50,11 +50,7 @@ mod AgreementFactory {
     use core::panic_with_felt252;
     use starknet::{ClassHash, ContractAddress, contract_address_const};
 
-<<<<<<<< Updated upstream:verifier_applier/src/agreement_factory.cairo
     use verifier_applier::{
-========
-    use state_channel_framework::{
->>>>>>>> Stashed changes:verifier_contract/agreement_factory.cairo
         agreement_factory::{
             Agreement, AgreementAcceptance, AgreementProposal, errors, ProposedAgreement
         },
