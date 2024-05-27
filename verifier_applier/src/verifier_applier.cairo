@@ -76,7 +76,7 @@ mod VerifierApplier {
     }
 
     #[abi(embed_v0)]
-    impl IVerifierApplierImpl of super::IVerifierApplier<ContractState> {
+    impl VerifierApplierImpl of super::IVerifierApplier<ContractState> {
         fn get_program_hash(self: @ContractState) -> felt252 {
             self.program_hash.read()
         }
