@@ -20,22 +20,22 @@ tracing.workspace = true
 tracing-subscriber.workspace = true
 serde.workspace = true
 serde_json.workspace = true
-prefix-hex = "0.7.1"
-bytes = "1.4.0"
-hex = "0.4.3"
-serde_with = "1.6.1"
-reqwest = { version = "0.11", features = ["blocking", "json"] }
-ed25519-dalek = { version = "2.1.1", features = ["rand_core"] }
-rand = "0.8.5"
-rand_core = "0.6.4"
-surrealdb = { version = "1.4.2", features = ["kv-mem"] }
-stark-curve = "0.1.1"
-elliptic-curve = "0.13.8"
-primeorder = "0.13.6"
-sha2 = "0.10.8"
-num-bigint = "0.4.4"
-uuid = "1.8.0"
-secp256k1 = { version = "0.29.0", features = ["rand", "hashes", "rand-std"] }
-ecdsa = { version = "0.16.9", features = ["arithmetic"] }
-starknet = "0.10.0"
-sha256 = "1.5.0"
+prefix-hex.workspace = true
+bytes.workspace = true
+hex.workspace = true
+serde_with.workspace = true
+reqwest.workspace = true
+ed25519-dalek.workspace = true
+rand.workspace = true
+rand_core.workspace = true
+surrealdb .workspace= true
+stark-curve.workspace = true
+elliptic-curve.workspace = true
+primeorder.workspace = true
+sha2.workspace = true
+num-bigint.workspace = true
+uuid.workspace = true
+secp256k1.workspace = true
+ecdsa .workspace= true
+starknet.workspace = true
+sha256.workspace = true
