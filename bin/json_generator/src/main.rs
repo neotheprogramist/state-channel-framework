@@ -30,6 +30,12 @@ struct Args {
 
     #[arg(short, long, default_value_t = 1)]
     agreements_count: u64,
+
+    #[arg(long, default_value_t = String::from("target/generator_output/in.json"))]
+    path_in: String,
+
+    #[arg(long, default_value_t = String::from("target/generator_output/out.json"))]
+    path_out: String,
 }
 
 #[tokio::main]
@@ -89,19 +95,17 @@ async fn main() -> Result<(), Box<dyn StdError>> {
         router.clone(),
     )
     .await?;
+
     //Save to files
-    // TODO : HARDCODED FILE PATH
-    let path_in: &str = "resources/json_generator_out/in.json";
     prepare_and_save_data(
-        path_in.to_string(),
+        args.path_in.to_string(),
         settlement_proof.clone(),
         client_mock_account.clone(),
         server_mock_account.clone(),
     )
     .await?;
-    let path_out: &str = "resources/json_generator_out/out.json";
     save_out(
-        path_out.to_string(),
+        args.path_out.to_string(),
         settlement_price,
         settlement_proof.diff,
     )

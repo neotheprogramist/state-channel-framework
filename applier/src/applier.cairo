@@ -25,7 +25,7 @@ pub trait IApplier<TContractState> {
 mod Applier {
     use core::traits::Into;
     use core::ecdsa::check_ecdsa_signature;
-    use core::poseidon::{PoseidonImpl, PoseidonTrait};
+    use core::poseidon::{PoseidonImpl, PoseidonTrait, poseidon_hash_span};
     use core::hash::HashStateTrait;
     use core::result::ResultTrait;
     use applier::applier::Agreement;
@@ -57,12 +57,16 @@ mod Applier {
     #[abi(embed_v0)]
     impl ApplierImpl of super::IApplier<ContractState> {
         fn apply(ref self: ContractState, agreement: Agreement) -> Result<felt252, felt252> {
-            let agreement_hash = PoseidonImpl::new()
-                .update(self.client_public_key.read())
-                .update(agreement.quantity)
-                .update(agreement.nonce)
-                .update(agreement.price)
-                .finalize();
+ 
+            let agreement_hash = poseidon_hash_span(
+                array![
+                    self.client_public_key.read(),
+                    agreement.quantity,
+                    agreement.nonce,
+                    agreement.price
+                ]
+                    .span()
+            );
 
             let valid_server_signature = check_ecdsa_signature(
                 agreement_hash,
