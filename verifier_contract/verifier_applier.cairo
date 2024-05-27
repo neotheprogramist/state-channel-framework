@@ -9,7 +9,7 @@ struct ProgramOutput {
 }
 
 #[starknet::interface]
-pub trait IVerifier_Applier<TContractState> {
+pub trait IVerifierApplier<TContractState> {
     fn get_program_hash(self: @TContractState) -> felt252;
     fn get_facts_registry_address(self: @TContractState) -> ContractAddress;
     fn get_herodotus_facts_registry_address(self: @TContractState) -> ContractAddress;
@@ -27,7 +27,7 @@ mod errors {
 }
 
 #[starknet::contract]
-mod Verifier_Applier {
+mod IVerifierApplier {
     use state_channel_framework::{
         verifier_applier::{ProgramOutput, errors},
         facts_registry::{IFactsRegistryDispatcher, IFactsRegistryDispatcherTrait},
@@ -76,7 +76,7 @@ mod Verifier_Applier {
     }
 
     #[abi(embed_v0)]
-    impl Verifier_ApplierImpl of super::IVerifier_Applier<ContractState> {
+    impl IVerifierApplierImpl of super::IVerifierApplier<ContractState> {
         fn get_program_hash(self: @ContractState) -> felt252 {
             self.program_hash.read()
         }
