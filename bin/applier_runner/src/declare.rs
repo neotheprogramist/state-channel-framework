@@ -11,9 +11,9 @@ use starknet::{
 use std::sync::Arc;
 
 pub const SIERRA_STR: &str =
-    include_str!("../../../applier/target/dev/applier_Applier.contract_class.json");
+    include_str!("../../../target/dev/applier_Applier.contract_class.json");
 pub const CASM_STR: &str =
-    include_str!("../../../applier/target/dev/applier_Applier.compiled_contract_class.json");
+    include_str!("../../../target/dev/applier_Applier.compiled_contract_class.json");
 
 pub async fn declare_contract<P, S>(
     prefunded_account: &SingleOwnerAccount<P, S>,

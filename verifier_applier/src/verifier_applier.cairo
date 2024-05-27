@@ -27,8 +27,8 @@ mod errors {
 }
 
 #[starknet::contract]
-mod IVerifierApplier {
-    use state_channel_framework::{
+mod VerifierApplier {
+    use verifier_applier::{
         verifier_applier::{ProgramOutput, errors},
         facts_registry::{IFactsRegistryDispatcher, IFactsRegistryDispatcherTrait},
     };
@@ -76,7 +76,7 @@ mod IVerifierApplier {
     }
 
     #[abi(embed_v0)]
-    impl IVerifierApplierImpl of super::IVerifierApplier<ContractState> {
+    impl VerifierApplierImpl of super::IVerifierApplier<ContractState> {
         fn get_program_hash(self: @ContractState) -> felt252 {
             self.program_hash.read()
         }

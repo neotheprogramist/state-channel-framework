@@ -7,4 +7,4 @@ fi
 
 profile=$1
 
-sncast --profile "$profile" --wait declare --contract-name AgreementVersion2
+sncast --profile "$profile" --wait declare --contract-name Applier

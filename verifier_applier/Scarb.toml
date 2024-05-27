@@ -1,15 +1,11 @@
 [package]
-name = "applier"
+name = "verifier_applier"
 version = "0.1.0"
 edition = "2023_11"
 
 # See more keys and their definitions at https://docs.swmansion.com/scarb/docs/reference/manifest.html
 
 [dependencies]
-starknet = "2.6.3"
-
-[dev-dependencies]
+openzeppelin.workspace = true
 snforge_std.workspace = true
-[[target.starknet-contract]]
-sierra = true
-casm = true
+starknet.workspace = true

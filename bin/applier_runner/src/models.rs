@@ -89,7 +89,7 @@ pub fn get_formated_agreements(
 }
 
 pub fn get_agreements_data() -> Result<(Vec<FieldElementAgreement>, String, String), RunnerError> {
-    let mut file = File::open("resources/json_generator_out/in.json")?;
+    let mut file = File::open("target/generator_output/in.json")?;
     let mut contents = String::new();
     file.read_to_string(&mut contents)?;
     let data: InputData = serde_json::from_str(&contents)?;

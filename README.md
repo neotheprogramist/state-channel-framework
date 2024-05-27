@@ -100,13 +100,16 @@ This guide provides instructions to generate sample agreements, set up Starknet 
 
 ## Generate Sample Agreements
 
-To generate sample agreements, **ensure you have created the directory resources/json_generator_out/** inside state-channel-framework, to avoid a "no such file" error. Then, execute the following command:
+To generate sample agreements, **ensure you have created the directory target/generator_output/** inside state-channel-framework, to avoid a "no such file" error. Then, execute the following command:
+
+Note:
+Generate new agreements eachtime you want to deploy contracts on sepolia
 
 ```bash
 cargo run --bin json_generator -- --agreements-count <number_of_agreements>
 ```
 
-The generated outputs will be located in **resources/json_generator_out/**, which will contain the necessary data for deploying the contract and applying agreements.
+The generated outputs will be located in **target/generator_output/**, which will contain the necessary data for deploying the contract and applying agreements.
 
 ## Setting Up Starknet Devnet
 
@@ -123,9 +126,11 @@ Follow these steps to declare and deploy the agreement contract on Devnet:
 1. **Set Environment Variables**
     
     If non-existent, create file **.cargo/config.toml** to hold our enviroment variables.
+    
 
     Add the necessary enviroment variables. For _DEVNET use one of the predeployed account from starknet-devnet.
    ```bash
+
    export ADDRESS_DEVNET = "0x18...69"
    export PRIVATE_KEY_DEVNET = "0x26..."
 
@@ -133,10 +138,11 @@ Follow these steps to declare and deploy the agreement contract on Devnet:
    export ADDRESS = "0x028d...52DF30"
    ```
    
+   
 2. **Run the Program**
 
    ```bash
-   cargo run --bin agreement_version_2_runner
+   cargo run --bin applier_runner
    ```
 
 This streamlined guide ensures that you have all the necessary steps to generate agreements and deploy contracts on Starknet Devnet and Sepolia.

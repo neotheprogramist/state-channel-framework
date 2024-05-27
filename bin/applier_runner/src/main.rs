@@ -53,7 +53,7 @@ struct Args {
     #[arg(long, env)]
     private_key_devnet: FieldElement,
 
-    #[arg(long, env)]
+    #[arg(long, default_value = "0xcca64674ab8db572")]
     salt_devnet: FieldElement,
 
     #[arg(

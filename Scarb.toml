@@ -1,5 +1,5 @@
 [workspace]
-members = ["contracts", "provable"]
+members = ["verifier_applier", "provable", "applier"]
 
 [workspace.package]
 edition = "2023_10"
