@@ -93,6 +93,7 @@
 This setup guide will help you to configure and run the necessary components for the project. Make sure you follow the steps in order to ensure everything functions as expected.
 
 # Applier
+# Applier
 
 ## Overview
 
@@ -100,7 +101,7 @@ This guide provides instructions to generate sample agreements, set up Starknet 
 
 ## Generate Sample Agreements
 
-To generate sample agreements, **ensure you have created the directory resources/json_generator_out/** to avoid a "no such file" error. Then, execute the following command:
+To generate sample agreements, **ensure you have created the directory resources/json_generator_out/** inside state-channel-framework, to avoid a "no such file" error. Then, execute the following command:
 
 ```bash
 cargo run --bin json_generator -- --agreements-count <number_of_agreements>
@@ -133,7 +134,13 @@ Follow these steps to declare and deploy the agreement contract on Devnet:
 
    export PRIVATE_KEY = "0x07...8a3"
    export ADDRESS = "0x028d...52DF30"
+   export ADDRESS_DEVNET = "0x18...69"
+   export PRIVATE_KEY_DEVNET = "0x26..."
+
+   export PRIVATE_KEY = "0x07...8a3"
+   export ADDRESS = "0x028d...52DF30"
    ```
+   
    
 2. **Run the Program**
 
