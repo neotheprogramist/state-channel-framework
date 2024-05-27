@@ -1,7 +1,5 @@
 use std::time::Instant;
 
-use starknet::macros::felt;
-
 use crate::{
     apply::apply_agreements, deploy::deploy_contract_on_sepolia, errors::RunnerError,
     models::FieldElementAgreement, Args,

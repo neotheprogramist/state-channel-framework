@@ -1,7 +1,7 @@
 [workspace]
 resolver = "2"
 members = [
-    "bin/agreement_version_2_runner",
+    "bin/applier_runner",
     "bin/client",
     "bin/json_generator",
     "bin/prover",
