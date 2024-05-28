@@ -1,11 +1,12 @@
 [workspace]
-members = ["verifier_applier", "provable", "applier"]
+members = ["applier", "provable", "verifier", "verifier_applier"]
 
 [workspace.package]
 edition = "2023_10"
 version = "0.1.0"
 
 [workspace.dependencies]
+cairo_verifier = { git = "https://github.com/HerodotusDev/integrity", rev = "a29acce9aa3b3f52c8fdabdcb7008dc5db364816" }
 openzeppelin = { git = "https://github.com/OpenZeppelin/cairo-contracts.git", tag = "v0.12.0" }
 snforge_std = { git = "https://github.com/foundry-rs/starknet-foundry", tag = "v0.24.0" }
 starknet = "2.6.3"

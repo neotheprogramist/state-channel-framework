@@ -36,6 +36,7 @@ pub struct InputData {
     pub client_public_key: String,
     pub server_public_key: String,
     pub agreements: Vec<Agreement>,
+    pub settlement_price: String,
 }
 #[derive(Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]

@@ -7,7 +7,7 @@ Cargo.lock
 Scarb.lock
 
 /resources
-.cargo/config.toml
+/.cargo
 bin/client/proptest-regressions/
 resources/json_generator_out/
 

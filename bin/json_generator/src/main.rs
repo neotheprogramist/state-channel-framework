@@ -19,13 +19,13 @@ const URL_REQUEST_SETTLEMENT_PROOF_WITH_DATA: &str = "/requestSettlementProofWit
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
 struct Args {
-    #[arg(long, default_value_t = String::from("http://localhost:7005/server/requestQuote"))]
+    #[arg(long, default_value_t = String::from("http://localhost:7007/server/requestQuote"))]
     url_request_quote: String,
 
-    #[arg(long, default_value_t = String::from("http://localhost:7005/server/acceptContract"))]
+    #[arg(long, default_value_t = String::from("http://localhost:7007/server/acceptContract"))]
     url_accept_contract: String,
 
-    #[arg(long, default_value_t = String::from("http://localhost:7005/server/requestSettlementProof"))]
+    #[arg(long, default_value_t = String::from("http://localhost:7007/server/requestSettlementProof"))]
     url_request_settlement_proof: String,
 
     #[arg(short, long, default_value_t = 1)]
@@ -101,6 +101,7 @@ async fn main() -> Result<(), Box<dyn StdError>> {
         settlement_proof.clone(),
         client_mock_account.clone(),
         server_mock_account.clone(),
+        settlement_price,
     )
     .await?;
     save_out(

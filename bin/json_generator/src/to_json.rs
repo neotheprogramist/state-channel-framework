@@ -27,6 +27,7 @@ pub async fn prepare_and_save_data(
     settlement_proof: SettlementProofResponseWithData,
     client_mock_account: MockAccount,
     server_mock_account: MockAccount,
+    settlement_price: i64,
 ) -> Result<(), std::io::Error> {
     let agreements: Vec<Agreement> = settlement_proof
         .contracts
@@ -46,6 +47,7 @@ pub async fn prepare_and_save_data(
         client_public_key: format!("0x{:x}", client_mock_account.public_key.scalar()),
         server_public_key: format!("0x{:x}", server_mock_account.public_key.scalar()),
         agreements,
+        settlement_price: format!("{}", settlement_price),
     };
 
     save_input(path, output).await

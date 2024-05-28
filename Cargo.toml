@@ -4,9 +4,8 @@ members = [
     "bin/applier_runner",
     "bin/client",
     "bin/json_generator",
-    "bin/prover",
     "bin/server",
-    "bin/validator",
+    "bin/verifier_applier_runner",
     "crates/podman",
     "crates/utils",
 ]
