@@ -43,11 +43,12 @@ impl MockAccount {
         let quantity_hex = format!("{:x}", &quote.quantity);
         let quantity = FieldElement::from_hex_be(&quantity_hex)?;
         let nonce = FieldElement::from_hex_be(&quote.nonce.to_string())?;
+        println!("DATA {} {:x} {} {:x}", price, nonce, quantity, address);
 
         let data = [price, nonce, quantity, address];
         let hash = compute_hash_on_elements(&data);
-
-        let signature = self.secret_key.sign(&hash).unwrap();
+        println!("HASHING {}", hash);
+        let signature: starknet::core::crypto::Signature = self.secret_key.sign(&hash).unwrap();
 
         // Converting signature parts to hex string
         let r_hex = format!("0x{:x}", signature.r);
