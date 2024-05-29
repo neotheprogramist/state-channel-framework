@@ -1,11 +1,18 @@
+from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.builtin_poseidon.poseidon import poseidon_hash_many
-from starkware.cairo.stark_verifier.core.serialize_utils import append_felt, append_felts
+from starkware.cairo.common.cairo_builtins import HashBuiltin, PoseidonBuiltin, EcOpBuiltin, SignatureBuiltin
 from starkware.cairo.common.signature import (
     verify_ecdsa_signature,
 )
 from input import Agreement
 
-func aggregate(
+func aggregate{
+    range_check_ptr,
+    ecdsa_ptr: SignatureBuiltin*,
+    bitwise_ptr,
+    ec_op_ptr: EcOpBuiltin*,
+    poseidon_ptr: PoseidonBuiltin*,
+}(
     client_public_key: felt,
     server_public_key: felt,
     agreements_len: felt,
@@ -17,18 +24,13 @@ func aggregate(
         return (a=a, b=b);
     }
 
-    // let (data: felt*) = alloc();
-    // append_felt{data=data}(agreements[0].price);
-    // append_felt{data=data}(agreements[0].nonce);
-    // append_felt{data=data}(agreements[0].quantity);
-    // append_felt{data=data}(client_public_key);
-    // let data_start = data;
-    // let (hash) = poseidon_hash_many(n=4, elements=data_start);
+    tempvar elements: felt* = new (agreements[0].price, agreements[0].nonce, agreements[0].quantity, client_public_key);
+    let (hash) = poseidon_hash_many(n=4, elements=elements);
     // verify_ecdsa_signature(
-    //     message = agreement_hash,
-    //     public_key = server_public_key,
-    //     signature_r = agreements[0].server_signature_r,
-    //     signature_s = agreements[0].server_signature_s,
+    //     hash,
+    //     server_public_key,
+    //     agreements[0].server_signature_r,
+    //     agreements[0].server_signature_s,
     // );
 
     return aggregate(

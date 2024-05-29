@@ -18,7 +18,6 @@ pub struct SeverSignature {
 #[derive(Debug, Clone)]
 pub struct MockAccount {
     pub secret_key: SigningKey,
-    pub public_key: VerifyingKey,
 }
 
 impl Default for MockAccount {
@@ -30,12 +29,13 @@ impl Default for MockAccount {
 impl MockAccount {
     pub fn new() -> Self {
         let secret_key = SigningKey::from_random();
-        let public_key = secret_key.verifying_key();
 
-        MockAccount {
+        Self {
             secret_key,
-            public_key,
         }
+    }
+    pub fn public_key(&self) -> VerifyingKey {
+        self.secret_key.verifying_key()
     }
     pub fn sign_message(&self, quote: Quote) -> Result<(String, String), ServerError> {
         let price = FieldElement::from_dec_str(&quote.price.to_string())?;

@@ -44,8 +44,8 @@ pub async fn prepare_and_save_data(
         .collect();
 
     let output = InputData {
-        client_public_key: client_mock_account.public_key.scalar().to_string(),
-        server_public_key: server_mock_account.public_key.scalar().to_string(),
+        client_public_key: client_mock_account.public_key().scalar().to_string(),
+        server_public_key: server_mock_account.public_key().scalar().to_string(),
         agreements,
         settlement_price: format!("{}", settlement_price),
     };

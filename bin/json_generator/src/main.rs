@@ -44,7 +44,6 @@ async fn main() -> Result<(), Box<dyn StdError>> {
     let agreements_count = args.agreements_count / 2;
     let (buy_prices, sell_prices) = generate_identical_but_shuffled_prices(agreements_count);
 
-    let address = "0x4b3f4ba8c00a02b66142a4b1dd41a4dfab4f92650922a3280977b0f03c75ee1";
     let db = Surreal::new::<Mem>(())
         .await
         .expect("Failed to initialize the database");
@@ -56,6 +55,7 @@ async fn main() -> Result<(), Box<dyn StdError>> {
     };
 
     let client_mock_account = MockAccount::new();
+    let address = format!("{:x}", client_mock_account.public_key().scalar());
 
     let router: Router = server::request::router(&state);
 
@@ -64,7 +64,7 @@ async fn main() -> Result<(), Box<dyn StdError>> {
         create_agreement(
             1,
             buying_price as i64,
-            address,
+            &address,
             URL_REQUEST_QUOTE,
             URL_ACCEPT_CONTRACT,
             router.clone(),
@@ -77,7 +77,7 @@ async fn main() -> Result<(), Box<dyn StdError>> {
         create_agreement(
             -1,
             selling_price as i64,
-            address,
+            &address,
             URL_REQUEST_QUOTE,
             URL_ACCEPT_CONTRACT,
             router.clone(),

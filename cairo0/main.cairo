@@ -1,13 +1,21 @@
 %builtins output pedersen range_check ecdsa bitwise ec_op poseidon
 
-from starkware.cairo.common.cairo_builtins import HashBuiltin
-from starkware.cairo.common.hash import hash2
+from starkware.cairo.common.cairo_builtins import HashBuiltin, PoseidonBuiltin, EcOpBuiltin, SignatureBuiltin
+from starkware.cairo.common.builtin_poseidon.poseidon import poseidon_hash_many
 from aggregate import aggregate
 from input import (
-    Input, get_agreements
+    Input, get_agreements, Agreement
 )
 
-func main{output_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr: felt, bitwise_ptr: felt*}() -> () {
+func main{
+    output_ptr: felt*,
+    pedersen_ptr: HashBuiltin*,
+    range_check_ptr,
+    ecdsa_ptr: SignatureBuiltin*,
+    bitwise_ptr,
+    ec_op_ptr: EcOpBuiltin*,
+    poseidon_ptr: PoseidonBuiltin*,
+}() -> () {
     alloc_locals;
 
     let (input: Input) = get_agreements();
