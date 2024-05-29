@@ -22,7 +22,12 @@ pub(crate) async fn devnet_run(
         starknet::providers::JsonRpcClient<starknet::providers::jsonrpc::HttpTransport>,
         starknet::signers::LocalWallet,
     > = get_account;
-    let class_hash: FieldElement = declare_contract(&prefunded_account).await?;
+    let class_hash: FieldElement = declare_contract(
+        &prefunded_account,
+        "target/dev/applier_Applier.contract_class.json",
+        "target/dev/applier_Applier.compiled_contract_class.json",
+    )
+    .await?;
 
     let deployed_address = deploy_contract_on_devnet(
         args.clone(),

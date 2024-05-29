@@ -177,8 +177,8 @@ fn create_agreement_constructor(
     Ok(AgreementConstructor {
         client_balance: 1000000u64.into(),
         server_balance: 1000000u64.into(),
-        client_public_key: FieldElement::from_hex_be(client_public_key)?,
-        server_public_key: FieldElement::from_hex_be(server_public_key)?,
+        client_public_key: FieldElement::from_dec_str(client_public_key)?,
+        server_public_key: FieldElement::from_dec_str(server_public_key)?,
         a: 0u64.into(),
         b: 0u64.into(),
     })

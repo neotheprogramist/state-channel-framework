@@ -18,7 +18,7 @@ edition = "2021"
 
 [workspace.dependencies]
 axum = { version = "0.7.5", features = ["http2", "macros", "multipart", "ws"] }
-cairo-proof-parser = { git = "https://github.com/cartridge-gg/cairo-proof-parser.git" }
+cairo-proof-parser = { git = "https://github.com/cartridge-gg/cairo-proof-parser", branch = "feat/proper-field-element-type" }
 clap = { version = "4.5.4", features = ["derive", "env"] }
 podman = { path = "crates/podman" }
 server = { path = "bin/server" }
@@ -73,3 +73,4 @@ once_cell = "1.19.0"
 proptest = "1.4.0"
 futures = "0.3.30"
 seq-macro = "0.3.5"
+prover-sdk = { git = "https://github.com/neotheprogramist/http-prover", version = "0.1.0" }

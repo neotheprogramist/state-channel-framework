@@ -11,5 +11,5 @@ if [ $# -ne 4 ]; then
     exit 1
 fi
 
-sncast --profile "$1" --wait deploy --class-hash "$2" \
+sncast --wait deploy --class-hash "$2" \
    -c "$3" "$4" 

@@ -106,7 +106,7 @@ Note:
 Generate new agreements eachtime you want to deploy contracts on sepolia
 
 ```bash
-cargo run --bin json_generator -- --agreements-count <number_of_agreements>
+cargo run -r --bin json_generator -- --agreements-count <number_of_agreements>
 ```
 
 The generated outputs will be located in **target/generator_output/**, which will contain the necessary data for deploying the contract and applying agreements.
