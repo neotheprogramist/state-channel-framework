@@ -85,6 +85,7 @@ pub(crate) async fn run(
     let prover_input = Cairo0ProverInput {
         program: serde_json::from_str(&program).unwrap(),
         program_input: serde_json::to_value(program_input).unwrap(),
+        layout: "starknet".to_string(),
     };
 
     let mut file: tokio::fs::File =
