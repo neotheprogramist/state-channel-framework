@@ -1,4 +1,4 @@
-use super::models::{Contract, Quote, RequestAcceptContract};
+use super::models::{Contract, RequestAcceptContract};
 use crate::request::models::AppState;
 use crate::server::ServerError;
 use axum::extract::State;
@@ -9,6 +9,7 @@ use serde::Serialize;
 use starknet::core::types::FieldElement;
 use surrealdb::engine::local::Db;
 use surrealdb::Surreal;
+use utils::models::Quote;
 use uuid::Uuid;
 
 pub async fn accept_contract(

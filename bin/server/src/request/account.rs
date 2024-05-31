@@ -1,9 +1,8 @@
-use crate::request::models::Quote;
 use crate::server::ServerError;
 use starknet::core::crypto::compute_hash_on_elements;
 use starknet::core::types::FieldElement;
 use starknet::signers::{SigningKey, VerifyingKey};
-
+use utils::models::Quote;
 /// Helper function to convert a `stark_curve::Scalar` to a hexadecimal string.
 pub fn scalar_to_hex(bytes: &[u8]) -> String {
     prefix_hex::encode(bytes.to_vec())
@@ -40,7 +39,10 @@ impl MockAccount {
     pub fn sign_message(&self, quote: Quote) -> Result<(FieldElement, FieldElement), ServerError> {
         tracing::info!(
             "DATA {} {:x} {} {:x}",
-            quote.price, quote.nonce, quote.quantity, quote.address
+            quote.price,
+            quote.nonce,
+            quote.quantity,
+            quote.address
         );
 
         let data = [quote.price, quote.nonce, quote.quantity, quote.address];

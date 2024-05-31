@@ -26,3 +26,4 @@ proptest.workspace = true
 rand.workspace = true
 surrealdb.workspace = true
 tracing.workspace = true
+utils.workspace = true

@@ -1,6 +1,5 @@
 use crate::server::ServerError;
 
-use super::account::MockAccount;
 use serde::{Deserialize, Serialize};
 use serde_with::serde_as;
 use starknet::core::types::FieldElement;
@@ -9,16 +8,8 @@ use std::{io, str::FromStr};
 use surrealdb::engine::local::Db;
 use surrealdb::sql::Id;
 use surrealdb::Surreal;
-
-impl std::fmt::Display for Quote {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(
-            f,
-            "Address: {}, Quantity: {}, Nonce: {:?}, Price: {}",
-            self.address, self.quantity, self.nonce, self.price
-        )
-    }
-}
+use utils::models::Quote;
+use utils::server::Server;
 
 #[serde_as]
 #[derive(Debug, Serialize, Deserialize)]
@@ -41,13 +32,6 @@ pub struct RequestQuotationResponse {
     pub server_signature_s: FieldElement,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct Quote {
-    pub address: FieldElement,
-    pub quantity: FieldElement,
-    pub nonce: FieldElement,
-    pub price: FieldElement,
-}
 #[serde_as]
 #[derive(Debug, Serialize, Deserialize)]
 pub struct AgreeToQuotation {
@@ -150,5 +134,5 @@ impl std::fmt::Display for Contract {
 #[derive(Debug, Clone)]
 pub struct AppState {
     pub db: Surreal<Db>,
-    pub mock_account: MockAccount,
+    pub server_mock: Server,
 }

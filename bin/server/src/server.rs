@@ -1,4 +1,3 @@
-use crate::request::account::MockAccount;
 use crate::request::models::AppState;
 use crate::{request, Args};
 use axum::{http::StatusCode, response::IntoResponse, Json};
@@ -81,6 +80,7 @@ impl IntoResponse for ServerError {
         (status, body).into_response()
     }
 }
+use utils::server::Server;
 
 impl From<surrealdb::Error> for ServerError {
     fn from(err: surrealdb::Error) -> Self {
@@ -92,8 +92,8 @@ pub async fn start(args: &Args) -> Result<(), ServerError> {
     let db = Surreal::new::<Mem>(()).await?;
 
     db.use_ns("test").use_db("test").await?;
-    let mock_account = MockAccount::new();
-    let state: AppState = AppState { db, mock_account };
+    let server_mock = Server::new();
+    let state: AppState = AppState { db, server_mock };
 
     tracing_subscriber::registry()
         .with(

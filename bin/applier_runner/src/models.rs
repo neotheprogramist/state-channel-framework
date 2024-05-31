@@ -27,7 +27,7 @@ pub struct InvokeResponse2 {
 #[serde(rename_all = "camelCase")]
 pub struct InputData {
     pub client_public_key: FieldElement,
-    pub server_public_key:FieldElement,
+    pub server_public_key: FieldElement,
     pub agreements: Vec<Agreement>,
 }
 
@@ -40,8 +40,10 @@ pub struct AgreementConstructor {
     pub b: FieldElement,
 }
 
-pub fn get_agreements_data() -> Result<(Vec<Agreement>, FieldElement, FieldElement), RunnerError> {
-    let mut file = File::open("target/generator_output/in.json")?;
+pub fn get_agreements_data(
+    path_to_input: &str,
+) -> Result<(Vec<Agreement>, FieldElement, FieldElement), RunnerError> {
+    let mut file = File::open(path_to_input)?;
     let mut contents = String::new();
     file.read_to_string(&mut contents)?;
     let data: InputData = serde_json::from_str(&contents)?;

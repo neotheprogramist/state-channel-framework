@@ -1,10 +1,11 @@
-use super::models::{Quote, RequestQuotationResponse, RequestQuotationWithPrice};
+use super::models::{RequestQuotationResponse, RequestQuotationWithPrice};
 use crate::request::models::Nonce;
 use crate::request::AppState;
 use crate::server::ServerError;
 use axum::extract::State;
 use axum::response::IntoResponse;
 use axum::Json;
+use utils::models::Quote;
 
 pub async fn request_quote_with_price(
     State(state): State<AppState>,
@@ -20,10 +21,10 @@ pub async fn request_quote_with_price(
         price: btc_price,
     };
 
-    let mock_account = state.mock_account;
+    let server_mock = state.server_mock;
 
     let quote_clone = quote.clone();
-    let (server_signature_r, server_signature_s) = mock_account.sign_message(quote_clone)?;
+    let (server_signature_r, server_signature_s) = server_mock.sing_quote(quote_clone);
 
     Ok(Json(RequestQuotationResponse {
         quote,

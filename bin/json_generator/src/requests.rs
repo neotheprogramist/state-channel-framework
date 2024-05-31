@@ -8,36 +8,32 @@ use axum::{
 };
 use serde_json::json;
 use serde_json::Value;
-use server::request::{
-    account::MockAccount,
-    models::{
-        Contract, RequestQuotationWithPrice, SettlementProofResponse,
-        SettlementProofResponseWithData,
-    },
+use server::request::models::{
+    Contract, RequestQuotationWithPrice, SettlementProofResponse, SettlementProofResponseWithData,
 };
 use starknet::core::types::FieldElement;
 use tower::util::ServiceExt;
 use tracing::info;
+use utils::client::Client;
 
 #[allow(dead_code)]
 pub async fn create_agreement(
     quantity: FieldElement,
     price: FieldElement,
-    address: FieldElement,
     url_request_quote: &str,
     url_accept_contract: &str,
     router: Router,
-    client_mock_account: MockAccount,
+    client: Client,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let request_quotation_response =
-        request_quote_with_price(address, quantity, url_request_quote, price, router.clone())
+        request_quote_with_price(&client, quantity, url_request_quote, price, router.clone())
             .await?;
 
     accept_contract(
         request_quotation_response,
         url_accept_contract,
         router.clone(),
-        client_mock_account,
+        client,
     )
     .await?;
 
@@ -47,11 +43,16 @@ pub async fn create_agreement(
 #[allow(dead_code)]
 pub async fn request_settlement_proof_with_price_and_data(
     url: &str,
-    address: FieldElement,
+    client: Client,
     price: FieldElement,
     router: Router,
 ) -> Result<SettlementProofResponseWithData, Box<dyn std::error::Error>> {
-    let url_with_params = format!("{}?address={}&price={}", url, address, price);
+    let url_with_params = format!(
+        "{}?address={}&price={}",
+        url,
+        client.public_key().scalar(),
+        price
+    );
 
     let req = Request::builder()
         .uri(url_with_params)
@@ -109,11 +110,10 @@ pub async fn accept_contract(
     request_quotation_response: RequestQuotationResponse,
     url: &str,
     router: Router,
-    client_mock_account: MockAccount,
+    client: Client,
 ) -> Result<(), Box<dyn std::error::Error>> {
-    let mock_account = client_mock_account;
     let quote_clone = request_quotation_response.quote.clone();
-    let (client_signature_r, client_signature_s) = mock_account.sign_message(quote_clone)?;
+    let (client_signature_r, client_signature_s) = client.sing_quote(quote_clone);
 
     let request_quotation = AgreeToQuotation {
         quote: request_quotation_response.quote,
@@ -145,14 +145,14 @@ pub async fn accept_contract(
 
 #[allow(dead_code)]
 pub async fn request_quote_with_price(
-    address: FieldElement,
+    client: &Client,
     quantity: FieldElement,
     url: &str,
     price: FieldElement,
     router: Router,
 ) -> Result<RequestQuotationResponse, Box<dyn std::error::Error>> {
     let request_quotation = RequestQuotationWithPrice {
-        address: address,
+        address: client.public_key().scalar(),
         quantity,
         price,
     };

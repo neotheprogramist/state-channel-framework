@@ -9,21 +9,22 @@ use starknet::{
     signers::Signer,
 };
 use std::sync::Arc;
-
-pub const SIERRA_STR: &str =
-    include_str!("../../../target/dev/applier_Applier.contract_class.json");
-pub const CASM_STR: &str =
-    include_str!("../../../target/dev/applier_Applier.compiled_contract_class.json");
+use tokio::fs;
 
 pub async fn declare_contract<P, S>(
     prefunded_account: &SingleOwnerAccount<P, S>,
+    sierra_path: &str,
+    casm_path: &str,
 ) -> Result<FieldElement, RunnerError>
 where
     P: Provider + Send + Sync,
     S: Signer + Send + Sync,
 {
-    let contract_artifact: SierraClass = serde_json::from_str(SIERRA_STR)?;
-    let compiled_class: CompiledClass = serde_json::from_str(CASM_STR)?;
+    // Read the JSON file contents from the paths
+    let sierra_str = fs::read_to_string(sierra_path).await?;
+    let casm_str = fs::read_to_string(casm_path).await?;
+    let contract_artifact: SierraClass = serde_json::from_str(&sierra_str)?;
+    let compiled_class: CompiledClass = serde_json::from_str(&casm_str)?;
     let casm_class_hash = compiled_class.class_hash()?;
     let flattened_class = contract_artifact.clone().flatten()?;
 

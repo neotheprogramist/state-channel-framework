@@ -50,7 +50,8 @@ struct Args {
 #[tokio::main]
 async fn main() -> Result<(), RunnerError> {
     let args: Args = Args::parse();
-    let (agreements, client_public_key, server_public_key) = get_agreements_data()?;
+    let (agreements, client_public_key, server_public_key) =
+        get_agreements_data("target/generator_output/in.json")?;
     let subscriber = FmtSubscriber::builder().finish();
     tracing::subscriber::set_global_default(subscriber).expect("setting default subscriber failed");
 
@@ -61,15 +62,23 @@ async fn main() -> Result<(), RunnerError> {
         args.private_key,
     );
 
-    let class_hash: FieldElement = declare_contract(&prefunded_account).await?;
+    let class_hash: FieldElement = declare_contract(
+        &prefunded_account,
+        "target/dev/applier_Applier.contract_class.json",
+        "target/dev/applier_Applier.compiled_contract_class.json",
+    )
+    .await?;
 
     let deployed_address = deploy_contract(
-        args.clone(),
         client_public_key,
         server_public_key,
         class_hash,
         args.salt,
         args.udc_address,
+        args.rpc_url.clone(),
+        args.chain_id,
+        args.address,
+        args.private_key,
     )
     .await?;
 

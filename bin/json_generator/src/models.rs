@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use serde_with::serde_as;
-use server::request::models::Quote;
 use starknet::core::types::FieldElement;
+use utils::models::Quote;
 
 #[serde_as]
 #[derive(Debug, Serialize, Deserialize)]
