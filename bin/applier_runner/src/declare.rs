@@ -51,6 +51,24 @@ where
                 )));
             }
         }
+        Err(AccountError::Provider(ProviderError::StarknetError(
+            StarknetError::TransactionExecutionError(data),
+        ))) => {
+            tracing::info!(
+                "TransactionExecutionError encountered: {:?}",
+                data.execution_error
+            );
+            if data.execution_error.contains("is already declared") {
+                let parsed_class_hash = parse_class_hash_from_error(&data.execution_error);
+                tracing::info!("Parsed class hash from error: {:?}", parsed_class_hash);
+                parsed_class_hash
+            } else {
+                return Err(RunnerError::AccountFailure(format!(
+                    "Transaction execution error: {}",
+                    data.execution_error
+                )));
+            }
+        }
         Err(e) => {
             tracing::info!("General account error encountered: {:?}", e);
             return Err(RunnerError::AccountFailure(format!("Account error: {}", e)));

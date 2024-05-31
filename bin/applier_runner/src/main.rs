@@ -1,39 +1,25 @@
-use crate::devnet::devnet_run;
 use crate::errors::RunnerError;
 use crate::models::get_agreements_data;
+use apply::apply_agreements;
 use clap::Parser;
-use sepolia::sepolia_run;
+use declare::declare_contract;
+use deploy::deploy_contract;
 use starknet::core::types::FieldElement;
-use tracing_subscriber::{EnvFilter, FmtSubscriber};
+use tokio::time::Instant;
+use tracing_subscriber::FmtSubscriber;
 use url::Url;
+mod account;
 mod apply;
 mod declare;
 mod deploy;
-pub mod devnet;
 mod errors;
-mod get_account;
 mod models;
-mod sepolia;
-use dialoguer::{theme::ColorfulTheme, Select};
 
 #[derive(Parser, Debug, Clone)]
 #[command(version, about, long_about = None)]
 struct Args {
     #[arg(long, short, env, default_value = "0x534e5f5345504f4c4941")]
     chain_id: FieldElement,
-
-    #[arg(long, short, env)]
-    address: FieldElement,
-
-    #[arg(long, short, env)]
-    private_key: FieldElement,
-    #[arg(
-        long,
-        short,
-        env,
-        default_value = "0x023ba0a5877c0e8772fc22a60c02a5fe5fddd592a8a47079522667c04418c29d"
-    )]
-    salt: FieldElement,
 
     #[arg(
         long,
@@ -43,31 +29,22 @@ struct Args {
     )]
     udc_address: FieldElement,
 
-    #[arg(long, env)]
-    address_devnet: FieldElement,
+    #[arg(
+        long,
+        short,
+        env,
+        default_value = "0x023ba0a5877c0e8772fc22a60c02a5fe5fddd592a8a47079522667c04418c29d"
+    )]
+    salt: FieldElement,
+
+    #[arg(long, short, env)]
+    address: FieldElement,
+
+    #[arg(long, short, env)]
+    private_key: FieldElement,
 
     #[arg(long, env, default_value = "http://localhost:5050/rpc")]
-    rpc_url_devnet: Url,
-
-    #[arg(
-        long,
-        env,
-        default_value = "https://free-rpc.nethermind.io/sepolia-juno/v0_7"
-    )]
     rpc_url: Url,
-
-    #[arg(long, env)]
-    private_key_devnet: FieldElement,
-
-    #[arg(long, default_value = "0xcca64674ab8db572")]
-    salt_devnet: FieldElement,
-
-    #[arg(
-        long,
-        env,
-        default_value = "0x026c4d6961674f8c33c55d2f7c9e78c32d00e73552bd0c1df8652db0b42bdd9c"
-    )]
-    declared_contract_address: FieldElement,
 }
 
 #[tokio::main]
@@ -77,24 +54,43 @@ async fn main() -> Result<(), RunnerError> {
     let subscriber = FmtSubscriber::builder().finish();
     tracing::subscriber::set_global_default(subscriber).expect("setting default subscriber failed");
 
-    let selections = vec!["Sepolia", "Devnet"];
-    let selection = Select::with_theme(&ColorfulTheme::default())
-        .with_prompt("Select the network you want to proceed with")
-        .default(0)
-        .items(&selections)
-        .interact()?;
+    let prefunded_account = account::get_account(
+        args.rpc_url.clone(),
+        args.chain_id,
+        args.address,
+        args.private_key,
+    );
 
-    match selections[selection] {
-        "Sepolia" => {
-            tracing::info!("You selected Sepolia. Proceeding with Sepolia...");
-            let _ = sepolia_run(args, agreements, server_public_key, client_public_key).await;
-        }
-        "Devnet" => {
-            tracing::info!("You selected Devnet. Proceeding with Devnet...");
-            let _ = devnet_run(args, agreements, server_public_key, client_public_key).await;
-        }
-        _ => unreachable!(),
-    }
+    let class_hash: FieldElement = declare_contract(&prefunded_account).await?;
+
+    let deployed_address = deploy_contract(
+        args.clone(),
+        client_public_key,
+        server_public_key,
+        class_hash,
+        args.salt,
+        args.udc_address,
+    )
+    .await?;
+
+    let start = Instant::now();
+    let gas_sum = apply_agreements(
+        agreements.clone(),
+        deployed_address,
+        args.rpc_url,
+        args.chain_id,
+        args.address,
+        args.private_key,
+    )
+    .await?;
+    let duration = start.elapsed();
+
+    tracing::info!(
+        "Gas consumed by {} contracts: : {}",
+        agreements.len(),
+        gas_sum
+    );
+    tracing::info!("Time taken to execute apply_agreements: {:?}", duration);
 
     Ok(())
 }

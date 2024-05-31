@@ -77,7 +77,6 @@ mod Applier {
             if !valid_server_signature {
                 return Result::Err('Invalid server signature');
             }
-            asssert valid_server_signature = true
             let valid_client_signature = check_ecdsa_signature(
                 agreement_hash,
                 self.client_public_key.read(),

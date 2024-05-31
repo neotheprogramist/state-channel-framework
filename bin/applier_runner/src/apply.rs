@@ -1,5 +1,5 @@
+use crate::account::get_account;
 use crate::deploy::get_wait_config;
-use crate::get_account::get_account;
 use crate::models::Agreement;
 use sncast::{handle_wait_for_tx, response::errors::StarknetCommandError};
 use starknet::core::types::{InvokeTransactionResult, PendingTransactionReceipt, StarknetError};
