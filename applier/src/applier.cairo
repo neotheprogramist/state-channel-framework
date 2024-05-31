@@ -57,10 +57,9 @@ mod Applier {
     #[abi(embed_v0)]
     impl ApplierImpl of super::IApplier<ContractState> {
         fn apply(ref self: ContractState, agreement: Agreement) -> Result<felt252, felt252> {
- 
             let agreement_hash = poseidon_hash_span(
                 array![
-                    self.client_public_key.read(),
+                    self.server_public_key.read(),
                     agreement.quantity,
                     agreement.nonce,
                     agreement.price
@@ -74,18 +73,26 @@ mod Applier {
                 agreement.server_signature_r,
                 agreement.server_signature_s
             );
-            if !valid_server_signature {
-                return Result::Err('Invalid server signature');
-            }
+
+            assert!(valid_server_signature == true, "Invalid server signature");
+
+            let agreement_hash = poseidon_hash_span(
+                array![
+                    self.client_public_key.read(),
+                    agreement.quantity,
+                    agreement.nonce,
+                    agreement.price
+                ]
+                    .span()
+            );
             let valid_client_signature = check_ecdsa_signature(
                 agreement_hash,
                 self.client_public_key.read(),
                 agreement.client_signature_r,
                 agreement.client_signature_s
             );
-            if !valid_client_signature {
-                return Result::Err('Invalid client signature');
-            }
+
+            assert!(valid_client_signature == true, "Invalid server signature");
 
             let curr_a = self.a.read() + agreement.quantity.into();
             self.a.write(curr_a);
