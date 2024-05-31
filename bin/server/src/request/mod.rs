@@ -3,14 +3,12 @@ use axum::{routing::get, routing::post, Router};
 mod accept_contract;
 pub mod account;
 pub mod models;
-mod price;
 mod request_quote;
 mod request_settlement_proof;
 mod tests;
 
 pub fn router(app_state: &AppState) -> Router {
     Router::new()
-        .route("/requestQuote", post(request_quote::request_quote))
         .route(
             "/requestQuoteWithPrice",
             post(request_quote::request_quote_with_price),

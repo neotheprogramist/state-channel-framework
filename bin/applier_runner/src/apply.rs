@@ -1,5 +1,6 @@
 use crate::deploy::get_wait_config;
-use crate::{get_account::get_account, models::FieldElementAgreement};
+use crate::get_account::get_account;
+use crate::models::Agreement;
 use sncast::{handle_wait_for_tx, response::errors::StarknetCommandError};
 use starknet::core::types::{InvokeTransactionResult, PendingTransactionReceipt, StarknetError};
 use starknet::{
@@ -13,7 +14,7 @@ use std::time::Duration;
 use tokio::time::sleep;
 use url::Url;
 pub async fn apply_agreements(
-    agreements: Vec<FieldElementAgreement>,
+    agreements: Vec<Agreement>,
     deployed_address: FieldElement,
     rpc_url: Url,
     chain_id: FieldElement,
@@ -45,15 +46,15 @@ pub async fn apply_agreements(
 
         let estimated_fee = match fee_estimate_result {
             Ok(fee) => {
-                println!("Estimated Fee for transaction {}: {}", i, fee.overall_fee);
+                tracing::info!("Estimated Fee for transaction {}: {}", i, fee.overall_fee);
                 fee.overall_fee
             }
             Err(e) => {
-                eprintln!("Error estimating fee for transaction {}: {:?}", i, e);
+                tracing::info!("Error estimating fee for transaction {}: {:?}", i, e);
                 return Err(Box::new(e));
             }
         };
-        println!("Estimated Fee for transaction {}: {}", i, estimated_fee);
+        tracing::info!("Estimated Fee for transaction {}: {}", i, estimated_fee);
 
         let adjusted_fee = estimated_fee * 2u64.into();
 
@@ -97,16 +98,16 @@ pub async fn apply_agreements(
             .map_err(StarknetCommandError::from),
 
             Err(err) => {
-                eprintln!("Failed to send transaction: {:?}", err);
+                tracing::info!("Failed to send transaction: {:?}", err);
                 return Err(Box::new(err));
             }
         };
         let receipt = wait_for_receipt(&prefunded_account, result?.transaction_hash).await?;
         if let Some(overall_fee) = extract_gas_fee(&receipt) {
-            println!("RECEIPT {}", overall_fee);
+            tracing::info!("RECEIPT {}", overall_fee);
             gas_fee_sum += overall_fee;
         } else {
-            eprintln!("Failed to extract gas fee from receipt.");
+            tracing::info!("Failed to extract gas fee from receipt.");
             return Err(Box::new(std::io::Error::new(
                 std::io::ErrorKind::Other,
                 "Failed to extract gas fee from receipt",
@@ -143,7 +144,7 @@ async fn wait_for_receipt(
 ) -> Result<MaybePendingTransactionReceipt, ProviderError> {
     let mut attempts = 0;
     loop {
-        println!("Transaction_hash {:x}", tx_hash);
+        tracing::info!("Transaction_hash {:x}", tx_hash);
         match provider.provider().get_transaction_receipt(tx_hash).await {
             Ok(receipt) => {
                 return Ok(receipt);

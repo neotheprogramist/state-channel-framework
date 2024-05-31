@@ -2,15 +2,15 @@ use std::time::Instant;
 
 use crate::{
     apply::apply_agreements, declare::declare_contract, deploy::deploy_contract_on_devnet,
-    errors::RunnerError, get_account::get_account, models::FieldElementAgreement, Args,
+    errors::RunnerError, get_account::get_account, models::Agreement, Args,
 };
 use starknet::core::types::FieldElement;
 
 pub(crate) async fn devnet_run(
     args: Args,
-    agreements: Vec<FieldElementAgreement>,
-    server_public_key: String,
-    client_public_key: String,
+    agreements: Vec<Agreement>,
+    server_public_key: FieldElement,
+    client_public_key: FieldElement,
 ) -> Result<(), RunnerError> {
     let get_account = get_account(
         args.rpc_url_devnet.clone(),
@@ -23,7 +23,7 @@ pub(crate) async fn devnet_run(
         starknet::signers::LocalWallet,
     > = get_account;
     let class_hash: FieldElement = declare_contract(&prefunded_account).await?;
-
+    tracing::info!("DECLARED CONTRACCT");
     let deployed_address = deploy_contract_on_devnet(
         args.clone(),
         client_public_key,
@@ -33,6 +33,7 @@ pub(crate) async fn devnet_run(
         args.udc_address,
     )
     .await?;
+tracing::info!("deploued CONTRACCT");
 
     let start = Instant::now();
 
@@ -47,12 +48,12 @@ pub(crate) async fn devnet_run(
     .await?;
     let duration = start.elapsed();
 
-    println!(
+    tracing::info!(
         "Gas consumed by {} contracts: : {}",
         agreements.len(),
         gas_sum
     );
-    println!("Time taken to execute apply_agreements: {:?}", duration);
+    tracing::info!("Time taken to execute apply_agreements: {:?}", duration);
 
     Ok(())
 }

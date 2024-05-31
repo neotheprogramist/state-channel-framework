@@ -6,6 +6,7 @@ use crate::request::models::{GenerateSettlementProofRequest, SettlementProofResp
 use crate::server::ServerError;
 use axum::extract::{Json, Query, State};
 use serde_json::json;
+use starknet::core::types::FieldElement;
 use surrealdb::engine::local::Db;
 use surrealdb::Surreal;
 
@@ -13,24 +14,20 @@ pub async fn request_settlement_proof(
     State(state): State<AppState>,
     Query(params): Query<GenerateSettlementProofRequest>,
 ) -> Result<Json<SettlementProofResponse>, ServerError> {
-    if params.address.trim().is_empty() {
-        return Err(ServerError::DatabaseError("Missing address".to_string()));
-    }
-    println!("Address: {}", params.address);
+    tracing::info!("Address: {}", params.address);
 
     let contracts = get_all_contracts_for_address(&state.db, &params.address).await?;
-    println!("DISPLAY AGGREMENTS ");
     for contract in &contracts {
-        println!(
+        tracing::info!(
             "Contract: Quantity: {}, Price: {}",
-            contract.quantity, contract.price
+            contract.quantity,
+            contract.price
         );
     }
-    let (_a, _b) = aggregate(&contracts, 0, 0);
     let settlement_proof_response = SettlementProofResponse {
         address: params.address,
-        balance: 0.0,
-        diff: 0,
+        balance: 0u64.into(),
+        diff: 0u64.into(),
     };
     Ok(Json(settlement_proof_response))
 }
@@ -40,25 +37,25 @@ pub async fn request_settlement_proof_with_set_price_and_data(
     State(state): State<AppState>,
     Query(params): Query<GenerateSettlementProofRequestWithPrice>,
 ) -> Result<Json<SettlementProofResponseWithData>, ServerError> {
-    if params.address.trim().is_empty() {
-        return Err(ServerError::DatabaseError("Missing address".to_string()));
-    }
     let contracts = get_all_contracts_for_address(&state.db, &params.address).await?;
 
     delete_all_contracts_for_addresss(&params.address, &state.db).await?;
-    let (a, b) = aggregate(&contracts, 0, 0);
-    let diff: i64 = a * params.price + b;
-
+    let (a, b) = aggregate(&contracts, 0u64.into(), 0u64.into());
+    let diff: FieldElement = a * params.price + b;
     let settlement_proof_response = SettlementProofResponseWithData {
         contracts,
         address: params.address,
-        balance: 0.0,
+        balance: 0u64.into(),
         diff,
     };
     Ok(Json(settlement_proof_response))
 }
 
-fn aggregate(agreements: &[Contract], a: i64, b: i64) -> (i64, i64) {
+fn aggregate(
+    agreements: &[Contract],
+    a: FieldElement,
+    b: FieldElement,
+) -> (FieldElement, FieldElement) {
     if agreements.is_empty() {
         return (a, b);
     }
@@ -72,25 +69,22 @@ pub async fn request_settlement_proof_with_set_price(
     State(state): State<AppState>,
     Query(params): Query<GenerateSettlementProofRequestWithPrice>,
 ) -> Result<Json<SettlementProofResponse>, ServerError> {
-    if params.address.trim().is_empty() {
-        return Err(ServerError::DatabaseError("Missing address".to_string()));
-    }
     let contracts = get_all_contracts_for_address(&state.db, &params.address).await?;
 
     delete_all_contracts_for_addresss(&params.address, &state.db).await?;
-    let (a, b) = aggregate(&contracts, 0, 0);
-    let diff: i64 = a * params.price + b;
+    let (a, b) = aggregate(&contracts, 0u64.into(), 0u64.into());
+    let diff: FieldElement = a * params.price + b;
 
     let settlement_proof_response = SettlementProofResponse {
         address: params.address,
-        balance: 0.0,
+        balance: 0u64.into(),
         diff,
     };
     Ok(Json(settlement_proof_response))
 }
 
 pub async fn delete_all_contracts_for_addresss(
-    address: &str,
+    address: &FieldElement,
     db: &Surreal<Db>,
 ) -> Result<(), ServerError> {
     let query = r#"DELETE FROM contract WHERE address = $address"#;
@@ -109,7 +103,7 @@ pub async fn delete_all_contracts_for_addresss(
 
 pub async fn get_all_contracts_for_address(
     db: &Surreal<Db>,
-    address: &String,
+    address: &FieldElement,
 ) -> Result<Vec<Contract>, ServerError> {
     let query = "
     SELECT

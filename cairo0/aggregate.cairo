@@ -20,7 +20,7 @@ func aggregate{output_ptr: felt*, pedersen_ptr: HashBuiltin*,ecdsa_ptr: Signatur
     let agreement_price:felt = agreements[0].price;
     let agreement_server_signature_r: felt = agreements[0].server_signature_r;
     let agreement_server_signature_s :felt= agreements[0].server_signature_s;
-        //667047919106426844415409795208142446036318900740055715479849966787227123817.
+     //667047919106426844415409795208142446036318900740055715479849966787227123817.
 
     assert agreement_quantity=1;
     assert agreement_nonce=0x7c219f1adcf0131760e6ec9cbb78e5ca30b76209983e45883ebf5741571a848;

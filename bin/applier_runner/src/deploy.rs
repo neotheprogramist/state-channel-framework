@@ -19,8 +19,8 @@ use starknet::{
 
 pub async fn deploy_contract_on_sepolia(
     args: Args,
-    client_public_key: String,
-    server_public_key: String,
+    client_public_key: FieldElement,
+    server_public_key: FieldElement,
     class_hash: FieldElement,
     salt: FieldElement,
     udc_address: FieldElement,
@@ -32,8 +32,14 @@ pub async fn deploy_contract_on_sepolia(
         args.private_key,
     );
     let contract_factory = create_contract_factory(class_hash, prefunded_account, udc_address);
-    let agreement_constructor =
-        create_agreement_constructor(&client_public_key, &server_public_key)?;
+    let agreement_constructor = AgreementConstructor {
+        client_balance: 1000000u64.into(),
+        server_balance: 1000000u64.into(),
+        client_public_key,
+        server_public_key,
+        a: 0u64.into(),
+        b: 0u64.into(),
+    };
 
     let deployment = contract_factory.deploy(
         vec![
@@ -63,7 +69,7 @@ pub async fn deploy_contract_on_sepolia(
         Err(AccountError::Provider(ProviderError::StarknetError(
             StarknetError::ContractError(data),
         ))) => {
-            println!("StarknetError encountered: {}", data.revert_error);
+            tracing::info!("StarknetError encountered: {}", data.revert_error);
             if data.revert_error.contains("is unavailable for deployment") {
                 Ok(parse_contract_address_from_error(&data.revert_error))
             } else {
@@ -80,7 +86,7 @@ pub async fn deploy_contract_on_sepolia(
     match result {
         Ok(deployed_address) => Ok(deployed_address),
         Err(e) => {
-            println!("Failed to deploy contract: {:?}", e);
+            tracing::info!("Failed to deploy contract: {:?}", e);
             Err(RunnerError::DeploymentFailure(
                 "Failed to deploy contract".to_string(),
             ))
@@ -90,8 +96,8 @@ pub async fn deploy_contract_on_sepolia(
 
 pub async fn deploy_contract_on_devnet(
     args: Args,
-    client_public_key: String,
-    server_public_key: String,
+    client_public_key: FieldElement,
+    server_public_key: FieldElement,
     class_hash: FieldElement,
     salt: FieldElement,
     udc_address: FieldElement,
@@ -104,8 +110,14 @@ pub async fn deploy_contract_on_devnet(
     );
 
     let contract_factory = create_contract_factory(class_hash, prefunded_account, udc_address);
-    let agreement_constructor =
-        create_agreement_constructor(&client_public_key, &server_public_key)?;
+    let agreement_constructor = AgreementConstructor {
+        client_balance: 1000000u64.into(),
+        server_balance: 1000000u64.into(),
+        client_public_key,
+        server_public_key,
+        a: 0u64.into(),
+        b: 0u64.into(),
+    };
 
     let deployment = contract_factory.deploy(
         vec![
@@ -133,7 +145,7 @@ pub async fn deploy_contract_on_devnet(
         Err(AccountError::Provider(ProviderError::StarknetError(
             StarknetError::ContractError(data),
         ))) => {
-            println!("StarknetError encountered: {}", data.revert_error); // Debugging print
+            tracing::info!("StarknetError encountered: {}", data.revert_error);
             if data.revert_error.contains("is unavailable for deployment") {
                 Ok(parse_contract_address_from_error(&data.revert_error))
             } else {
@@ -168,18 +180,4 @@ fn create_contract_factory(
     udc_address: FieldElement,
 ) -> ContractFactory<SingleOwnerAccount<JsonRpcClient<HttpTransport>, LocalWallet>> {
     ContractFactory::new_with_udc(class_hash, prefunded_account, udc_address)
-}
-
-fn create_agreement_constructor(
-    client_public_key: &str,
-    server_public_key: &str,
-) -> Result<AgreementConstructor, RunnerError> {
-    Ok(AgreementConstructor {
-        client_balance: 1000000u64.into(),
-        server_balance: 1000000u64.into(),
-        client_public_key: FieldElement::from_hex_be(client_public_key)?,
-        server_public_key: FieldElement::from_hex_be(server_public_key)?,
-        a: 0u64.into(),
-        b: 0u64.into(),
-    })
 }

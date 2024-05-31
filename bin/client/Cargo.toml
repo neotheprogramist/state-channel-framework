@@ -40,3 +40,4 @@ proptest.workspace = true
 seq-macro.workspace = true
 futures.workspace = true
 server.workspace = true
+starknet.workspace = true

@@ -1,24 +1,29 @@
+use std::str::FromStr;
+
 use crate::models::{AgreeToQuotation, RequestQuotationResponse};
 use axum::{
     body::Body,
     http::{Method, Request},
     Router,
 };
-use dialoguer::console::style;
 use serde_json::json;
 use serde_json::Value;
-use server::request::account::MockAccount;
-use server::request::models::Contract;
-use server::request::models::RequestQuotationWithPrice;
-use server::request::models::SettlementProofResponse;
-use server::request::models::SettlementProofResponseWithData;
+use server::request::{
+    account::MockAccount,
+    models::{
+        Contract, RequestQuotationWithPrice, SettlementProofResponse,
+        SettlementProofResponseWithData,
+    },
+};
+use starknet::core::types::FieldElement;
 use tower::util::ServiceExt;
+use tracing::info;
 
 #[allow(dead_code)]
 pub async fn create_agreement(
-    quantity: i64,
-    price: i64,
-    address: &str,
+    quantity: FieldElement,
+    price: FieldElement,
+    address: FieldElement,
     url_request_quote: &str,
     url_accept_contract: &str,
     router: Router,
@@ -42,8 +47,8 @@ pub async fn create_agreement(
 #[allow(dead_code)]
 pub async fn request_settlement_proof_with_price_and_data(
     url: &str,
-    address: &String,
-    price: i64,
+    address: FieldElement,
+    price: FieldElement,
     router: Router,
 ) -> Result<SettlementProofResponseWithData, Box<dyn std::error::Error>> {
     let url_with_params = format!("{}?address={}&price={}", url, address, price);
@@ -69,20 +74,25 @@ pub async fn request_settlement_proof_with_price_and_data(
     let body_bytes: bytes::Bytes = axum::body::to_bytes(response.into_body(), usize::MAX).await?;
     let response_text = String::from_utf8(body_bytes.to_vec())?;
 
-    println!("{}", response_text);
-
     let json_body: Value = serde_json::from_str(&response_text)?;
 
-    let client_address = json_body["address"]
-        .as_str()
-        .ok_or("Address not found in JSON response")?
-        .to_string();
-    let balance: f64 = json_body["balance"]
-        .as_f64()
-        .ok_or("Balance not found in JSON response or not a valid float")?;
-    let diff: i64 = json_body["diff"]
-        .as_i64()
-        .ok_or("Diff not found in JSON response")?;
+    let client_address = FieldElement::from_str(
+        json_body["address"]
+            .as_str()
+            .ok_or("Address not found in JSON response")?,
+    )?;
+
+    let balance = FieldElement::from_str(
+        json_body["balance"]
+            .as_str()
+            .ok_or("Balance not found in JSON response or not a valid float")?,
+    )?;
+    let diff = FieldElement::from_str(
+        json_body["diff"]
+            .as_str()
+            .ok_or("Diff not found in JSON response")?,
+    )?;
+
     let contracts: Vec<Contract> = serde_json::from_value(json_body["contracts"].clone())
         .map_err(|_| "Failed to parse contracts")?;
 
@@ -109,8 +119,8 @@ pub async fn accept_contract(
         quote: request_quotation_response.quote,
         server_signature_r: request_quotation_response.server_signature_r,
         server_signature_s: request_quotation_response.server_signature_s,
-        client_signature_r: client_signature_r.to_string(),
-        client_signature_s: client_signature_s.to_string(),
+        client_signature_r: client_signature_r,
+        client_signature_s: client_signature_s,
     };
 
     let req = Request::builder()
@@ -122,10 +132,10 @@ pub async fn accept_contract(
     let agree_to_quotation_response = router.oneshot(req).await?;
 
     if agree_to_quotation_response.status().is_success() {
-        println!("{}", style("Contract created successfully!").green());
+        tracing::info!("{}", "Contract created successfully!");
         Ok(())
     } else {
-        println!(
+        tracing::info!(
             "Contract failed with status: {}",
             agree_to_quotation_response.status()
         );
@@ -135,17 +145,18 @@ pub async fn accept_contract(
 
 #[allow(dead_code)]
 pub async fn request_quote_with_price(
-    address: &str,
-    quantity: i64,
+    address: FieldElement,
+    quantity: FieldElement,
     url: &str,
-    price: i64,
+    price: FieldElement,
     router: Router,
 ) -> Result<RequestQuotationResponse, Box<dyn std::error::Error>> {
     let request_quotation = RequestQuotationWithPrice {
-        address: address.to_string(),
+        address: address,
         quantity,
         price,
     };
+
     let req = Request::builder()
         .method(Method::POST)
         .uri(url)
@@ -156,12 +167,10 @@ pub async fn request_quote_with_price(
     let response = router.oneshot(req).await.unwrap();
 
     if response.status().is_success() {
-        dbg!("SUCCES REQUEST Quote");
         let body_bytes = axum::body::to_bytes(response.into_body(), usize::MAX).await?;
         let response_data: RequestQuotationResponse = serde_json::from_slice(&body_bytes)?;
         Ok(response_data)
     } else {
-        dbg!("FAILURE REQUEST");
         let error_message = format!("Failed to get a successful response: {}", response.status());
         Err(Box::new(std::io::Error::new(
             std::io::ErrorKind::Other,
@@ -173,7 +182,7 @@ pub async fn request_quote_with_price(
 #[allow(dead_code)]
 async fn request_settlement_proof(
     url: &str,
-    address: &String,
+    address: &FieldElement,
     router: Router,
 ) -> Result<SettlementProofResponse, Box<dyn std::error::Error>> {
     let url_with_params = format!("{}?address={}", url, address);
@@ -199,20 +208,26 @@ async fn request_settlement_proof(
     let body_bytes: bytes::Bytes = axum::body::to_bytes(response.into_body(), usize::MAX).await?;
     let response_text = String::from_utf8(body_bytes.to_vec())?;
 
-    println!("{}", response_text);
+    info!("{}", response_text);
 
     let json_body: Value = serde_json::from_str(&response_text)?;
 
-    let client_address = json_body["address"]
-        .as_str()
-        .ok_or("Address not found in JSON response")?
-        .to_string();
-    let balance: f64 = json_body["balance"]
-        .as_f64()
-        .ok_or("Balance not found in JSON response or not a valid float")?;
-    let diff: i64 = json_body["diff"]
-        .as_i64()
-        .ok_or("Diff not found in JSON response")?;
+    let client_address = FieldElement::from_str(
+        json_body["address"]
+            .as_str()
+            .ok_or("Address not found in JSON response")?,
+    )?;
+
+    let balance = FieldElement::from_str(
+        json_body["balance"]
+            .as_str()
+            .ok_or("Balance not found in JSON response or not a valid float")?,
+    )?;
+    let diff = FieldElement::from_str(
+        json_body["diff"]
+            .as_str()
+            .ok_or("Diff not found in JSON response")?,
+    )?;
 
     Ok(SettlementProofResponse {
         address: client_address,

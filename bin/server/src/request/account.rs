@@ -11,8 +11,8 @@ pub fn scalar_to_hex(bytes: &[u8]) -> String {
 
 #[derive(Debug, Clone)]
 pub struct SeverSignature {
-    pub server_signature_r: String,
-    pub server_signature_s: String,
+    pub server_signature_r: FieldElement,
+    pub server_signature_s: FieldElement,
 }
 
 #[derive(Debug, Clone)]
@@ -37,23 +37,17 @@ impl MockAccount {
             public_key,
         }
     }
-    pub fn sign_message(&self, quote: Quote) -> Result<(String, String), ServerError> {
-        let price = FieldElement::from_dec_str(&quote.price.to_string())?;
-        let address = FieldElement::from_hex_be(&quote.address)?;
-        let quantity_hex = format!("{:x}", &quote.quantity);
-        let quantity = FieldElement::from_hex_be(&quantity_hex)?;
-        let nonce = FieldElement::from_hex_be(&quote.nonce.to_string())?;
-        println!("DATA {} {:x} {} {:x}", price, nonce, quantity, address);
+    pub fn sign_message(&self, quote: Quote) -> Result<(FieldElement, FieldElement), ServerError> {
+        tracing::info!(
+            "DATA {} {:x} {} {:x}",
+            quote.price, quote.nonce, quote.quantity, quote.address
+        );
 
-        let data = [price, nonce, quantity, address];
+        let data = [quote.price, quote.nonce, quote.quantity, quote.address];
         let hash = compute_hash_on_elements(&data);
-        println!("HASHING {}", hash);
+        tracing::info!("HASHING {}", hash);
         let signature: starknet::core::crypto::Signature = self.secret_key.sign(&hash).unwrap();
 
-        // Converting signature parts to hex string
-        let r_hex = format!("0x{:x}", signature.r);
-        let s_hex = format!("0x{:x}", signature.s);
-
-        Ok((r_hex, s_hex))
+        Ok((signature.r, signature.s))
     }
 }
