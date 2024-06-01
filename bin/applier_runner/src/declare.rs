@@ -8,12 +8,8 @@ use starknet::{
     providers::{Provider, ProviderError},
     signers::Signer,
 };
+use tokio::io::AsyncReadExt;
 use std::sync::Arc;
-
-pub const SIERRA_STR: &str =
-    include_str!("../../../target/dev/applier_Applier.contract_class.json");
-pub const CASM_STR: &str =
-    include_str!("../../../target/dev/applier_Applier.compiled_contract_class.json");
 
 pub async fn declare_contract<P, S>(
     prefunded_account: &SingleOwnerAccount<P, S>,

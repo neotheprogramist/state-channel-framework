@@ -13,7 +13,7 @@ pub struct Agreement {
 #[starknet::interface]
 pub trait IApplier<TContractState> {
     fn apply(ref self: TContractState, agreement: Agreement,) -> Result<felt252, felt252>;
-    fn result(self: @TContractState, x: u256) -> u256;
+    fn result(self: @TContractState, x: felt252) -> felt252;
     fn get_client_balance(self: @TContractState) -> u256;
     fn get_server_balance(self: @TContractState) -> u256;
     fn get_agreement_by_id(self: @TContractState, id: felt252) -> Agreement;
@@ -38,8 +38,8 @@ mod Applier {
         server_balance: u256,
         agreements_len: felt252,
         agreements: LegacyMap::<felt252, Agreement>,
-        a: u256,
-        b: u256
+        a: felt252,
+        b: felt252
     }
 
     #[constructor]
@@ -107,7 +107,7 @@ mod Applier {
             Result::Ok(agreement_id)
         }
 
-        fn result(self: @ContractState, x: u256) -> u256 {
+        fn result(self: @ContractState, x: felt252) -> felt252 {
             self.a.read() * x + self.b.read()
         }
         fn get_client_public_key(self: @ContractState) -> felt252 {

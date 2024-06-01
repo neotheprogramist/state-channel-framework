@@ -37,8 +37,8 @@ pub async fn deploy_contract(
         server_balance: 1000000u64.into(),
         client_public_key,
         server_public_key,
-        a: 0u64.into(),
-        b: 0u64.into(),
+        a: FieldElement::ZERO,
+        b:  FieldElement::ZERO,
     };
 
     let deployment = contract_factory.deploy(

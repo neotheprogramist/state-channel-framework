@@ -2,7 +2,7 @@ use core::fmt;
 
 use crate::models::Quote;
 use starknet::{
-    core::{crypto::compute_hash_on_elements, types::FieldElement},
+    core::types::FieldElement,
     signers::{SigningKey, VerifyingKey},
 };
 use starknet_crypto::poseidon_hash_many;
