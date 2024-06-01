@@ -1,4 +1,7 @@
-use crate::{deploy::get_wait_config, errors::{parse_class_hash_from_error, RunnerError}};
+use crate::{
+    deploy::get_wait_config,
+    errors::{parse_class_hash_from_error, RunnerError},
+};
 use sncast::{handle_wait_for_tx, response::errors::StarknetCommandError};
 use starknet::{
     accounts::{Account, AccountError, ConnectedAccount, SingleOwnerAccount},
@@ -9,15 +12,14 @@ use starknet::{
     providers::{jsonrpc::HttpTransport, JsonRpcClient, ProviderError},
     signers::LocalWallet,
 };
-use tokio::io::AsyncReadExt;
 use std::sync::Arc;
+use tokio::io::AsyncReadExt;
 
 pub async fn declare_contract(
-    prefunded_account: SingleOwnerAccount<JsonRpcClient<HttpTransport>, LocalWallet> ,
+    prefunded_account: SingleOwnerAccount<JsonRpcClient<HttpTransport>, LocalWallet>,
     sierra_path: &str,
     casm_path: &str,
-) -> Result<FieldElement, RunnerError>
-{
+) -> Result<FieldElement, RunnerError> {
     let mut file = tokio::fs::File::open(sierra_path).await?;
     let mut sierra = String::default();
     file.read_to_string(&mut sierra).await?;
@@ -32,9 +34,10 @@ pub async fn declare_contract(
     let flattened_class = contract_artifact.clone().flatten()?;
 
     let result = match prefunded_account
-    .declare(Arc::new(flattened_class), casm_class_hash)
-    .send()
-    .await{
+        .declare(Arc::new(flattened_class), casm_class_hash)
+        .send()
+        .await
+    {
         Ok(result) => handle_wait_for_tx(
             prefunded_account.provider(),
             result.transaction_hash,
@@ -91,5 +94,4 @@ pub async fn declare_contract(
             ))
         }
     }
-
 }

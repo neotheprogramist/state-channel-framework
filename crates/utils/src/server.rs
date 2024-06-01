@@ -25,6 +25,7 @@ pub fn starknet_to_crypto(fe: &StarknetFieldElement) -> CryptoFieldElement {
 }
 
 impl Server {
+
     pub fn new() -> Self {
         let private_key = SigningKey::from_random();
         Server { private_key }

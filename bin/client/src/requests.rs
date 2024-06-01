@@ -108,8 +108,8 @@ pub async fn accept_contract(
         quote: request_quotation_response.quote,
         server_signature_r: request_quotation_response.server_signature_r,
         server_signature_s: request_quotation_response.server_signature_s,
-        client_signature_r: client_signature_r,
-        client_signature_s: client_signature_s,
+        client_signature_r,
+        client_signature_s,
     };
 
     let req = Request::builder()
@@ -141,7 +141,7 @@ pub async fn request_quote_with_price(
     router: Router,
 ) -> Result<RequestQuotationResponse, Box<dyn std::error::Error>> {
     let request_quotation = RequestQuotationWithPrice {
-        address: address,
+        address,
         quantity,
         price,
     };

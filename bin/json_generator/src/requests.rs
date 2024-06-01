@@ -119,8 +119,8 @@ pub async fn accept_contract(
         quote: request_quotation_response.quote,
         server_signature_r: request_quotation_response.server_signature_r,
         server_signature_s: request_quotation_response.server_signature_s,
-        client_signature_r: client_signature_r,
-        client_signature_s: client_signature_s,
+        client_signature_r,
+        client_signature_s,
     };
 
     let req = Request::builder()
