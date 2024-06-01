@@ -24,7 +24,7 @@ pub async fn request_quote_with_price(
     let server_mock = state.server_mock;
 
     let quote_clone = quote.clone();
-    let (server_signature_r, server_signature_s) = server_mock.sing_quote(quote_clone);
+    let (server_signature_r, server_signature_s) = server_mock.sign_quote(quote_clone);
 
     Ok(Json(RequestQuotationResponse {
         quote,

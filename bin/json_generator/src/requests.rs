@@ -113,7 +113,7 @@ pub async fn accept_contract(
     client: Client,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let quote_clone = request_quotation_response.quote.clone();
-    let (client_signature_r, client_signature_s) = client.sing_quote(quote_clone);
+    let (client_signature_r, client_signature_s) = client.sign_quote(quote_clone);
 
     let request_quotation = AgreeToQuotation {
         quote: request_quotation_response.quote,

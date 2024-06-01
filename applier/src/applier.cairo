@@ -74,7 +74,7 @@ mod Applier {
                 agreement.server_signature_s
             );
 
-            assert!(valid_server_signature == true, "Invalid server signature");
+            assert!(valid_server_signature, "Invalid server signature");
 
             let agreement_hash = poseidon_hash_span(
                 array![
@@ -92,7 +92,7 @@ mod Applier {
                 agreement.client_signature_s
             );
 
-            assert!(valid_client_signature == true, "Invalid server signature");
+            assert!(valid_client_signature, "Invalid server signature");
 
             let curr_a = self.a.read() + agreement.quantity.into();
             self.a.write(curr_a);

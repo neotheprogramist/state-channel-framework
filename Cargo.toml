@@ -17,6 +17,7 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [workspace.dependencies]
+starknet = { git = "https://github.com/xJonathanLEI/starknet-rs", rev = "d980869" }
 axum = { version = "0.7.5", features = ["http2", "macros", "multipart", "ws"] }
 cairo-proof-parser = { git = "https://github.com/cartridge-gg/cairo-proof-parser", branch = "feat/proper-field-element-type" }
 clap = { version = "4.5.4", features = ["derive", "env"] }
@@ -35,7 +36,6 @@ tracing = "0.1.40"
 tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
 serde = { version = "^1", features = ["derive"] }
 serde_json = "^1"
-starknet = { git = "https://github.com/xJonathanLEI/starknet-rs", rev = "d980869" }
 url = "2.5.0"
 sncast = { git = "https://github.com/neotheprogramist/starknet-foundry", branch = "fix/unlock" }
 dialoguer = "0.9"
@@ -75,3 +75,5 @@ futures = "0.3.30"
 seq-macro = "0.3.5"
 prover-sdk = { git = "https://github.com/neotheprogramist/http-prover", version = "0.1.0" }
 starknet-crypto = "0.6.2"
+starknet_ff = { git = "https://github.com/xJonathanLEI/starknet-rs", package = "starknet-ff" }
+starknet_providers = { git = "https://github.com/xJonathanLEI/starknet-rs", package = "starknet-providers" }

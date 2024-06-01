@@ -2,7 +2,7 @@ use core::fmt;
 
 use starknet::core::types::FieldElement as StarknetFieldElement;
 use starknet::{
-    core::{types::FieldElement},
+    core::types::FieldElement,
     signers::{SigningKey, VerifyingKey},
 };
 use starknet_crypto::poseidon_hash_many;
@@ -33,7 +33,7 @@ impl Client {
         self.private_key.verifying_key()
     }
 
-    pub fn sing_quote(&self, quote: Quote) -> (FieldElement, FieldElement) {
+    pub fn sign_quote(&self, quote: Quote) -> (FieldElement, FieldElement) {
         let data = [
             starknet_to_crypto(&self.public_key().scalar()),
             starknet_to_crypto(&quote.quantity),

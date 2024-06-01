@@ -6,7 +6,6 @@ from aggregate import aggregate
 from input import (
     Input, get_agreements, Agreement
 )
-from starkware.cairo.common.cairo_builtins import SignatureBuiltin 
 
 
 func main{
@@ -21,7 +20,7 @@ func main{
     alloc_locals;
 
     let (input: Input) = get_agreements();
-    let (a: felt, b: felt) = aggregate(
+    let (a: felt, b: felt) =aggregate(
         input.client_public_key,
         input.server_public_key,
         input.agreements_len,

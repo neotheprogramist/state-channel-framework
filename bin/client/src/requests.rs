@@ -8,12 +8,12 @@ use axum::{
 use dialoguer::console::style;
 use serde_json::json;
 use serde_json::Value;
-use server::request::account::MockAccount;
 use server::request::models::{
     AgreeToQuotation, RequestQuotationResponse, RequestQuotationWithPrice, SettlementProofResponse,
 };
 use starknet::core::types::FieldElement;
 use tower::util::ServiceExt;
+use utils::client::Client;
 
 #[allow(dead_code)]
 pub async fn create_agreement(
@@ -101,9 +101,9 @@ pub async fn accept_contract(
     url: &str,
     router: Router,
 ) -> Result<(), Box<dyn std::error::Error>> {
-    let mock_account = MockAccount::new();
+    let client = Client::new();
     let (client_signature_r, client_signature_s) =
-        mock_account.sign_message(request_quotation_response.quote.clone())?;
+        client.sign_quote(request_quotation_response.quote.clone());
     let request_quotation = AgreeToQuotation {
         quote: request_quotation_response.quote,
         server_signature_r: request_quotation_response.server_signature_r,

@@ -1,24 +1,22 @@
-use crate::errors::{parse_class_hash_from_error, RunnerError};
+use crate::{deploy::get_wait_config, errors::{parse_class_hash_from_error, RunnerError}};
+use sncast::{handle_wait_for_tx, response::errors::StarknetCommandError};
 use starknet::{
-    accounts::{Account, AccountError, SingleOwnerAccount},
+    accounts::{Account, AccountError, ConnectedAccount, SingleOwnerAccount},
     core::types::{
         contract::{CompiledClass, SierraClass},
         FieldElement, StarknetError,
     },
-    providers::{Provider, ProviderError},
-    signers::Signer,
+    providers::{jsonrpc::HttpTransport, JsonRpcClient, ProviderError},
+    signers::LocalWallet,
 };
 use tokio::io::AsyncReadExt;
 use std::sync::Arc;
 
-pub async fn declare_contract<P, S>(
-    prefunded_account: &SingleOwnerAccount<P, S>,
+pub async fn declare_contract(
+    prefunded_account: SingleOwnerAccount<JsonRpcClient<HttpTransport>, LocalWallet> ,
     sierra_path: &str,
     casm_path: &str,
 ) -> Result<FieldElement, RunnerError>
-where
-    P: Provider + Send + Sync,
-    S: Signer + Send + Sync,
 {
     let mut file = tokio::fs::File::open(sierra_path).await?;
     let mut sierra = String::default();
@@ -33,15 +31,18 @@ where
     let casm_class_hash = compiled_class.class_hash()?;
     let flattened_class = contract_artifact.clone().flatten()?;
 
-    let result = prefunded_account
-        .declare(Arc::new(flattened_class), casm_class_hash)
-        .send()
-        .await;
-    let class_hash = match result {
-        Ok(hash) => {
-            tracing::info!("Declaration successful, class hash: {:?}", hash.class_hash);
-            hash.class_hash
-        }
+    let result = match prefunded_account
+    .declare(Arc::new(flattened_class), casm_class_hash)
+    .send()
+    .await{
+        Ok(result) => handle_wait_for_tx(
+            prefunded_account.provider(),
+            result.transaction_hash,
+            result.class_hash,
+            get_wait_config(true, 8),
+        )
+        .await
+        .map_err(StarknetCommandError::from),
         Err(AccountError::Provider(ProviderError::StarknetError(
             StarknetError::ContractError(data),
         ))) => {
@@ -49,7 +50,7 @@ where
             if data.revert_error.contains("is already declared") {
                 let parsed_class_hash = parse_class_hash_from_error(&data.revert_error);
                 tracing::info!("Parsed class hash from error: {:?}", parsed_class_hash);
-                parsed_class_hash
+                Ok(parsed_class_hash)
             } else {
                 return Err(RunnerError::AccountFailure(format!(
                     "Contract error: {}",
@@ -67,7 +68,7 @@ where
             if data.execution_error.contains("is already declared") {
                 let parsed_class_hash = parse_class_hash_from_error(&data.execution_error);
                 tracing::info!("Parsed class hash from error: {:?}", parsed_class_hash);
-                parsed_class_hash
+                Ok(parsed_class_hash)
             } else {
                 return Err(RunnerError::AccountFailure(format!(
                     "Transaction execution error: {}",
@@ -80,5 +81,15 @@ where
             return Err(RunnerError::AccountFailure(format!("Account error: {}", e)));
         }
     };
-    Ok(class_hash)
+
+    match result {
+        Ok(hash) => Ok(hash),
+        Err(e) => {
+            tracing::info!("Failed to deploy contract: {:?}", e);
+            Err(RunnerError::DeploymentFailure(
+                "Failed to deploy contract".to_string(),
+            ))
+        }
+    }
+
 }

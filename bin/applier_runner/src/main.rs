@@ -63,11 +63,12 @@ async fn main() -> Result<(), RunnerError> {
     );
 
     let class_hash: FieldElement = declare_contract(
-        &prefunded_account,
+        prefunded_account,
         "target/dev/applier_Applier.contract_class.json",
         "target/dev/applier_Applier.compiled_contract_class.json",
     )
     .await?;
+    tracing::info!("Declared contract");
 
     let deployed_address = deploy_contract(
         client_public_key,
@@ -81,6 +82,7 @@ async fn main() -> Result<(), RunnerError> {
         args.private_key,
     )
     .await?;
+    tracing::info!("Deployed contract");
 
     let start = Instant::now();
     let gas_sum = apply_agreements(
