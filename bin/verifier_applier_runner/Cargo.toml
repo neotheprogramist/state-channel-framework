@@ -21,3 +21,5 @@ sncast.workspace = true
 dialoguer.workspace = true
 regex.workspace = true
 anyhow.workspace = true
+prover-sdk.workspace = true
+cairo-proof-parser.workspace = true

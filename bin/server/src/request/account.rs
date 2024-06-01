@@ -17,7 +17,6 @@ pub struct SeverSignature {
 #[derive(Debug, Clone)]
 pub struct MockAccount {
     pub secret_key: SigningKey,
-    pub public_key: VerifyingKey,
 }
 
 impl Default for MockAccount {
@@ -29,21 +28,18 @@ impl Default for MockAccount {
 impl MockAccount {
     pub fn new() -> Self {
         let secret_key = SigningKey::from_random();
-        let public_key = secret_key.verifying_key();
 
-        MockAccount {
-            secret_key,
-            public_key,
-        }
+        Self { secret_key }
     }
-    pub fn sign_message(&self, quote: Quote) -> Result<(FieldElement, FieldElement), ServerError> {
-        tracing::info!(
-            "DATA {} {:x} {} {:x}",
-            quote.price,
-            quote.nonce,
-            quote.quantity,
-            quote.address
-        );
+    pub fn public_key(&self) -> VerifyingKey {
+        self.secret_key.verifying_key()
+    }
+    pub fn sign_message(&self, quote: Quote) -> Result<(String, String), ServerError> {
+        let price = FieldElement::from_dec_str(&quote.price.to_string())?;
+        let address = FieldElement::from_hex_be(&quote.address)?;
+        let quantity_hex = format!("{:x}", &quote.quantity);
+        let quantity = FieldElement::from_hex_be(&quantity_hex)?;
+        let nonce = FieldElement::from_hex_be(&quote.nonce.to_string())?;
 
         let data = [quote.price, quote.nonce, quote.quantity, quote.address];
         let hash = compute_hash_on_elements(&data);

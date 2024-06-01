@@ -35,25 +35,6 @@ pub enum RunnerError {
     BoxError(#[from] Box<dyn std::error::Error>),
 }
 
-pub fn parse_contract_address_from_error(error_msg: &str) -> FieldElement {
-    println!("Error message: {}", error_msg);
-    // Define a regular expression to capture the class hash
-    let re = Regex::new(
-        r#"ContractAddress\(PatriciaKey\(StarkFelt\("(?P<address>0x[a-fA-F0-9]+)"\)\)\)"#,
-    )
-    .unwrap();
-
-    // Attempt to capture the class hash
-    if let Some(captures) = re.captures(error_msg) {
-        if let Some(contract_address) = captures.name("address") {
-            return FieldElement::from_hex_be(contract_address.as_str())
-                .expect("Failed to parse class hash");
-        }
-    }
-
-    panic!("Failed to extract class hash from error message");
-}
-
 pub fn parse_class_hash_from_error(error_msg: &str) -> FieldElement {
     println!("Error message: {}", error_msg);
     let re = Regex::new(r#"StarkFelt\("(0x[a-fA-F0-9]+)"\)"#).unwrap();

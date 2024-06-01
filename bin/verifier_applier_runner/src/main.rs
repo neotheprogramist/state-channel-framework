@@ -4,12 +4,14 @@ use clap::Parser;
 use run::run;
 use starknet::core::types::FieldElement;
 use url::Url;
-mod apply;
+
 mod declare;
 mod deploy;
 mod errors;
 mod get_account;
+mod invoke;
 mod models;
+mod receipt;
 mod run;
 
 #[derive(Parser, Debug, Clone)]
@@ -37,13 +39,22 @@ struct Args {
 
     #[arg(long, env, default_value = "http://localhost:5050/rpc")]
     rpc_url: Url,
+
+    #[arg(long, env, default_value = "http://prover.visoft.dev:3618")]
+    prover_url: Url,
+
+    #[arg(long, env)]
+    prover_secret_key: String,
+
+    #[arg(long, env)]
+    program_hash: FieldElement,
 }
 
 #[tokio::main]
 async fn main() -> Result<(), RunnerError> {
     let args: Args = Args::parse();
     let (agreements, client_public_key, server_public_key) = get_agreements_data()?;
-    let _ = run(args, agreements, server_public_key, client_public_key).await;
+    run(args, agreements, server_public_key, client_public_key).await?;
 
     Ok(())
 }

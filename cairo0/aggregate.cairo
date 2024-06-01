@@ -1,3 +1,9 @@
+from starkware.cairo.common.alloc import alloc
+from starkware.cairo.common.builtin_poseidon.poseidon import poseidon_hash_many
+from starkware.cairo.common.cairo_builtins import HashBuiltin, PoseidonBuiltin, EcOpBuiltin, SignatureBuiltin
+from starkware.cairo.common.signature import (
+    verify_ecdsa_signature,
+)
 from input import Agreement
 from starkware.cairo.common.signature import (
     verify_ecdsa_signature,
@@ -48,6 +54,8 @@ func aggregate{output_ptr: felt*, pedersen_ptr: HashBuiltin*,ecdsa_ptr: Signatur
     );    
     
     return aggregate(
+        client_public_key,
+        server_public_key,
         agreements_len - 1,
         agreements + 1,
         a + agreement_quantity,

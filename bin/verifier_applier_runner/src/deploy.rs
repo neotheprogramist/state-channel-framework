@@ -1,9 +1,5 @@
 use crate::get_account::get_account;
-use crate::{
-    errors::{parse_contract_address_from_error, RunnerError},
-    models::AgreementConstructor,
-    Args,
-};
+use crate::{errors::RunnerError, Args};
 use anyhow::anyhow;
 use sncast::{
     handle_wait_for_tx, response::errors::StarknetCommandError, ValidatedWaitParams, WaitForTx,
@@ -19,11 +15,10 @@ use starknet::{
 
 pub async fn deploy_contract(
     args: Args,
-    client_public_key: String,
-    server_public_key: String,
     class_hash: FieldElement,
     salt: FieldElement,
     udc_address: FieldElement,
+    calldata: Vec<FieldElement>,
 ) -> Result<FieldElement, RunnerError> {
     let prefunded_account = get_account(
         args.rpc_url.clone(),
@@ -33,17 +28,8 @@ pub async fn deploy_contract(
     );
 
     let contract_factory = create_contract_factory(class_hash, prefunded_account, udc_address);
-    let agreement_constructor =
-        create_agreement_constructor(&client_public_key, &server_public_key)?;
 
-    let deployment = contract_factory.deploy(
-        vec![
-            agreement_constructor.client_public_key,
-            agreement_constructor.server_public_key,
-        ],
-        salt,
-        false,
-    );
+    let deployment = contract_factory.deploy(calldata, salt, true);
     let prefunded_account = get_account(
         args.rpc_url.clone(),
         args.chain_id,
@@ -63,14 +49,10 @@ pub async fn deploy_contract(
             StarknetError::ContractError(data),
         ))) => {
             println!("StarknetError encountered: {}", data.revert_error); // Debugging print
-            if data.revert_error.contains("is unavailable for deployment") {
-                Ok(parse_contract_address_from_error(&data.revert_error))
-            } else {
-                return Err(RunnerError::AccountFailure(format!(
-                    "Contract error: {}",
-                    data.revert_error
-                )));
-            }
+            return Err(RunnerError::AccountFailure(format!(
+                "Contract error: {}",
+                data.revert_error
+            )));
         }
         Err(Provider(error)) => Err(StarknetCommandError::ProviderError(error.into())),
         _ => Err(anyhow!("Unknown RPC error").into()),
@@ -98,18 +80,4 @@ fn create_contract_factory(
     udc_address: FieldElement,
 ) -> ContractFactory<SingleOwnerAccount<JsonRpcClient<HttpTransport>, LocalWallet>> {
     ContractFactory::new_with_udc(class_hash, prefunded_account, udc_address)
-}
-
-fn create_agreement_constructor(
-    client_public_key: &str,
-    server_public_key: &str,
-) -> Result<AgreementConstructor, RunnerError> {
-    Ok(AgreementConstructor {
-        client_balance: 1000000u64.into(),
-        server_balance: 1000000u64.into(),
-        client_public_key: FieldElement::from_hex_be(client_public_key)?,
-        server_public_key: FieldElement::from_hex_be(server_public_key)?,
-        a: 0u64.into(),
-        b: 0u64.into(),
-    })
 }

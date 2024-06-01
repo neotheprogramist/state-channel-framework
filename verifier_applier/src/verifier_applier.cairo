@@ -4,8 +4,10 @@ use starknet::ContractAddress;
 struct ProgramOutput {
     client_public_key: felt252,
     server_public_key: felt252,
+    settlement_price: felt252,
     a: felt252,
     b: felt252,
+    result: felt252,
 }
 
 #[starknet::interface]
@@ -42,6 +44,8 @@ mod VerifierApplier {
         herodotus_fact_registry_address: ContractAddress,
         client_public_key: felt252,
         server_public_key: felt252,
+        client_balance: felt252,
+        server_balance: felt252,
         collateral_token_address: ContractAddress,
         client_amount: u256,
     }
@@ -49,30 +53,17 @@ mod VerifierApplier {
     #[constructor]
     fn constructor(
         ref self: ContractState,
+        program_hash: felt252,
+        fact_registry_address: ContractAddress,
         client_public_key: felt252,
         server_public_key: felt252,
-        collateral_token_address: ContractAddress,
-        client_amount: u256
     ) {
-        self.program_hash.write(0x1e0a9aedb642a67097df9114a992054d577d7759f558d2499c55f35beebf390);
-        self
-            .fact_registry_address
-            .write(
-                contract_address_const::<
-                    0x679bd7ba29abf0c708f2ddcc321aab97e26f70ccb85a7ce92c289d9dfedac0c
-                >()
-            );
-        self
-            .herodotus_fact_registry_address
-            .write(
-                contract_address_const::<
-                    0x07d3550237ecf2d6ddef9b78e59b38647ee511467fe000ce276f245a006b40bc
-                >()
-            );
+        self.program_hash.write(program_hash);
+        self.fact_registry_address.write(fact_registry_address);
         self.client_public_key.write(client_public_key);
         self.server_public_key.write(server_public_key);
-        self.collateral_token_address.write(collateral_token_address);
-        self.client_amount.write(client_amount);
+        self.client_balance.write(1_000_000);
+        self.server_balance.write(1_000_000);
     }
 
     #[abi(embed_v0)]
@@ -120,7 +111,10 @@ mod VerifierApplier {
             };
             assert(fact_registry.is_valid(fact), errors::INVALID_PROOF);
 
-            0
+            self.client_balance.write(self.client_balance.read() + program_output.result);
+            self.server_balance.write(self.server_balance.read() - program_output.result);
+
+            program_output.result
         }
     }
 }

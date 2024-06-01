@@ -2,11 +2,6 @@ use crate::RunnerError;
 use serde::{Deserialize, Serialize};
 use starknet::core::types::FieldElement;
 use std::{fs::File, io::Read};
-#[derive(Debug, Clone)]
-pub struct DeployResult {
-    pub deployed_address: FieldElement,
-    pub transaction_hash: FieldElement,
-}
 
 #[derive(Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]

@@ -3,7 +3,7 @@
 source .venv/bin/activate && \
 cairo-run \
   --program target/cairo0/program.casm.json \
-  --layout small \
+  --layout starknet \
   --print_output \
   --trace_file target/cairo0/trace.bin \
   --memory_file target/cairo0/memory.bin \
