@@ -1,17 +1,11 @@
-use crate::account::get_account;
-use crate::deploy::get_wait_config;
-use crate::models::Agreement;
-use starknet::core::types::{InvokeTransactionResult, PendingTransactionReceipt, StarknetError};
-use starknet::{
-    accounts::{Account, Call, ConnectedAccount, SingleOwnerAccount},
-    core::types::{FieldElement, MaybePendingTransactionReceipt, TransactionReceipt},
-    macros::selector,
-    providers::{jsonrpc::HttpTransport, JsonRpcClient, Provider, ProviderError},
-    signers::LocalWallet,
-};
-use std::time::Duration;
-use tokio::time::sleep;
+use starknet::accounts::{Account, ConnectedAccount};
+use starknet::core::types::InvokeTransactionResult;
+use starknet::{accounts::Call, core::types::FieldElement, macros::selector};
 use url::Url;
+use utils::account::get_account;
+use utils::deploy::get_wait_config;
+use utils::models::Agreement;
+use utils::receipt::{extract_gas_fee, wait_for_receipt};
 use utils::sncast::handle_wait_for_tx;
 use utils::sncast::WaitForTransactionError;
 pub async fn apply_agreements(
@@ -117,46 +111,4 @@ pub async fn apply_agreements(
     }
 
     Ok(gas_fee_sum)
-}
-
-// Function to extract gas fee from the receipt
-fn extract_gas_fee(receipt: &MaybePendingTransactionReceipt) -> Option<FieldElement> {
-    match receipt {
-        MaybePendingTransactionReceipt::Receipt(receipt) => match receipt {
-            TransactionReceipt::Invoke(receipt) => Some(receipt.actual_fee.amount),
-            TransactionReceipt::L1Handler(receipt) => Some(receipt.actual_fee.amount),
-            TransactionReceipt::Declare(receipt) => Some(receipt.actual_fee.amount),
-            TransactionReceipt::Deploy(receipt) => Some(receipt.actual_fee.amount),
-            TransactionReceipt::DeployAccount(receipt) => Some(receipt.actual_fee.amount),
-        },
-        MaybePendingTransactionReceipt::PendingReceipt(receipt) => match receipt {
-            PendingTransactionReceipt::Invoke(receipt) => Some(receipt.actual_fee.amount),
-            PendingTransactionReceipt::L1Handler(receipt) => Some(receipt.actual_fee.amount),
-            PendingTransactionReceipt::Declare(receipt) => Some(receipt.actual_fee.amount),
-            PendingTransactionReceipt::DeployAccount(receipt) => Some(receipt.actual_fee.amount),
-        },
-    }
-}
-
-// Function to poll for transaction receipt until it's available
-async fn wait_for_receipt(
-    provider: &SingleOwnerAccount<JsonRpcClient<HttpTransport>, LocalWallet>,
-    tx_hash: FieldElement,
-) -> Result<MaybePendingTransactionReceipt, ProviderError> {
-    let mut attempts = 0;
-    loop {
-        tracing::info!("Transaction_hash {:x}", tx_hash);
-        match provider.provider().get_transaction_receipt(tx_hash).await {
-            Ok(receipt) => {
-                return Ok(receipt);
-            }
-            Err(ProviderError::StarknetError(err))
-                if err == StarknetError::TransactionHashNotFound && attempts < 20 =>
-            {
-                attempts += 1;
-                sleep(Duration::from_secs(5)).await;
-            }
-            Err(err) => return Err(err),
-        }
-    }
 }
