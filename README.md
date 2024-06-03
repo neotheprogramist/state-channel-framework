@@ -98,25 +98,32 @@ This setup guide will help you to configure and run the necessary components for
 
 This guide provides instructions to generate sample agreements, set up Starknet Devnet, and deploy contracts on both Devnet and Sepolia.
 
+## Build contract
+
+Start by building the contract using the following command to ensure it compiles into deployable bytecode.
+
+```bash
+scarb build 
+```
+
 ## Generate Sample Agreements
 
-To generate sample agreements, **ensure you have created the directory target/generator_output/** inside state-channel-framework, to avoid a "no such file" error. Then, execute the following command:
-
-Note:
-Generate new agreements eachtime you want to deploy contracts on sepolia
+To generate sample agreements execute the following command:
 
 ```bash
 cargo run -r --bin json_generator -- --agreements-count <number_of_agreements>
 ```
+Note:
+Generate new agreements eachtime you want to deploy contracts on sepolia
 
-The generated outputs will be located in **target/generator_output/**, which will contain the necessary data for deploying the contract and applying agreements.
+The generated outputs should be located in **target/generator_output/**, which will contain the necessary data for deploying the contract and applying agreements.
 
 ## Setting Up Starknet Devnet
 
 To launch Starknet Devnet, use the command:
 
 ```bash
-starknet-devnet
+starknet-devnet --seed 0
 ```
 
 ## Declaring and Deploying Contract on Devnet and Sepolia
@@ -126,17 +133,12 @@ Follow these steps to declare and deploy the agreement contract on Devnet:
 1. **Set Environment Variables**
     
     If non-existent, create file **.cargo/config.toml** to hold our enviroment variables.
-    
-
-    Add the necessary enviroment variables. For _DEVNET use one of the predeployed account from starknet-devnet.
+    Add the necessary enviroment variables **ADDRESS**, **PRIVATE_KEY**.
    ```bash
-
-   export ADDRESS_DEVNET = "0x18...69"
-   export PRIVATE_KEY_DEVNET = "0x26..."
-
-   export PRIVATE_KEY = "0x07...8a3"
-   export ADDRESS = "0x028d...52DF30"
+    export ADDRESS = "0x64b48806902a367c8598f4f95c305e8c1a1acba5f082d294a43793113115691"
+    export PRIVATE_KEY = "0x71d7bb07b9a64f6f78ac4c816aff4da9"
    ```
+   The sample address and private_key can be used for devnet, for sepolia provide your sepolia-eth account details.
    
    
 2. **Run the Program**

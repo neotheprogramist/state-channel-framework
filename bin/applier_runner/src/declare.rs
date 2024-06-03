@@ -21,13 +21,33 @@ pub async fn declare_contract(
     sierra_path: &str,
     casm_path: &str,
 ) -> Result<FieldElement, RunnerError> {
-    let mut file = tokio::fs::File::open(sierra_path).await?;
+    let mut file = tokio::fs::File::open(sierra_path).await.map_err(|e| {
+        if e.kind() == std::io::ErrorKind::NotFound {
+            RunnerError::ReadFileError(
+                "Contract json file not found, please execute scarb build command".to_string(),
+            )
+        } else {
+            RunnerError::ReadFileError(e.to_string())
+        }
+    })?;
     let mut sierra = String::default();
-    file.read_to_string(&mut sierra).await?;
+    file.read_to_string(&mut sierra)
+        .await
+        .map_err(|e| RunnerError::ReadFileError(e.to_string()))?;
 
-    let mut file = tokio::fs::File::open(casm_path).await?;
+    let mut file = tokio::fs::File::open(casm_path).await.map_err(|e| {
+        if e.kind() == std::io::ErrorKind::NotFound {
+            RunnerError::ReadFileError(
+                "Contract json file not found, please execute scarb build command".to_string(),
+            )
+        } else {
+            RunnerError::ReadFileError(e.to_string())
+        }
+    })?;
     let mut casm = String::default();
-    file.read_to_string(&mut casm).await?;
+    file.read_to_string(&mut casm)
+        .await
+        .map_err(|e| RunnerError::ReadFileError(e.to_string()))?;
 
     let contract_artifact: SierraClass = serde_json::from_str(&sierra)?;
     let compiled_class: CompiledClass = serde_json::from_str(&casm)?;
@@ -80,8 +100,19 @@ pub async fn declare_contract(
                 )));
             }
         }
+        Err(AccountError::Provider(ProviderError::Other(e))) => {
+            if let Some(source) = e.source() {
+                if source.to_string().contains("Connection refused") {
+                    return Err(RunnerError::DevnetNotLaunched(source.to_string()));
+                }
+            }
+            return Err(RunnerError::AccountFailure(format!(
+                "Transport error: {}",
+                e
+            )));
+        }
         Err(e) => {
-            tracing::info!("General account error encountered: {:?}", e);
+            tracing::info!("General account error encountered: {:?}, possible cause - incorrect address or public_key in enviroment variables!", e);
             return Err(RunnerError::AccountFailure(format!("Account error: {}", e)));
         }
     };

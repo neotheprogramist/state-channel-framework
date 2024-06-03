@@ -1,3 +1,5 @@
+use std::fs;
+
 use crate::requests::{create_agreement, request_settlement_proof_with_price_and_data};
 use axum::Router;
 use clap::Parser;
@@ -54,7 +56,10 @@ async fn main() -> Result<(), Box<dyn StdError>> {
 
     let client = Client::new();
     let router: Router = server::request::router(&state);
-
+    // Create the generator_output directory if it does not exist
+    if let Some(parent) = std::path::Path::new(&args.path_in).parent() {
+        fs::create_dir_all(parent)?;
+    }
     //first 50 buys then 50 sells with the same sum prices
     for buying_price in buy_prices {
         create_agreement(

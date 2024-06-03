@@ -17,8 +17,7 @@ pub enum RunnerError {
     SerdeJsonError(#[from] serde_json::Error),
 
     #[error("ReadFileError error: {0}")]
-    ReadFileError(#[from] std::io::Error),
-
+    ReadFileError(String),
     #[error("JsonError error: {0}")]
     JsonError(#[from] starknet::core::types::contract::JsonError),
 
@@ -33,6 +32,9 @@ pub enum RunnerError {
 
     #[error("Box error: {0}")]
     BoxError(#[from] Box<dyn std::error::Error>),
+
+    #[error("Starknet-devnet not launched : {0}")]
+    DevnetNotLaunched(String),
 }
 
 pub fn parse_contract_address_from_error(error_msg: &str) -> FieldElement {
