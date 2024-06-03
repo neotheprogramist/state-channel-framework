@@ -1,5 +1,4 @@
 use crate::args::Args;
-use crate::models::AgreementConstructor;
 use crate::runner_error::parse_contract_address_from_error;
 use crate::sncast::{handle_wait_for_tx, ValidatedWaitParams, WaitForTransactionError, WaitForTx};
 use crate::{account::get_account, runner_error::RunnerError};
@@ -12,8 +11,7 @@ use starknet::{
 };
 
 pub async fn deploy_contract(
-    client_public_key: FieldElement,
-    server_public_key: FieldElement,
+    calldata: Vec<FieldElement>,
     class_hash: FieldElement,
     args: Args,
 ) -> Result<FieldElement, RunnerError> {
@@ -26,23 +24,7 @@ pub async fn deploy_contract(
     let contract_factory =
         ContractFactory::new_with_udc(class_hash, prefunded_account, args.udc_address);
 
-    let agreement_constructor = AgreementConstructor {
-        client_balance: 1000000u64.into(),
-        server_balance: 1000000u64.into(),
-        client_public_key,
-        server_public_key,
-        a: FieldElement::ZERO,
-        b: FieldElement::ZERO,
-    };
-
-    let deployment = contract_factory.deploy(
-        vec![
-            agreement_constructor.client_public_key,
-            agreement_constructor.server_public_key,
-        ],
-        args.salt,
-        false,
-    );
+    let deployment = contract_factory.deploy(calldata, args.salt, false);
 
     let prefunded_account =
         get_account(args.rpc_url, args.chain_id, args.address, args.private_key);
