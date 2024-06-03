@@ -141,10 +141,21 @@ Follow these steps to declare and deploy the agreement contract on Devnet:
    The sample address and private_key can be used for devnet, for sepolia provide your sepolia-eth account details.
    
    
-2. **Run the Program**
+2. **Run the Program on Devnet**
 
    ```bash
    cargo run --bin applier_runner
    ```
 
-This streamlined guide ensures that you have all the necessary steps to generate agreements and deploy contracts on Starknet Devnet and Sepolia.
+3. **Run the Program on Sepolia**
+
+  To run the program on sepolia change the RPC_URL in params or in enviroment variables.
+
+   ```bash
+    RPC_URL = "https://free-rpc.nethermind.io/sepolia-juno/v0_7"
+   ```
+  Then execute the following code.
+
+   ```bash
+   cargo run --bin applier_runner
+   ```
