@@ -29,7 +29,7 @@ pub struct Args {
     pub rpc_url: Url,
 
     #[arg(long, env, default_value = "http://prover.visoft.dev:3618")]
-    pub  prover_url: Url,
+    pub prover_url: Url,
 
     #[arg(long, env)]
     pub prover_secret_key: String,
