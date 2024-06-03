@@ -4,11 +4,6 @@ use crate::{
     errors::{parse_contract_address_from_error, RunnerError},
     models::AgreementConstructor,
 };
-use anyhow::anyhow;
-use sncast::{
-    handle_wait_for_tx, response::errors::StarknetCommandError, ValidatedWaitParams, WaitForTx,
-};
-use starknet::accounts::AccountError::Provider;
 use starknet::accounts::ConnectedAccount;
 use starknet::{
     accounts::AccountError,
@@ -16,14 +11,20 @@ use starknet::{
     core::types::{FieldElement, StarknetError},
     providers::ProviderError,
 };
-
+use utils::sncast::{handle_wait_for_tx, WaitForTransactionError};
+use utils::sncast::{ValidatedWaitParams, WaitForTx};
 pub async fn deploy_contract(
     client_public_key: FieldElement,
     server_public_key: FieldElement,
     class_hash: FieldElement,
-    args:Args
+    args: Args,
 ) -> Result<FieldElement, RunnerError> {
-    let prefunded_account = get_account(args.rpc_url.clone(), args.chain_id, args.address, args.private_key);
+    let prefunded_account = get_account(
+        args.rpc_url.clone(),
+        args.chain_id,
+        args.address,
+        args.private_key,
+    );
     let contract_factory =
         ContractFactory::new_with_udc(class_hash, prefunded_account, args.udc_address);
 
@@ -45,7 +46,8 @@ pub async fn deploy_contract(
         false,
     );
 
-    let prefunded_account = get_account(args.rpc_url, args.chain_id, args.address, args.private_key);
+    let prefunded_account =
+        get_account(args.rpc_url, args.chain_id, args.address, args.private_key);
 
     let result = match deployment.send().await {
         Ok(result) => handle_wait_for_tx(
@@ -55,7 +57,7 @@ pub async fn deploy_contract(
             get_wait_config(true, 5),
         )
         .await
-        .map_err(StarknetCommandError::from),
+        .map_err(WaitForTransactionError::from),
         Err(AccountError::Provider(ProviderError::StarknetError(
             StarknetError::ContractError(data),
         ))) => {
@@ -69,8 +71,7 @@ pub async fn deploy_contract(
                 )));
             }
         }
-        Err(Provider(error)) => Err(StarknetCommandError::ProviderError(error.into())),
-        _ => Err(anyhow!("Unknown RPC error").into()),
+        _ => Err(WaitForTransactionError::ProviderError),
     };
 
     match result {

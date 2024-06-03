@@ -2,18 +2,19 @@ use crate::{
     deploy::get_wait_config,
     errors::{parse_class_hash_from_error, RunnerError},
 };
-use sncast::{handle_wait_for_tx, response::errors::StarknetCommandError};
+use starknet::core::types::StarknetError;
 use starknet::{
     accounts::{Account, AccountError, ConnectedAccount, SingleOwnerAccount},
     core::types::{
         contract::{CompiledClass, SierraClass},
-        FieldElement, StarknetError,
+        FieldElement,
     },
     providers::{jsonrpc::HttpTransport, JsonRpcClient, ProviderError},
     signers::LocalWallet,
 };
 use std::sync::Arc;
 use tokio::io::AsyncReadExt;
+use utils::sncast::{handle_wait_for_tx, WaitForTransactionError};
 
 pub async fn declare_contract(
     prefunded_account: SingleOwnerAccount<JsonRpcClient<HttpTransport>, LocalWallet>,
@@ -45,7 +46,7 @@ pub async fn declare_contract(
             get_wait_config(true, 8),
         )
         .await
-        .map_err(StarknetCommandError::from),
+        .map_err(WaitForTransactionError::from),
         Err(AccountError::Provider(ProviderError::StarknetError(
             StarknetError::ContractError(data),
         ))) => {
