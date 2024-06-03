@@ -37,13 +37,9 @@ pub(crate) async fn run(
     .await?;
 
     println!("deploying verifier...");
-    let fact_registry_address = deploy_contract(
-        client_public_key,
-        server_public_key,
-        fact_registry_class_hash,
-        args.clone(),
-    )
-    .await?;
+
+    let fact_registry_address =
+        deploy_contract(vec![], fact_registry_class_hash, args.clone()).await?;
 
     println!("declaring applier...");
 
@@ -54,14 +50,15 @@ pub(crate) async fn run(
     )
     .await?;
 
-    println!("deploying applier...");
-    let verifier_applier_address = deploy_contract(
+    let calldata = vec![
+        verifier_applier_class_hash,
+        fact_registry_address,
         client_public_key,
         server_public_key,
-        verifier_applier_class_hash,
-        args.clone(),
-    )
-    .await?;
+    ];
+    println!("deploying applier...");
+    let verifier_applier_address =
+        deploy_contract(calldata, verifier_applier_class_hash, args.clone()).await?;
 
     let program_input = ProgramInput {
         client_public_key,

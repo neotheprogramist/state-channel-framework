@@ -24,15 +24,6 @@ pub struct InputData {
     pub agreements: Vec<Agreement>,
 }
 
-pub struct AgreementConstructor {
-    pub client_balance: FieldElement,
-    pub server_balance: FieldElement,
-    pub client_public_key: FieldElement,
-    pub server_public_key: FieldElement,
-    pub a: FieldElement,
-    pub b: FieldElement,
-}
-
 pub fn get_agreements_data(
     path_to_input: &str,
 ) -> Result<(Vec<Agreement>, FieldElement, FieldElement), RunnerError> {

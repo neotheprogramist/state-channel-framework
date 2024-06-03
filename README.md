@@ -154,6 +154,11 @@ Follow these steps to declare and deploy the agreement contract on Devnet:
    ```bash
     RPC_URL = "https://free-rpc.nethermind.io/sepolia-juno/v0_7"
    ```
+  Generate new agreements with:
+
+   ```bash
+    cargo run -r --bin json_generator -- --agreements-count <number_of_agreements> 
+   ```
   Then execute the following code.
 
    ```bash

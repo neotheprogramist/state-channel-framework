@@ -36,13 +36,9 @@ async fn main() -> Result<(), RunnerError> {
     .await?;
     tracing::info!("Declared contract");
 
-    let deployed_address = deploy_contract(
-        client_public_key,
-        server_public_key,
-        class_hash,
-        args.clone(),
-    )
-    .await?;
+    let calldata = vec![client_public_key, server_public_key];
+
+    let deployed_address = deploy_contract(calldata, class_hash, args.clone()).await?;
     tracing::info!("Deployed contract");
     let mut gas_sum: FieldElement = FieldElement::ZERO;
 
