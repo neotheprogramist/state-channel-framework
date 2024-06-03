@@ -1,7 +1,6 @@
 use crate::account::get_account;
 use crate::deploy::get_wait_config;
 use crate::models::Agreement;
-use sncast::{handle_wait_for_tx, response::errors::StarknetCommandError};
 use starknet::core::types::{InvokeTransactionResult, PendingTransactionReceipt, StarknetError};
 use starknet::{
     accounts::{Account, Call, ConnectedAccount, SingleOwnerAccount},
@@ -13,6 +12,8 @@ use starknet::{
 use std::time::Duration;
 use tokio::time::sleep;
 use url::Url;
+use utils::sncast::handle_wait_for_tx;
+use utils::sncast::WaitForTransactionError;
 pub async fn apply_agreements(
     agreements: Vec<Agreement>,
     deployed_address: FieldElement,
@@ -95,7 +96,7 @@ pub async fn apply_agreements(
                 get_wait_config(true, 1),
             )
             .await
-            .map_err(StarknetCommandError::from),
+            .map_err(WaitForTransactionError::from),
 
             Err(err) => {
                 tracing::info!("Failed to send transaction: {:?}", err);

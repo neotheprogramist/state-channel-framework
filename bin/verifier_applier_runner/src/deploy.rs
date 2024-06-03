@@ -1,10 +1,6 @@
 use crate::get_account::get_account;
 use crate::{errors::RunnerError, Args};
-use anyhow::anyhow;
-use sncast::{
-    handle_wait_for_tx, response::errors::StarknetCommandError, ValidatedWaitParams, WaitForTx,
-};
-use starknet::accounts::AccountError::Provider;
+
 use starknet::{
     accounts::{AccountError, ConnectedAccount, SingleOwnerAccount},
     contract::ContractFactory,
@@ -12,6 +8,7 @@ use starknet::{
     providers::{jsonrpc::HttpTransport, JsonRpcClient, ProviderError},
     signers::LocalWallet,
 };
+use utils::sncast::{handle_wait_for_tx, ValidatedWaitParams, WaitForTransactionError, WaitForTx};
 
 pub async fn deploy_contract(
     args: Args,
@@ -44,7 +41,7 @@ pub async fn deploy_contract(
             get_wait_config(false, 5),
         )
         .await
-        .map_err(StarknetCommandError::from),
+        .map_err(WaitForTransactionError::from),
         Err(AccountError::Provider(ProviderError::StarknetError(
             StarknetError::ContractError(data),
         ))) => {
@@ -54,8 +51,7 @@ pub async fn deploy_contract(
                 data.revert_error
             )));
         }
-        Err(Provider(error)) => Err(StarknetCommandError::ProviderError(error.into())),
-        _ => Err(anyhow!("Unknown RPC error").into()),
+        _ => Err(WaitForTransactionError::ProviderError),
     };
 
     match result {

@@ -37,7 +37,7 @@ tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
 serde = { version = "^1", features = ["derive"] }
 serde_json = "^1"
 url = "2.5.0"
-sncast = { git = "https://github.com/neotheprogramist/starknet-foundry", branch = "fix/unlock" }
+
 dialoguer = "0.9"
 regex = "1.10.4"
 anyhow = "1"

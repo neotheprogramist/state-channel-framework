@@ -74,7 +74,7 @@ async fn main() -> Result<(), RunnerError> {
         client_public_key,
         server_public_key,
         class_hash,
-        args.clone()
+        args.clone(),
     )
     .await?;
     tracing::info!("Deployed contract");

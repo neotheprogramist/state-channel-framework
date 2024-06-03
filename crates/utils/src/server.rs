@@ -23,9 +23,12 @@ pub fn starknet_to_crypto(fe: &StarknetFieldElement) -> CryptoFieldElement {
     let bytes = fe.to_bytes_be(); // Hypothetical method to get bytes
     CryptoFieldElement::from_bytes_be(&bytes).unwrap()
 }
-
+impl Default for Server {
+    fn default() -> Self {
+        Self::new()
+    }
+}
 impl Server {
-
     pub fn new() -> Self {
         let private_key = SigningKey::from_random();
         Server { private_key }
