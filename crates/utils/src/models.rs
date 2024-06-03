@@ -15,10 +15,7 @@ pub struct Agreement {
     pub client_signature_r: FieldElement,
     pub client_signature_s: FieldElement,
 }
-#[derive(Clone, Debug, PartialEq)]
-pub struct InvokeResponse2 {
-    pub transaction_hash: FieldElement,
-}
+
 #[derive(Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct InputData {

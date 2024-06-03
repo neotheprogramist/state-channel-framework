@@ -3,7 +3,6 @@ use run::run;
 
 use utils::{args::Args, models::get_agreements_data, runner_error::RunnerError};
 
-mod invoke;
 mod run;
 
 #[tokio::main]

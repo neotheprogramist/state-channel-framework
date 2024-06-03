@@ -1,13 +1,17 @@
-use apply::apply_agreements;
 use clap::Parser;
 use starknet::core::types::FieldElement;
 use tokio::time::Instant;
 use tracing_subscriber::FmtSubscriber;
 use utils::{
-    account::get_account, args::Args, declare::declare_contract, deploy::deploy_contract,
-    models::get_agreements_data, runner_error::RunnerError,
+    account::get_account,
+    args::Args,
+    declare::declare_contract,
+    deploy::deploy_contract,
+    invoke::invoke,
+    models::get_agreements_data,
+    receipt::{extract_gas_fee, wait_for_receipt},
+    runner_error::RunnerError,
 };
-mod apply;
 
 #[tokio::main]
 async fn main() -> Result<(), RunnerError> {
@@ -40,17 +44,30 @@ async fn main() -> Result<(), RunnerError> {
     )
     .await?;
     tracing::info!("Deployed contract");
+    let mut gas_sum: FieldElement = FieldElement::ZERO;
 
     let start = Instant::now();
-    let gas_sum = apply_agreements(
-        agreements.clone(),
-        deployed_address,
-        args.rpc_url,
-        args.chain_id,
-        args.address,
-        args.private_key,
-    )
-    .await?;
+
+    for agreement in agreements.iter() {
+        let invoke = invoke(
+            &prefunded_account,
+            deployed_address,
+            "apply",
+            vec![
+                agreement.quantity,
+                agreement.nonce,
+                agreement.price,
+                agreement.server_signature_r,
+                agreement.server_signature_s,
+                agreement.client_signature_r,
+                agreement.client_signature_s,
+            ],
+        );
+        let tx_hash = invoke.await.unwrap();
+        gas_sum +=
+            extract_gas_fee(&wait_for_receipt(&prefunded_account, tx_hash).await.unwrap()).unwrap();
+    }
+
     let duration = start.elapsed();
 
     tracing::info!(

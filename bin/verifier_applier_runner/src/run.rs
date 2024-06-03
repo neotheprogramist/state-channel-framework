@@ -1,6 +1,6 @@
 use std::time::Instant;
 
-use crate::{invoke::invoke, Args};
+use crate::Args;
 use cairo_proof_parser::{output::extract_output, parse};
 use prover_sdk::{Cairo0ProverInput, ProverAccessKey, ProverSDK};
 use serde::Serialize;
@@ -10,6 +10,7 @@ use utils::{
     account::get_account,
     declare::declare_contract,
     deploy::deploy_contract,
+    invoke::invoke,
     models::Agreement,
     receipt::{extract_gas_fee, wait_for_receipt},
     runner_error::RunnerError,
@@ -96,7 +97,7 @@ pub(crate) async fn run(
     .unwrap();
     file.flush().await.unwrap();
 
-    let mut gas_sum = FieldElement::ZERO;
+    let mut gas_sum: FieldElement = FieldElement::ZERO;
 
     let start = Instant::now();
 
@@ -107,7 +108,7 @@ pub(crate) async fn run(
     println!("proving...");
     let proof = sdk.prove_cairo0(prover_input).await.unwrap();
     let extracted_program_output = extract_output(&proof).unwrap();
-    let calldata = parse(&proof).unwrap().into();
+    let calldata: Vec<FieldElement> = parse(&proof).unwrap().into();
     let tx_hash = invoke(
         &prefunded_account,
         fact_registry_address,
