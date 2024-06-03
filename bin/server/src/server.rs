@@ -1,12 +1,11 @@
-use crate::request::account::MockAccount;
 use crate::request::models::AppState;
 use crate::{request, Args};
 use axum::{http::StatusCode, response::IntoResponse, Json};
 use axum::{routing::get, Router};
 use reqwest::Error as ReqwestError;
 use serde_json::json;
-use starknet::core::types::FromByteArrayError;
 use starknet::core::types::FromStrError;
+use starknet::core::types::{FromByteArrayError, FromByteSliceError};
 use std::num::ParseIntError;
 use std::{
     net::{AddrParseError, SocketAddr},
@@ -50,6 +49,9 @@ pub enum ServerError {
 
     #[error("Database error: {0}")]
     FromByteArrayError(#[from] FromByteArrayError),
+
+    #[error("FieldElement conversion error: {0}")]
+    FromByteSliceError(#[from] FromByteSliceError),
 }
 
 impl IntoResponse for ServerError {
@@ -70,11 +72,15 @@ impl IntoResponse for ServerError {
             ServerError::FromByteArrayError(_) => {
                 (StatusCode::INTERNAL_SERVER_ERROR, self.to_string())
             }
+            ServerError::FromByteSliceError(_) => {
+                (StatusCode::INTERNAL_SERVER_ERROR, self.to_string())
+            }
         };
         let body = Json(json!({ "error": error_message }));
         (status, body).into_response()
     }
 }
+use utils::server::Server;
 
 impl From<surrealdb::Error> for ServerError {
     fn from(err: surrealdb::Error) -> Self {
@@ -86,8 +92,8 @@ pub async fn start(args: &Args) -> Result<(), ServerError> {
     let db = Surreal::new::<Mem>(()).await?;
 
     db.use_ns("test").use_db("test").await?;
-    let mock_account = MockAccount::new();
-    let state: AppState = AppState { db, mock_account };
+    let server_mock = Server::new();
+    let state: AppState = AppState { db, server_mock };
 
     tracing_subscriber::registry()
         .with(

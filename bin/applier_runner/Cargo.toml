@@ -21,3 +21,4 @@ sncast.workspace = true
 dialoguer.workspace = true
 regex.workspace = true
 anyhow.workspace = true
+starknet_ff.workspace = true

@@ -6,6 +6,7 @@ from starkware.cairo.common.signature import (
 )
 from input import Agreement
 
+
 func aggregate{
     range_check_ptr,
     ecdsa_ptr: SignatureBuiltin*,
@@ -23,15 +24,16 @@ func aggregate{
     if (agreements_len == 0) {
         return (a=a, b=b);
     }
+    tempvar elements: felt* = new (client_public_key, agreements[0].quantity,agreements[0].nonce,agreements[0].price );
 
-    tempvar elements: felt* = new (agreements[0].price, agreements[0].nonce, agreements[0].quantity, client_public_key);
-    let (hash) = poseidon_hash_many(n=4, elements=elements);
-    // verify_ecdsa_signature(
-    //     hash,
-    //     server_public_key,
-    //     agreements[0].server_signature_r,
-    //     agreements[0].server_signature_s,
-    // );
+    let (agreement_hash) = poseidon_hash_many{poseidon_ptr=poseidon_ptr}(n=4, elements=elements);
+
+    verify_ecdsa_signature(
+        message = agreement_hash,
+        public_key = client_public_key,
+        signature_r = agreements[0].client_signature_r,
+        signature_s = agreements[0].client_signature_s,
+    );    
 
     return aggregate(
         client_public_key,

@@ -22,22 +22,27 @@ func get_agreements() -> (input: Input) {
     local agreements_len: felt;
     local agreements: Agreement**;
     %{
+        def parse_hex_or_int(value):
+            if isinstance(value, str) and value.startswith('0x'):
+                return int(value, 16)
+            return int(value)
+
         program_input_agreements = program_input["agreements"]
         agreements = [
             (
-                int(agreement["quantity"]),
-                int(agreement["nonce"]),
-                int(agreement["price"]),
-                int(agreement["serverSignatureR"]),
-                int(agreement["serverSignatureS"]),
-                int(agreement["clientSignatureR"]),
-                int(agreement["clientSignatureS"]),
+                parse_hex_or_int(agreement["quantity"]),
+                parse_hex_or_int(agreement["nonce"]),
+                parse_hex_or_int(agreement["price"]),
+                parse_hex_or_int(agreement["serverSignatureR"]),
+                parse_hex_or_int(agreement["serverSignatureS"]),
+                parse_hex_or_int(agreement["clientSignatureR"]),
+                parse_hex_or_int(agreement["clientSignatureS"]),
             )
             for agreement in program_input_agreements
         ]
-        ids.input.client_public_key = int(program_input["clientPublicKey"])
-        ids.input.server_public_key = int(program_input["serverPublicKey"])
-        ids.input.settlement_price = int(program_input["settlementPrice"])
+        ids.input.client_public_key = parse_hex_or_int(program_input["clientPublicKey"])
+        ids.input.server_public_key = parse_hex_or_int(program_input["serverPublicKey"])
+        ids.input.settlement_price = parse_hex_or_int(program_input["settlementPrice"])
         ids.input.agreements_len = len(agreements)
         ids.input.agreements = segments.gen_arg(agreements)
     %}

@@ -71,8 +71,8 @@ pub(crate) async fn run(
     .await?;
 
     let program_input = ProgramInput {
-        client_public_key: client_public_key,
-        server_public_key: server_public_key,
+        client_public_key,
+        server_public_key,
         agreements: agreements.clone(),
         settlement_price: FieldElement::from(1500_u64),
     };

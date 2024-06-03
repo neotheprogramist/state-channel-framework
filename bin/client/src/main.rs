@@ -1,6 +1,5 @@
 use clap::Parser;
 mod requests;
-mod tests;
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
 struct Args {

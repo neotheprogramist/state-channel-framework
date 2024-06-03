@@ -13,7 +13,7 @@ pub struct Agreement {
 #[starknet::interface]
 pub trait IApplier<TContractState> {
     fn apply(ref self: TContractState, agreement: Agreement,) -> Result<felt252, felt252>;
-    fn result(self: @TContractState, x: u256) -> u256;
+    fn result(self: @TContractState, x: felt252) -> felt252;
     fn get_client_balance(self: @TContractState) -> u256;
     fn get_server_balance(self: @TContractState) -> u256;
     fn get_agreement_by_id(self: @TContractState, id: felt252) -> Agreement;
@@ -38,8 +38,8 @@ mod Applier {
         server_balance: u256,
         agreements_len: felt252,
         agreements: LegacyMap::<felt252, Agreement>,
-        a: u256,
-        b: u256
+        a: felt252,
+        b: felt252
     }
 
     #[constructor]
@@ -57,10 +57,9 @@ mod Applier {
     #[abi(embed_v0)]
     impl ApplierImpl of super::IApplier<ContractState> {
         fn apply(ref self: ContractState, agreement: Agreement) -> Result<felt252, felt252> {
- 
             let agreement_hash = poseidon_hash_span(
                 array![
-                    self.client_public_key.read(),
+                    self.server_public_key.read(),
                     agreement.quantity,
                     agreement.nonce,
                     agreement.price
@@ -74,19 +73,26 @@ mod Applier {
                 agreement.server_signature_r,
                 agreement.server_signature_s
             );
-            if !valid_server_signature {
-                return Result::Err('Invalid server signature');
-            }
 
+            assert!(valid_server_signature, "Invalid server signature");
+
+            let agreement_hash = poseidon_hash_span(
+                array![
+                    self.client_public_key.read(),
+                    agreement.quantity,
+                    agreement.nonce,
+                    agreement.price
+                ]
+                    .span()
+            );
             let valid_client_signature = check_ecdsa_signature(
                 agreement_hash,
                 self.client_public_key.read(),
                 agreement.client_signature_r,
                 agreement.client_signature_s
             );
-            if !valid_client_signature {
-                return Result::Err('Invalid client signature');
-            }
+
+            assert!(valid_client_signature, "Invalid server signature");
 
             let curr_a = self.a.read() + agreement.quantity.into();
             self.a.write(curr_a);
@@ -101,7 +107,7 @@ mod Applier {
             Result::Ok(agreement_id)
         }
 
-        fn result(self: @ContractState, x: u256) -> u256 {
+        fn result(self: @ContractState, x: felt252) -> felt252 {
             self.a.read() * x + self.b.read()
         }
         fn get_client_public_key(self: @ContractState) -> felt252 {

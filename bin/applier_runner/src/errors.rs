@@ -36,7 +36,7 @@ pub enum RunnerError {
 }
 
 pub fn parse_contract_address_from_error(error_msg: &str) -> FieldElement {
-    println!("Error message: {}", error_msg);
+    tracing::info!("Error message: {}", error_msg);
     // Define a regular expression to capture the class hash
     let re = Regex::new(
         r#"ContractAddress\(PatriciaKey\(StarkFelt\("(?P<address>0x[a-fA-F0-9]+)"\)\)\)"#,
@@ -55,7 +55,7 @@ pub fn parse_contract_address_from_error(error_msg: &str) -> FieldElement {
 }
 
 pub fn parse_class_hash_from_error(error_msg: &str) -> FieldElement {
-    println!("Error message: {}", error_msg);
+    tracing::info!("Error message: {}", error_msg);
     let re = Regex::new(r#"StarkFelt\("(0x[a-fA-F0-9]+)"\)"#).unwrap();
 
     // Attempt to capture the class hash

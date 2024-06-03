@@ -7,6 +7,7 @@ from input import (
     Input, get_agreements, Agreement
 )
 
+
 func main{
     output_ptr: felt*,
     pedersen_ptr: HashBuiltin*,
@@ -19,7 +20,7 @@ func main{
     alloc_locals;
 
     let (input: Input) = get_agreements();
-    let (a: felt, b: felt) = aggregate(
+    let (a: felt, b: felt) =aggregate(
         input.client_public_key,
         input.server_public_key,
         input.agreements_len,
