@@ -6,7 +6,7 @@ use crate::{
     errors::RunnerError,
     get_account::get_account,
     invoke::invoke,
-    models::FieldElementAgreement,
+    models::Agreement,
     receipt::{extract_gas_fee, wait_for_receipt},
     Args,
 };
@@ -18,7 +18,7 @@ use tokio::io::{AsyncReadExt, AsyncWriteExt};
 
 pub(crate) async fn run(
     args: Args,
-    agreements: Vec<FieldElementAgreement>,
+    agreements: Vec<Agreement>,
     server_public_key: FieldElement,
     client_public_key: FieldElement,
 ) -> Result<(), RunnerError> {
@@ -148,7 +148,7 @@ pub(crate) async fn run(
 pub struct ProgramInput {
     pub client_public_key: FieldElement,
     pub server_public_key: FieldElement,
-    pub agreements: Vec<FieldElementAgreement>,
+    pub agreements: Vec<Agreement>,
     pub settlement_price: FieldElement,
 }
 

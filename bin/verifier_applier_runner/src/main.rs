@@ -53,7 +53,8 @@ struct Args {
 #[tokio::main]
 async fn main() -> Result<(), RunnerError> {
     let args: Args = Args::parse();
-    let (agreements, client_public_key, server_public_key) = get_agreements_data()?;
+    let (agreements, client_public_key, server_public_key) =
+        get_agreements_data("target/generator_output/in.json")?;
     run(args, agreements, server_public_key, client_public_key).await?;
 
     Ok(())
