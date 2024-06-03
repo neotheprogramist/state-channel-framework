@@ -22,7 +22,11 @@ use crate::models::Quote;
 pub struct Client {
     private_key: SigningKey,
 }
-
+impl Default for Client {
+    fn default() -> Self {
+        Self::new()
+    }
+}
 impl Client {
     pub fn new() -> Self {
         let private_key = SigningKey::from_random();
