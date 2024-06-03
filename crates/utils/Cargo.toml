@@ -20,3 +20,5 @@ serde_json.workspace = true
 prefix-hex.workspace = true
 starknet-crypto.workspace = true
 anyhow.workspace = true
+url.workspace = true
+regex.workspace = true

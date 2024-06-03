@@ -1,9 +1,8 @@
-use crate::account::get_account;
-use crate::Args;
-use crate::{
-    errors::{parse_contract_address_from_error, RunnerError},
-    models::AgreementConstructor,
-};
+use crate::args::Args;
+use crate::models::AgreementConstructor;
+use crate::runner_error::parse_contract_address_from_error;
+use crate::sncast::{handle_wait_for_tx, ValidatedWaitParams, WaitForTransactionError, WaitForTx};
+use crate::{account::get_account, runner_error::RunnerError};
 use starknet::accounts::ConnectedAccount;
 use starknet::{
     accounts::AccountError,
@@ -11,8 +10,7 @@ use starknet::{
     core::types::{FieldElement, StarknetError},
     providers::ProviderError,
 };
-use utils::sncast::{handle_wait_for_tx, WaitForTransactionError};
-use utils::sncast::{ValidatedWaitParams, WaitForTx};
+
 pub async fn deploy_contract(
     client_public_key: FieldElement,
     server_public_key: FieldElement,

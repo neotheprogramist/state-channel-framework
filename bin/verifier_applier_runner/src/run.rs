@@ -1,21 +1,20 @@
 use std::time::Instant;
 
-use crate::{
-    declare::declare_contract,
-    deploy::deploy_contract,
-    errors::RunnerError,
-    get_account::get_account,
-    invoke::invoke,
-    models::Agreement,
-    receipt::{extract_gas_fee, wait_for_receipt},
-    Args,
-};
+use crate::Args;
 use cairo_proof_parser::{output::extract_output, parse};
 use prover_sdk::{Cairo0ProverInput, ProverAccessKey, ProverSDK};
 use serde::Serialize;
 use starknet::core::types::FieldElement;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
-
+use utils::{
+    account::get_account,
+    declare::declare_contract,
+    deploy::deploy_contract,
+    invoke::invoke,
+    models::Agreement,
+    receipt::{extract_gas_fee, wait_for_receipt},
+    runner_error::RunnerError,
+};
 pub(crate) async fn run(
     args: Args,
     agreements: Vec<Agreement>,
@@ -39,15 +38,15 @@ pub(crate) async fn run(
 
     println!("deploying verifier...");
     let fact_registry_address = deploy_contract(
-        args.clone(),
+        client_public_key,
+        server_public_key,
         fact_registry_class_hash,
-        args.salt,
-        args.udc_address,
-        vec![],
+        args.clone(),
     )
     .await?;
 
     println!("declaring applier...");
+
     let verifier_applier_class_hash: FieldElement = declare_contract(
         &prefunded_account,
         "target/dev/verifier_applier_VerifierApplier.contract_class.json",
@@ -57,16 +56,10 @@ pub(crate) async fn run(
 
     println!("deploying applier...");
     let verifier_applier_address = deploy_contract(
-        args.clone(),
+        client_public_key,
+        server_public_key,
         verifier_applier_class_hash,
-        args.salt,
-        args.udc_address,
-        vec![
-            args.program_hash,
-            fact_registry_address,
-            client_public_key,
-            server_public_key,
-        ],
+        args.clone(),
     )
     .await?;
 
@@ -77,10 +70,13 @@ pub(crate) async fn run(
         settlement_price: FieldElement::from(1500_u64),
     };
 
-    let mut file: tokio::fs::File =
-        tokio::fs::File::open("target/cairo0/program.casm.json").await?;
+    let mut file: tokio::fs::File = tokio::fs::File::open("target/cairo0/program.casm.json")
+        .await
+        .map_err(|e| RunnerError::ReadFileError(e.to_string()))?;
     let mut program = String::default();
-    file.read_to_string(&mut program).await?;
+    file.read_to_string(&mut program)
+        .await
+        .map_err(|e| RunnerError::ReadFileError(e.to_string()))?;
 
     let prover_input = Cairo0ProverInput {
         program: serde_json::from_str(&program).unwrap(),
@@ -89,7 +85,9 @@ pub(crate) async fn run(
     };
 
     let mut file: tokio::fs::File =
-        tokio::fs::File::create("target/cairo0/compiled_with_input.json").await?;
+        tokio::fs::File::create("target/cairo0/compiled_with_input.json")
+            .await
+            .map_err(|e| RunnerError::ReadFileError(e.to_string()))?;
     file.write_all(
         serde_json::to_string_pretty(&prover_input)
             .unwrap()
@@ -99,16 +97,18 @@ pub(crate) async fn run(
     .unwrap();
     file.flush().await.unwrap();
 
-    let mut gas_sum = FieldElement::ZERO;
+    let mut gas_sum: FieldElement = FieldElement::ZERO;
 
     let start = Instant::now();
 
-    let secret_key = ProverAccessKey::from_hex_string(&args.prover_secret_key).unwrap();
-    let sdk = ProverSDK::new(secret_key, args.prover_url).await.unwrap();
+    let secret_key = ProverAccessKey::from_hex_string(&args.clone().prover_secret_key).unwrap();
+    let sdk = ProverSDK::new(secret_key, args.clone().prover_url)
+        .await
+        .unwrap();
     println!("proving...");
     let proof = sdk.prove_cairo0(prover_input).await.unwrap();
     let extracted_program_output = extract_output(&proof).unwrap();
-    let calldata = parse(&proof).unwrap().into();
+    let calldata: Vec<FieldElement> = parse(&proof).unwrap().into();
     let tx_hash = invoke(
         &prefunded_account,
         fact_registry_address,

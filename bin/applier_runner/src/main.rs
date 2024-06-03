@@ -1,51 +1,17 @@
-use crate::errors::RunnerError;
-use crate::models::get_agreements_data;
-use apply::apply_agreements;
 use clap::Parser;
-use declare::declare_contract;
-use deploy::deploy_contract;
 use starknet::core::types::FieldElement;
 use tokio::time::Instant;
 use tracing_subscriber::FmtSubscriber;
-use url::Url;
-mod account;
-mod apply;
-mod declare;
-mod deploy;
-mod errors;
-mod models;
-
-#[derive(Parser, Debug, Clone)]
-#[command(version, about, long_about = None)]
-struct Args {
-    #[arg(long, short, env, default_value = "0x534e5f5345504f4c4941")]
-    chain_id: FieldElement,
-
-    #[arg(
-        long,
-        short,
-        env,
-        default_value = "0x41A78E741E5AF2FEC34B695679BC6891742439F7AFB8484ECD7766661AD02BF"
-    )]
-    udc_address: FieldElement,
-
-    #[arg(
-        long,
-        short,
-        env,
-        default_value = "0x023ba0a5877c0e8772fc22a60c02a5fe5fddd592a8a47079522667c04418c29d"
-    )]
-    salt: FieldElement,
-
-    #[arg(long, short, env)]
-    address: FieldElement,
-
-    #[arg(long, short, env)]
-    private_key: FieldElement,
-
-    #[arg(long, env, default_value = "http://localhost:5050/rpc")]
-    rpc_url: Url,
-}
+use utils::{
+    account::get_account,
+    args::Args,
+    declare::declare_contract,
+    deploy::deploy_contract,
+    invoke::invoke,
+    models::get_agreements_data,
+    receipt::{extract_gas_fee, wait_for_receipt},
+    runner_error::RunnerError,
+};
 
 #[tokio::main]
 async fn main() -> Result<(), RunnerError> {
@@ -55,7 +21,7 @@ async fn main() -> Result<(), RunnerError> {
     let subscriber = FmtSubscriber::builder().finish();
     tracing::subscriber::set_global_default(subscriber).expect("setting default subscriber failed");
 
-    let prefunded_account = account::get_account(
+    let prefunded_account = get_account(
         args.rpc_url.clone(),
         args.chain_id,
         args.address,
@@ -63,7 +29,7 @@ async fn main() -> Result<(), RunnerError> {
     );
 
     let class_hash: FieldElement = declare_contract(
-        prefunded_account,
+        &prefunded_account,
         "target/dev/applier_Applier.contract_class.json",
         "target/dev/applier_Applier.compiled_contract_class.json",
     )
@@ -78,17 +44,30 @@ async fn main() -> Result<(), RunnerError> {
     )
     .await?;
     tracing::info!("Deployed contract");
+    let mut gas_sum: FieldElement = FieldElement::ZERO;
 
     let start = Instant::now();
-    let gas_sum = apply_agreements(
-        agreements.clone(),
-        deployed_address,
-        args.rpc_url,
-        args.chain_id,
-        args.address,
-        args.private_key,
-    )
-    .await?;
+
+    for agreement in agreements.iter() {
+        let invoke = invoke(
+            &prefunded_account,
+            deployed_address,
+            "apply",
+            vec![
+                agreement.quantity,
+                agreement.nonce,
+                agreement.price,
+                agreement.server_signature_r,
+                agreement.server_signature_s,
+                agreement.client_signature_r,
+                agreement.client_signature_s,
+            ],
+        );
+        let tx_hash = invoke.await.unwrap();
+        gas_sum +=
+            extract_gas_fee(&wait_for_receipt(&prefunded_account, tx_hash).await.unwrap()).unwrap();
+    }
+
     let duration = start.elapsed();
 
     tracing::info!(
