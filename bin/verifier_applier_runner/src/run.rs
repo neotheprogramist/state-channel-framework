@@ -51,7 +51,7 @@ pub(crate) async fn run(
     .await?;
 
     let calldata = vec![
-        verifier_applier_class_hash,
+        args.program_hash,
         fact_registry_address,
         client_public_key,
         server_public_key,
