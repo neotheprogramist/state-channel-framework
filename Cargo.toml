@@ -75,5 +75,4 @@ futures = "0.3.30"
 seq-macro = "0.3.5"
 prover-sdk = { git = "https://github.com/neotheprogramist/http-prover", version = "0.1.0" }
 starknet-crypto = "0.6.2"
-starknet_ff = { git = "https://github.com/xJonathanLEI/starknet-rs", package = "starknet-ff" }
 starknet_providers = { git = "https://github.com/xJonathanLEI/starknet-rs", package = "starknet-providers" }
