@@ -11,7 +11,7 @@ pub struct Server {
 }
 
 use starknet::core::types::FieldElement as StarknetFieldElement;
-use starknet_crypto::FieldElement as CryptoFieldElement;
+use starknet_crypto::Felt as CryptoFieldElement;
 
 pub fn crypto_to_starknet(fe: &CryptoFieldElement) -> StarknetFieldElement {
     let bytes = fe.to_bytes_be();
@@ -21,7 +21,7 @@ pub fn crypto_to_starknet(fe: &CryptoFieldElement) -> StarknetFieldElement {
 pub fn starknet_to_crypto(fe: &StarknetFieldElement) -> CryptoFieldElement {
     // Similar conversion assuming a method to get bytes
     let bytes = fe.to_bytes_be(); // Hypothetical method to get bytes
-    CryptoFieldElement::from_bytes_be(&bytes).unwrap()
+    CryptoFieldElement::from_bytes_be(&bytes)
 }
 impl Default for Server {
     fn default() -> Self {
