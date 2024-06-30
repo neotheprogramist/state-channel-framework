@@ -106,6 +106,7 @@ Start by building the contract using the following command to ensure it compiles
 scarb build 
 ```
 
+
 ## Generate Sample Agreements
 
 To generate sample agreements execute the following command:
